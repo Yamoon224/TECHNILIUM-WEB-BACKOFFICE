@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+/*
+ * Palette sampled directly from the Techlium Group mark (logo.jpeg):
+ * near-black field, single amber/gold accent running from a bronze
+ * shadow stop to a pale highlight stop. Same brand tokens as the
+ * storefront app (duplicated on purpose, not imported — see README).
+ */
+:root {
+  --bg: #070604;
+  --surface: #141009;
+  --surface-raised: #1d170d;
+  --ink: #f6f1e4;
+  --ink-soft: #a89a7d;
+  --line: #2b2416;
+  --gold-shadow: #5e3306;
+  --gold-deep: #d27513;
+  --gold: #ee9e0b;
+  --gold-bright: #f6cf3c;
+  --gold-highlight: #fbf28c;
+  --danger: #f87171;
+  --gold-gradient: linear-gradient(
+    135deg,
+    var(--gold-shadow) 0%,
+    var(--gold-deep) 35%,
+    var(--gold) 60%,
+    var(--gold-bright) 82%,
+    var(--gold-highlight) 100%
+  );
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-gold: var(--gold);
+  --color-gold-bright: var(--gold-bright);
+  --color-gold-deep: var(--gold-deep);
+  --color-danger: var(--danger);
+  --font-display: var(--font-space-grotesk);
+  --font-sans: var(--font-plex-sans);
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans), sans-serif;
+}
+
+.gold-text {
+  background: var(--gold-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
