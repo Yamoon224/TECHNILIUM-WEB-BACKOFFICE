@@ -36,7 +36,8 @@ npm run test
 ## Pages
 
 - `/` — connexion (jeton Sanctum via l'API Identity) ; affiche le compte et les rôles une fois connecté, avec déconnexion.
+- `/commandes` — liste des commandes, filtrable par statut, actions pour faire avancer le statut (confirmer/expédier/livrer/annuler). Réservé aux rôles `administrateur` et `operateur_commandes` côté API (403 pour les autres, y compris `vendeur_tiers`) — se connecter avec un autre rôle affichera une erreur sur cette page.
 
 ## État d'avancement
 
-Seule la connexion est implémentée pour l'instant — le backend ne couvre encore que les modules Identity et Catalog. Le tableau de bord, la gestion des commandes/stocks/vendeurs suivront au fur et à mesure que les modules backend correspondants seront construits.
+Identity (connexion) et Orders (liste + changement de statut) sont câblés. Catalog (gestion produits/stocks), les vendeurs, la facturation et le reste suivront au fur et à mesure que les modules backend correspondants seront construits.
