@@ -1,0 +1,336 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { BackofficeNav } from "@/components/BackofficeNav";
+import { Button } from "@/components/Button";
+import { useAuth } from "@/lib/useAuth";
+import {
+  PaymentsError,
+  confirmPayment,
+  failPayment,
+  recordPayment,
+  refundPayment,
+  listPayments,
+  type MobileMoneyProvider,
+  type Payment,
+  type PaymentMethod,
+  type PaymentStatus,
+} from "@/lib/payments";
+
+const STATUS_LABEL: Record<PaymentStatus, string> = {
+  pending: "En attente",
+  completed: "Confirmé",
+  failed: "Échoué",
+  refunded: "Remboursé",
+};
+
+const METHOD_LABEL: Record<PaymentMethod, string> = {
+  cod: "Paiement à la livraison",
+  mobile_money: "Mobile money",
+};
+
+export default function PaymentsPage() {
+  const router = useRouter();
+  const { status: sessionStatus, token, logout } = useAuth();
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [filter, setFilter] = useState<PaymentStatus | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pendingId, setPendingId] = useState<number | null>(null);
+
+  const refresh = useCallback(() => {
+    if (!token) return;
+
+    setLoading(true);
+    setError(null);
+
+    listPayments(token, { status: filter ?? undefined })
+      .then(setPayments)
+      .catch((caught) => setError(caught instanceof PaymentsError ? caught.message : "Paiements indisponibles."))
+      .finally(() => setLoading(false));
+  }, [token, filter]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    refresh();
+  }, [refresh]);
+
+  async function handleLogout() {
+    await logout();
+    router.push("/");
+  }
+
+  async function handleAction(id: number, action: "confirm" | "fail" | "refund") {
+    if (!token) return;
+    setPendingId(id);
+    setError(null);
+    try {
+      const fn = action === "confirm" ? confirmPayment : action === "fail" ? failPayment : refundPayment;
+      const updated = await fn(token, id);
+      setPayments((current) => current.map((payment) => (payment.id === id ? updated : payment)));
+    } catch (caught) {
+      setError(caught instanceof PaymentsError ? caught.message : "L'action a échoué.");
+    } finally {
+      setPendingId(null);
+    }
+  }
+
+  if (sessionStatus === "checking") {
+    return <p className="px-4 py-16 text-center text-sm text-ink-soft">Vérification de la session…</p>;
+  }
+
+  if (!token) {
+    return (
+      <main className="flex min-h-screen flex-1 flex-col items-center justify-center gap-3 px-4">
+        <p className="text-ink-soft">Connectez-vous pour accéder aux paiements.</p>
+        <Link href="/" className="text-sm text-gold underline-offset-4 hover:underline">
+          Se connecter
+        </Link>
+      </main>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen flex-1 flex-col">
+      <BackofficeNav onLogout={handleLogout} />
+
+      <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
+        <h1 className="font-display text-2xl font-semibold text-ink">Paiements</h1>
+
+        <NewPaymentForm
+          onSubmit={async (input) => {
+            if (!token) return;
+            const created = await recordPayment(token, input);
+            setPayments((current) => [created, ...current]);
+          }}
+        />
+
+        <nav className="flex flex-wrap gap-2">
+          <FilterPill active={filter === null} onClick={() => setFilter(null)}>
+            Tous
+          </FilterPill>
+          {(["pending", "completed", "failed", "refunded"] as const).map((value) => (
+            <FilterPill key={value} active={filter === value} onClick={() => setFilter(value)}>
+              {STATUS_LABEL[value]}
+            </FilterPill>
+          ))}
+        </nav>
+
+        {error ? <p className="text-sm text-danger">{error}</p> : null}
+
+        {loading ? (
+          <p className="text-sm text-ink-soft">Chargement…</p>
+        ) : payments.length === 0 ? (
+          <p className="text-sm text-ink-soft">Aucun paiement.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[820px] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-line text-left text-ink-soft">
+                  <th className="py-2 pr-4 font-medium">Commande</th>
+                  <th className="py-2 pr-4 font-medium">Méthode</th>
+                  <th className="py-2 pr-4 font-medium">Montant</th>
+                  <th className="py-2 pr-4 font-medium">Référence</th>
+                  <th className="py-2 pr-4 font-medium">Statut</th>
+                  <th className="py-2 font-medium">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {payments.map((payment) => (
+                  <tr key={payment.id} className="border-b border-line">
+                    <td className="py-3 pr-4 text-ink">{payment.order_number}</td>
+                    <td className="py-3 pr-4 text-ink-soft">
+                      {METHOD_LABEL[payment.method]}
+                      {payment.provider ? ` (${payment.provider})` : ""}
+                    </td>
+                    <td className="py-3 pr-4 text-ink">
+                      {payment.amount_amount.toLocaleString("fr-FR")} {payment.currency}
+                    </td>
+                    <td className="py-3 pr-4 text-ink-soft">{payment.provider_reference ?? "—"}</td>
+                    <td className="py-3 pr-4 text-ink-soft">{STATUS_LABEL[payment.status]}</td>
+                    <td className="py-3">
+                      <div className="flex flex-wrap gap-2">
+                        {payment.status === "pending" || payment.status === "failed" ? (
+                          <button
+                            type="button"
+                            disabled={pendingId === payment.id}
+                            onClick={() => handleAction(payment.id, "confirm")}
+                            className="rounded-sm border border-gold px-2 py-1 text-xs text-gold transition-colors disabled:opacity-50"
+                          >
+                            Confirmer
+                          </button>
+                        ) : null}
+                        {payment.status === "pending" ? (
+                          <button
+                            type="button"
+                            disabled={pendingId === payment.id}
+                            onClick={() => handleAction(payment.id, "fail")}
+                            className="rounded-sm border border-danger px-2 py-1 text-xs text-danger transition-colors disabled:opacity-50"
+                          >
+                            Marquer échoué
+                          </button>
+                        ) : null}
+                        {payment.status === "completed" ? (
+                          <button
+                            type="button"
+                            disabled={pendingId === payment.id}
+                            onClick={() => handleAction(payment.id, "refund")}
+                            className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors disabled:opacity-50"
+                          >
+                            Rembourser
+                          </button>
+                        ) : null}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+function FilterPill({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full border px-3 py-1 text-sm transition-colors ${
+        active ? "border-gold bg-gold text-bg font-medium" : "border-line text-ink hover:border-gold"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function NewPaymentForm({
+  onSubmit,
+}: {
+  onSubmit: (input: {
+    order_number: string;
+    method: PaymentMethod;
+    amount_amount: number;
+    provider?: MobileMoneyProvider;
+    provider_reference?: string;
+  }) => Promise<void>;
+}) {
+  const [orderNumber, setOrderNumber] = useState("");
+  const [method, setMethod] = useState<PaymentMethod>("cod");
+  const [amount, setAmount] = useState("");
+  const [provider, setProvider] = useState<MobileMoneyProvider>("orange_money");
+  const [reference, setReference] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    setFormError(null);
+
+    if (!orderNumber || !amount) {
+      setFormError("La commande et le montant sont requis.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await onSubmit({
+        order_number: orderNumber,
+        method,
+        amount_amount: Number(amount),
+        provider: method === "mobile_money" ? provider : undefined,
+        provider_reference: reference || undefined,
+      });
+      setOrderNumber("");
+      setAmount("");
+      setReference("");
+    } catch (caught) {
+      setFormError(caught instanceof PaymentsError ? caught.message : "Enregistrement impossible.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
+      <label className="flex flex-col gap-1 text-xs text-ink-soft">
+        N° commande
+        <input
+          value={orderNumber}
+          onChange={(event) => setOrderNumber(event.target.value)}
+          placeholder="TCH-20261025-XXXXXX"
+          className="w-48 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
+        />
+      </label>
+
+      <label className="flex flex-col gap-1 text-xs text-ink-soft">
+        Méthode
+        <select
+          value={method}
+          onChange={(event) => setMethod(event.target.value as PaymentMethod)}
+          className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
+        >
+          <option value="cod">Paiement à la livraison</option>
+          <option value="mobile_money">Mobile money</option>
+        </select>
+      </label>
+
+      {method === "mobile_money" ? (
+        <>
+          <label className="flex flex-col gap-1 text-xs text-ink-soft">
+            Opérateur
+            <select
+              value={provider}
+              onChange={(event) => setProvider(event.target.value as MobileMoneyProvider)}
+              className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
+            >
+              <option value="orange_money">Orange Money</option>
+              <option value="mtn_money">MTN Money</option>
+              <option value="wave">Wave</option>
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs text-ink-soft">
+            Référence transaction
+            <input
+              value={reference}
+              onChange={(event) => setReference(event.target.value)}
+              placeholder="MM-12345678"
+              className="w-40 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
+            />
+          </label>
+        </>
+      ) : null}
+
+      <label className="flex flex-col gap-1 text-xs text-ink-soft">
+        Montant (F CFA)
+        <input
+          type="number"
+          min={0}
+          value={amount}
+          onChange={(event) => setAmount(event.target.value)}
+          className="w-32 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
+        />
+      </label>
+
+      <Button type="submit" disabled={submitting}>
+        Enregistrer
+      </Button>
+
+      {formError ? <p className="w-full text-sm text-danger">{formError}</p> : null}
+    </form>
+  );
+}

@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/offres", label: "Modération" },
   { href: "/vendeurs", label: "Vendeurs" },
   { href: "/stock", label: "Stock" },
+  { href: "/paiements", label: "Paiements" },
 ];
 
 export function BackofficeNav({ onLogout }: { onLogout: () => void }) {
