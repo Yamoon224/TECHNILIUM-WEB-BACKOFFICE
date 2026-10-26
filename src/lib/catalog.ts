@@ -170,3 +170,44 @@ export async function archiveProduct(token: string, id: number): Promise<Product
   if (!response.ok) throw await parseError(response);
   return response.json() as Promise<Product>;
 }
+
+export interface ModeratedOffer {
+  id: number;
+  vendor_id: number | null;
+  product_name: string;
+  brand: string;
+  sku: string;
+  price_amount: number;
+  currency: string;
+  stock_quantity: number;
+  warranty_months: number;
+  status: string;
+  created_at: string | null;
+}
+
+export async function listOffersForModeration(token: string, status = "pending_review"): Promise<ModeratedOffer[]> {
+  const response = await fetch(`${API_BASE_URL}/admin/offers?status=${encodeURIComponent(status)}`, {
+    headers: authHeaders(token),
+    cache: "no-store",
+  });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<ModeratedOffer[]>;
+}
+
+export async function approveOffer(token: string, id: number): Promise<ModeratedOffer> {
+  const response = await fetch(`${API_BASE_URL}/admin/offers/${id}/approve`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<ModeratedOffer>;
+}
+
+export async function rejectOffer(token: string, id: number): Promise<ModeratedOffer> {
+  const response = await fetch(`${API_BASE_URL}/admin/offers/${id}/reject`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<ModeratedOffer>;
+}
