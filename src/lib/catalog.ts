@@ -1,0 +1,172 @@
+/**
+ * Client-side access to the Catalog module's admin endpoints
+ * (backend/app/Modules/Catalog/Http/Controllers/Admin). Plain `fetch`,
+ * mirroring lib/orders.ts and lib/auth.ts.
+ */
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api/v1";
+
+export interface Category {
+  id: number;
+  parent_id: number | null;
+  name: string;
+  slug: string;
+  description: string | null;
+  position: number;
+  is_active: boolean;
+  product_count: number | null;
+}
+
+export interface CategoryInput {
+  name: string;
+  slug?: string;
+  description?: string;
+  parent_id?: number | null;
+  position?: number;
+  is_active?: boolean;
+}
+
+export type ProductStatus = "draft" | "published" | "archived";
+export type ConditionState = "neuf" | "reconditionne" | "occasion";
+
+export interface Product {
+  id: number;
+  category_id: number;
+  brand: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  condition_state: ConditionState;
+  status: ProductStatus;
+  sku: string | null;
+  price_amount: number | null;
+  currency: string | null;
+  stock_quantity: number | null;
+  warranty_months: number | null;
+}
+
+export interface ProductInput {
+  category_id: number;
+  brand: string;
+  name: string;
+  slug?: string;
+  description?: string;
+  condition_state?: ConditionState;
+  sku?: string;
+  price_amount: number;
+  currency?: string;
+  stock_quantity: number;
+  warranty_months?: number;
+}
+
+export interface ProductUpdateInput {
+  category_id?: number;
+  brand?: string;
+  name?: string;
+  slug?: string;
+  description?: string;
+  condition_state?: ConditionState;
+  status?: ProductStatus;
+  price_amount?: number;
+  stock_quantity?: number;
+  warranty_months?: number;
+}
+
+export interface Paginated<T> {
+  data: T[];
+  meta: { current_page: number; last_page: number; per_page: number; total: number };
+}
+
+export class CatalogError extends Error {
+  constructor(
+    message: string,
+    public readonly fieldErrors?: Record<string, string[]>,
+  ) {
+    super(message);
+  }
+}
+
+async function parseError(response: Response): Promise<CatalogError> {
+  try {
+    const body = (await response.json()) as { message?: string; errors?: Record<string, string[]> };
+    return new CatalogError(body.message ?? `Erreur inattendue (${response.status}).`, body.errors);
+  } catch {
+    return new CatalogError(`Erreur inattendue (${response.status}).`);
+  }
+}
+
+function authHeaders(token: string): HeadersInit {
+  return { Authorization: `Bearer ${token}`, Accept: "application/json", "Content-Type": "application/json" };
+}
+
+export async function listCategories(token: string): Promise<Category[]> {
+  const response = await fetch(`${API_BASE_URL}/admin/categories`, { headers: authHeaders(token), cache: "no-store" });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<Category[]>;
+}
+
+export async function createCategory(token: string, input: CategoryInput): Promise<Category> {
+  const response = await fetch(`${API_BASE_URL}/admin/categories`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<Category>;
+}
+
+export async function updateCategory(token: string, id: number, input: Partial<CategoryInput>): Promise<Category> {
+  const response = await fetch(`${API_BASE_URL}/admin/categories/${id}`, {
+    method: "PUT",
+    headers: authHeaders(token),
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<Category>;
+}
+
+export async function deleteCategory(token: string, id: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/admin/categories/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw await parseError(response);
+}
+
+export async function listProducts(token: string, page = 1): Promise<Paginated<Product>> {
+  const response = await fetch(`${API_BASE_URL}/admin/products?page=${page}&per_page=50`, {
+    headers: authHeaders(token),
+    cache: "no-store",
+  });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<Paginated<Product>>;
+}
+
+export async function createProduct(token: string, input: ProductInput): Promise<Product> {
+  const response = await fetch(`${API_BASE_URL}/admin/products`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<Product>;
+}
+
+export async function updateProduct(token: string, id: number, input: ProductUpdateInput): Promise<Product> {
+  const response = await fetch(`${API_BASE_URL}/admin/products/${id}`, {
+    method: "PUT",
+    headers: authHeaders(token),
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<Product>;
+}
+
+export async function archiveProduct(token: string, id: number): Promise<Product> {
+  const response = await fetch(`${API_BASE_URL}/admin/products/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<Product>;
+}

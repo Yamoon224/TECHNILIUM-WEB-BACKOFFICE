@@ -7,6 +7,8 @@ import { LogoMark } from "./LogoMark";
 const LINKS = [
   { href: "/", label: "Tableau de bord" },
   { href: "/commandes", label: "Commandes" },
+  { href: "/categories", label: "Catégories" },
+  { href: "/produits", label: "Produits" },
 ];
 
 export function BackofficeNav({ onLogout }: { onLogout: () => void }) {
