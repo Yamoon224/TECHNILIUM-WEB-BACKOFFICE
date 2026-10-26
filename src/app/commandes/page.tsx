@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { BackofficeNav } from "@/components/BackofficeNav";
 import { StatusBadge } from "@/components/StatusBadge";
 import { useAuth } from "@/lib/useAuth";
@@ -17,7 +18,8 @@ const ACTION_LABEL: Record<OrderStatus, string> = {
 };
 
 export default function OrdersPage() {
-  const { status: sessionStatus, token } = useAuth();
+  const router = useRouter();
+  const { status: sessionStatus, token, logout } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [filter, setFilter] = useState<OrderStatus | null>(null);
   const [loading, setLoading] = useState(false);
@@ -42,6 +44,11 @@ export default function OrdersPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
   }, [refresh]);
+
+  async function handleLogout() {
+    await logout();
+    router.push("/");
+  }
 
   async function handleTransition(orderNumber: string, target: OrderStatus) {
     if (!token) return;
@@ -74,7 +81,7 @@ export default function OrdersPage() {
 
   return (
     <div className="flex min-h-screen flex-1 flex-col">
-      <BackofficeNav onLogout={() => undefined} />
+      <BackofficeNav onLogout={handleLogout} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
         <h1 className="font-display text-2xl font-semibold text-ink">Commandes</h1>
