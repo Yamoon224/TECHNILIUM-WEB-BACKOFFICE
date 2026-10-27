@@ -13,6 +13,7 @@ const LINKS = [
   { href: "/offres", label: "Modération" },
   { href: "/vendeurs", label: "Vendeurs" },
   { href: "/stock", label: "Stock" },
+  { href: "/achats", label: "Achats" },
   { href: "/paiements", label: "Paiements" },
   { href: "/livraisons", label: "Livraisons" },
   { href: "/factures", label: "Factures" },

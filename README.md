@@ -46,6 +46,7 @@ npm run test
 - `/audit` — journal d'audit des actions backoffice (utilisateur, action, résultat, IP, données envoyées avec secrets masqués), filtres (utilisateur, méthode, chemin, échecs seulement, période) et bouton **Vérifier l'intégrité** de la chaîne de signatures. Réservé à `administrateur`.
 - `/support` — file des tickets clients : filtres (statut, en retard, mes tickets, non assignés, recherche), conversation dépliable avec réponse ou **note interne**, prise en charge, priorité, résolution / réouverture / clôture. Réservé à `support` et `administrateur`.
 - `/avis` — modération des avis clients : les avis signalés (lien, e-mail, téléphone, mot interdit) en premier, publier / rejeter avec motif / retirer / rétablir. Réservé à `support`, `marketing` et `administrateur`.
+- `/achats` — fournisseurs, bons de commande (création, envoi, réception contrôlée acceptés/refusés, frais d'approche), factures fournisseurs et règlements avec dettes échues, stock valorisé au coût moyen pondéré. Réservé à `responsable_achats` et `administrateur`.
 - `/retours` — dossiers de retour (RMA) : ouverture sur une commande livrée, acceptation, réception, remboursement total ou partiel, refus motivé ; le remboursement émet un avoir partiel et réduit le reversement du vendeur.
 - `/espace-vendeur` — espace du vendeur tiers (cloisonné côté API) : synthèse, ses commandes (ses lignes et sa part uniquement), relevés de reversement, gestion de ses offres (soumission, prix, stock, retrait). Un compte vendeur seul voit ce menu à la place du menu équipe.
 
