@@ -22,6 +22,7 @@ const LINKS = [
   { href: "/rapports", label: "Rapports" },
   { href: "/promotions", label: "Promotions" },
   { href: "/support", label: "Support" },
+  { href: "/avis", label: "Avis" },
   { href: "/notifications", label: "Notifications" },
   { href: "/audit", label: "Audit" },
 ];
