@@ -18,9 +18,19 @@ export interface Shipment {
   delivery_city: string | null;
   status: ShipmentStatus;
   attempts: number;
+  /** Wrong delivery codes typed so far; the shipment locks at MAX_CODE_ATTEMPTS. */
+  code_attempts: number;
+  code_locked: boolean;
   notes: string | null;
   delivered_at: string | null;
   created_at: string | null;
+}
+
+/** Mirrors ConfirmDeliveryAction::MAX_CODE_ATTEMPTS on the backend. */
+export const MAX_CODE_ATTEMPTS = 5;
+
+export function codeAttemptsLeft(shipment: Pick<Shipment, "code_attempts">): number {
+  return Math.max(0, MAX_CODE_ATTEMPTS - shipment.code_attempts);
 }
 
 export class ShippingError extends Error {}
@@ -73,17 +83,21 @@ async function transition(
   token: string,
   id: number,
   action: "start" | "deliver" | "retry" | "return",
+  body?: Record<string, string>,
 ): Promise<Shipment> {
   const response = await fetch(`${API_BASE_URL}/admin/shipments/${id}/${action}`, {
     method: "POST",
     headers: authHeaders(token),
+    body: body ? JSON.stringify(body) : undefined,
   });
   if (!response.ok) throw await parseError(response);
   return response.json() as Promise<Shipment>;
 }
 
 export const startShipment = (token: string, id: number) => transition(token, id, "start");
-export const deliverShipment = (token: string, id: number) => transition(token, id, "deliver");
+/** Proof of handover: the code the customer was given (cahier §5.6). */
+export const deliverShipment = (token: string, id: number, confirmationCode: string) =>
+  transition(token, id, "deliver", { confirmation_code: confirmationCode });
 export const retryShipment = (token: string, id: number) => transition(token, id, "retry");
 export const returnShipment = (token: string, id: number) => transition(token, id, "return");
 

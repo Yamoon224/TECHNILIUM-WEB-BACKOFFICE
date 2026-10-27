@@ -11,6 +11,7 @@ import {
   assignShipment,
   createShipment,
   deliverShipment,
+  codeAttemptsLeft,
   failShipment,
   listShipments,
   retryShipment,
@@ -181,15 +182,19 @@ export default function ShipmentsPage() {
                         {shipment.status === "in_transit" ? (
                           <>
                             <ActionButton
-                              disabled={pendingId === shipment.id}
-                              onClick={() =>
-                                handleAction(shipment.id, () => {
+                              disabled={pendingId === shipment.id || shipment.code_locked}
+                              onClick={() => {
+                                const code = window.prompt(
+                                  `Code de confirmation remis au client (${codeAttemptsLeft(shipment)} essai(s) restant(s)) :`,
+                                );
+                                if (!code) return;
+                                void handleAction(shipment.id, () => {
                                   if (!token) throw new ShippingError("Session expirée.");
-                                  return deliverShipment(token, shipment.id);
-                                })
-                              }
+                                  return deliverShipment(token, shipment.id, code.trim());
+                                });
+                              }}
                             >
-                              Marquer livrée
+                              {shipment.code_locked ? "Verrouillée" : "Confirmer la livraison"}
                             </ActionButton>
                             <FailForm
                               onFail={(notes) =>
