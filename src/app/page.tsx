@@ -28,7 +28,7 @@ export default function Home() {
   if (user && token) {
     return (
       <div className="flex min-h-screen flex-1 flex-col">
-        <BackofficeNav onLogout={logout} />
+        <BackofficeNav onLogout={logout} roles={user.roles} />
         <main className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-16">
           <AccountPanel user={user} onLogout={logout} />
         </main>

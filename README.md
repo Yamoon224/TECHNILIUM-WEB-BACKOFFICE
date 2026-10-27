@@ -41,6 +41,7 @@ npm run test
 - `/comptabilite` — balance générale (alerte si déséquilibrée) et écritures par journal, en lecture seule.
 - `/reversements` — reversements vendeurs : calcul par vendeur (ventes livrées hors délai de retour, moins commission), relevé détaillé par commande, enregistrement du paiement avec référence, total restant dû.
 - `/retours` — dossiers de retour (RMA) : ouverture sur une commande livrée, acceptation, réception, remboursement total ou partiel, refus motivé ; le remboursement émet un avoir partiel et réduit le reversement du vendeur.
+- `/espace-vendeur` — espace du vendeur tiers (cloisonné côté API) : synthèse, ses commandes (ses lignes et sa part uniquement), relevés de reversement, gestion de ses offres (soumission, prix, stock, retrait). Un compte vendeur seul voit ce menu à la place du menu équipe.
 
 ## État d'avancement
 

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { isVendorOnly } from "@/lib/roles";
 import { LogoMark } from "./LogoMark";
 
 const LINKS = [
@@ -20,8 +21,12 @@ const LINKS = [
   { href: "/retours", label: "Retours" },
 ];
 
-export function BackofficeNav({ onLogout }: { onLogout: () => void }) {
+/** A vendor-only account gets the vendor space instead of the staff menu (UI only; the API enforces access). */
+const VENDOR_LINKS = [{ href: "/espace-vendeur", label: "Mon espace" }];
+
+export function BackofficeNav({ onLogout, roles }: { onLogout: () => void; roles?: readonly string[] }) {
   const pathname = usePathname();
+  const links = roles && isVendorOnly(roles) ? VENDOR_LINKS : LINKS;
 
   return (
     <header className="flex flex-col gap-4 border-b border-line px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -30,7 +35,7 @@ export function BackofficeNav({ onLogout }: { onLogout: () => void }) {
       </Link>
 
       <nav className="flex items-center gap-4">
-        {LINKS.map((link) => (
+        {links.map((link) => (
           <Link
             key={link.href}
             href={link.href}
