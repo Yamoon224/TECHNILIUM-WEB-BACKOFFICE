@@ -21,6 +21,7 @@ const LINKS = [
   { href: "/retours", label: "Retours" },
   { href: "/rapports", label: "Rapports" },
   { href: "/promotions", label: "Promotions" },
+  { href: "/support", label: "Support" },
   { href: "/notifications", label: "Notifications" },
   { href: "/audit", label: "Audit" },
 ];
