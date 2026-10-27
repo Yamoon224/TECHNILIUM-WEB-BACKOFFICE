@@ -122,6 +122,17 @@ export const getSummary = (token: string) => request<VendorSummary>(token, "/sum
 export const listOrders = (token: string) =>
   request<{ data: VendorOrder[] }>(token, "/orders").then((body) => body.data);
 
+/** The vendor ships its own share of a confirmed order. */
+export const shipOrder = (token: string, orderNumber: string) =>
+  request<{ order_number: string; status: string }>(token, `/orders/${encodeURIComponent(orderNumber)}/ship`, {
+    method: "POST",
+  });
+
+/** Only a confirmed share can be shipped (mirrors the sub-order state machine). */
+export function canShip(order: Pick<VendorOrder, "status">): boolean {
+  return order.status === "confirmed";
+}
+
 export const listPayouts = (token: string) =>
   request<{ data: VendorPayout[] }>(token, "/payouts").then((body) => body.data);
 

@@ -1,12 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BackofficeNav } from "@/components/BackofficeNav";
 import { StatusBadge } from "@/components/StatusBadge";
 import { useAuth } from "@/lib/useAuth";
-import { listOrders, transitionOrder, OrdersError, type Order } from "@/lib/orders";
+import {
+  OrdersError,
+  hasSplit,
+  listOrders,
+  sellerLabel,
+  transitionOrder,
+  transitionSubOrder,
+  type Order,
+} from "@/lib/orders";
 import { ORDER_STATUSES, ORDER_STATUS_META, ORDER_STATUS_TRANSITIONS, type OrderStatus } from "@/lib/orderStatus";
 
 const ACTION_LABEL: Record<OrderStatus, string> = {
@@ -56,6 +64,20 @@ export default function OrdersPage() {
     setPendingOrderNumber(orderNumber);
     try {
       const updated = await transitionOrder(token, orderNumber, target);
+      setOrders((current) => current.map((order) => (order.order_number === orderNumber ? updated : order)));
+    } catch (caught) {
+      setError(caught instanceof OrdersError ? caught.message : "La mise à jour a échoué.");
+    } finally {
+      setPendingOrderNumber(null);
+    }
+  }
+
+  async function handleSubOrderTransition(orderNumber: string, subOrderId: number, target: OrderStatus) {
+    if (!token) return;
+
+    setPendingOrderNumber(orderNumber);
+    try {
+      const updated = await transitionSubOrder(token, orderNumber, subOrderId, target);
       setOrders((current) => current.map((order) => (order.order_number === orderNumber ? updated : order)));
     } catch (caught) {
       setError(caught instanceof OrdersError ? caught.message : "La mise à jour a échoué.");
@@ -118,7 +140,8 @@ export default function OrdersPage() {
               </thead>
               <tbody>
                 {orders.map((order) => (
-                  <tr key={order.order_number} className="border-b border-line">
+                  <Fragment key={order.order_number}>
+                  <tr className="border-b border-line">
                     <td className="py-3 pr-4 text-ink">{order.order_number}</td>
                     <td className="py-3 pr-4 text-ink">{order.customer_name}</td>
                     <td className="py-3 pr-4 text-ink-soft">{order.customer_phone}</td>
@@ -127,6 +150,7 @@ export default function OrdersPage() {
                     </td>
                     <td className="py-3 pr-4">
                       <StatusBadge status={order.status} />
+                      {order.partial ? <span className="ml-2 text-xs text-ink-soft">partielle</span> : null}
                     </td>
                     <td className="py-3">
                       <div className="flex flex-wrap gap-2">
@@ -144,6 +168,37 @@ export default function OrdersPage() {
                       </div>
                     </td>
                   </tr>
+                  {hasSplit(order)
+                    ? order.sub_orders?.map((subOrder) => (
+                        <tr key={subOrder.id} className="border-b border-line bg-surface">
+                          <td className="py-2 pl-6 pr-4 text-xs text-ink-soft" colSpan={3}>
+                            {sellerLabel(subOrder)}
+                          </td>
+                          <td className="py-2 pr-4 text-xs text-ink-soft">
+                            {subOrder.subtotal.amount.toLocaleString("fr-FR")} {subOrder.subtotal.currency}
+                          </td>
+                          <td className="py-2 pr-4">
+                            <StatusBadge status={subOrder.status} />
+                          </td>
+                          <td className="py-2">
+                            <div className="flex flex-wrap gap-2">
+                              {ORDER_STATUS_TRANSITIONS[subOrder.status].map((target) => (
+                                <button
+                                  key={target}
+                                  type="button"
+                                  disabled={pendingOrderNumber === order.order_number}
+                                  onClick={() => handleSubOrderTransition(order.order_number, subOrder.id, target)}
+                                  className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                  {ACTION_LABEL[target]}
+                                </button>
+                              ))}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    : null}
+                  </Fragment>
                 ))}
               </tbody>
             </table>

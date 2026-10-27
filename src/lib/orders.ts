@@ -11,6 +11,15 @@ export interface OrderItem {
   line_total: { amount: number; currency: string };
 }
 
+/** One seller's share of an order (vendor_id null = Technilium's own stock). */
+export interface SubOrder {
+  id: number;
+  vendor_id: number | null;
+  status: OrderStatus;
+  subtotal: { amount: number; currency: string };
+  delivered_at: string | null;
+}
+
 export interface Order {
   order_number: string;
   status: OrderStatus;
@@ -22,10 +31,22 @@ export interface Order {
   notes: string | null;
   subtotal: { amount: number; currency: string };
   items: OrderItem[];
+  sub_orders?: SubOrder[];
+  /** True when the sub-orders are at different stages (partially shipped / delivered). */
+  partial?: boolean;
   created_at: string | null;
 }
 
 export class OrdersError extends Error {}
+
+export function sellerLabel(subOrder: Pick<SubOrder, "vendor_id">): string {
+  return subOrder.vendor_id === null ? "Technilium" : `Vendeur #${subOrder.vendor_id}`;
+}
+
+/** Only worth showing the per-seller breakdown when more than one seller is involved. */
+export function hasSplit(order: Pick<Order, "sub_orders">): boolean {
+  return (order.sub_orders?.length ?? 0) > 1;
+}
 
 async function parseErrorMessage(response: Response): Promise<string> {
   try {
@@ -61,6 +82,32 @@ export async function transitionOrder(token: string, orderNumber: string, status
     },
     body: JSON.stringify({ status }),
   });
+
+  if (!response.ok) {
+    throw new OrdersError(await parseErrorMessage(response));
+  }
+
+  return response.json() as Promise<Order>;
+}
+
+export async function transitionSubOrder(
+  token: string,
+  orderNumber: string,
+  subOrderId: number,
+  status: OrderStatus,
+): Promise<Order> {
+  const response = await fetch(
+    `${API_BASE_URL}/orders/${encodeURIComponent(orderNumber)}/sub-orders/${subOrderId}/transition`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status }),
+    },
+  );
 
   if (!response.ok) {
     throw new OrdersError(await parseErrorMessage(response));

@@ -36,7 +36,7 @@ npm run test
 ## Pages
 
 - `/` — connexion (jeton Sanctum via l'API Identity) ; affiche le compte et les rôles une fois connecté, avec déconnexion.
-- `/commandes` — liste des commandes, filtrable par statut, actions pour faire avancer le statut (confirmer/expédier/livrer/annuler). Réservé aux rôles `administrateur` et `operateur_commandes` côté API (403 pour les autres, y compris `vendeur_tiers`) — se connecter avec un autre rôle affichera une erreur sur cette page.
+- `/commandes` — (voir aussi la ventilation par vendeur : chaque part a son statut et ses actions) liste des commandes, filtrable par statut, actions pour faire avancer le statut (confirmer/expédier/livrer/annuler). Réservé aux rôles `administrateur` et `operateur_commandes` côté API (403 pour les autres, y compris `vendeur_tiers`) — se connecter avec un autre rôle affichera une erreur sur cette page.
 - `/factures` — factures et avoirs : liste, émission depuis un numéro de commande, avoir total avec motif (rôles `comptable` / `administrateur`).
 - `/comptabilite` — balance générale (alerte si déséquilibrée) et écritures par journal, en lecture seule.
 - `/reversements` — reversements vendeurs : calcul par vendeur (ventes livrées hors délai de retour, moins commission), relevé détaillé par commande, enregistrement du paiement avec référence, total restant dû.

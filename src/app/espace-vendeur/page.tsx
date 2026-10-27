@@ -7,10 +7,12 @@ import { BackofficeNav } from "@/components/BackofficeNav";
 import { Button } from "@/components/Button";
 import { useAuth } from "@/lib/useAuth";
 import { formatMoney } from "@/lib/money";
+import { ORDER_STATUS_META, type OrderStatus } from "@/lib/orderStatus";
 import {
   OFFER_STATUS_LABEL,
   VendorSpaceError,
   archiveOffer,
+  canShip,
   createOffer,
   getPayout,
   getSummary,
@@ -18,6 +20,7 @@ import {
   listOffers,
   listOrders,
   listPayouts,
+  shipOrder,
   totalCount,
   updateOffer,
   type VendorOffer,
@@ -147,18 +150,33 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 function OrdersTab({ token }: { token: string }) {
-  const { data, error } = useLoader<VendorOrder[]>(useCallback(() => listOrders(token), [token]));
+  const { data, error, reload, setError } = useLoader<VendorOrder[]>(useCallback(() => listOrders(token), [token]));
+  const [busy, setBusy] = useState<string | null>(null);
+
+  async function handleShip(orderNumber: string) {
+    setBusy(orderNumber);
+    setError(null);
+    try {
+      await shipOrder(token, orderNumber);
+      reload();
+    } catch (caught) {
+      setError(caught instanceof VendorSpaceError ? caught.message : "Expédition impossible.");
+    } finally {
+      setBusy(null);
+    }
+  }
 
   if (!data) return <Status error={error} loading />;
   if (data.length === 0) return <p className="text-sm text-ink-soft">Aucune commande.</p>;
 
   return (
     <ul className="flex flex-col gap-3">
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
       {data.map((order) => (
         <li key={order.order_number} className="rounded-sm border border-line p-4 text-sm">
           <div className="flex flex-wrap justify-between gap-2 text-ink">
             <span>{order.order_number}</span>
-            <span className="text-ink-soft">{order.status}</span>
+            <span className="text-ink-soft">{ORDER_STATUS_META[order.status as OrderStatus]?.label ?? order.status}</span>
           </div>
           <p className="mt-1 text-ink-soft">
             {order.customer_name} · {order.customer_phone} · {order.delivery_address}
@@ -174,9 +192,23 @@ function OrdersTab({ token }: { token: string }) {
               </li>
             ))}
           </ul>
-          <p className="mt-2 text-right text-ink">
-            Votre part : {formatMoney({ amount: order.vendor_subtotal_amount, currency: order.currency })}
-          </p>
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+            {canShip(order) ? (
+              <button
+                type="button"
+                disabled={busy === order.order_number}
+                onClick={() => handleShip(order.order_number)}
+                className="rounded-sm border border-gold px-2 py-1 text-xs text-gold transition-colors disabled:opacity-50"
+              >
+                Marquer expédié
+              </button>
+            ) : (
+              <span />
+            )}
+            <p className="text-ink">
+              Votre part : {formatMoney({ amount: order.vendor_subtotal_amount, currency: order.currency })}
+            </p>
+          </div>
         </li>
       ))}
     </ul>
