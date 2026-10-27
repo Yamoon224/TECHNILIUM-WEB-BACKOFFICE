@@ -131,7 +131,15 @@ export default function InvoicesPage() {
                       <td className="py-3 pr-4 text-ink-soft">
                         {money(invoice.vat_amount)} ({invoice.vat_rate_percent} %)
                       </td>
-                      <td className="py-3 pr-4 text-ink">{money(invoice.total_amount)}</td>
+                      <td className="py-3 pr-4 text-ink">
+                        {money(invoice.total_amount)}
+                        {invoice.discount_amount > 0 ? (
+                          <span className="block text-xs text-ink-soft">
+                            remise {money(invoice.discount_amount)}
+                            {invoice.coupon_code ? ` (${invoice.coupon_code})` : ""}
+                          </span>
+                        ) : null}
+                      </td>
                       <td className="py-3">
                         {isCreditable(invoice, invoices) ? (
                           <button

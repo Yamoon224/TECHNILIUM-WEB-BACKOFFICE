@@ -14,6 +14,8 @@ function doc(overrides: Partial<Invoice>): Invoice {
     net_amount: 100,
     vat_amount: 18,
     total_amount: 118,
+    discount_amount: 0,
+    coupon_code: null,
     reason: null,
     issued_at: "2026-10-27T10:00:00Z",
     lines: null,

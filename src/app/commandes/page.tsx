@@ -147,6 +147,12 @@ export default function OrdersPage() {
                     <td className="py-3 pr-4 text-ink-soft">{order.customer_phone}</td>
                     <td className="py-3 pr-4 text-ink">
                       {order.subtotal.amount.toLocaleString("fr-FR")} {order.subtotal.currency}
+                      {order.discount && order.discount.amount > 0 ? (
+                        <span className="block text-xs text-ink-soft">
+                          remise {order.discount.amount.toLocaleString("fr-FR")}
+                          {order.coupon_code ? ` (${order.coupon_code})` : ""}
+                        </span>
+                      ) : null}
                     </td>
                     <td className="py-3 pr-4">
                       <StatusBadge status={order.status} />

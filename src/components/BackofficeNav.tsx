@@ -20,6 +20,9 @@ const LINKS = [
   { href: "/reversements", label: "Reversements" },
   { href: "/retours", label: "Retours" },
   { href: "/rapports", label: "Rapports" },
+  { href: "/promotions", label: "Promotions" },
+  { href: "/notifications", label: "Notifications" },
+  { href: "/audit", label: "Audit" },
 ];
 
 /** A vendor-only account gets the vendor space instead of the staff menu (UI only; the API enforces access). */

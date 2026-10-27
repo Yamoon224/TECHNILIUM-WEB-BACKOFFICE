@@ -34,6 +34,9 @@ export interface Invoice {
   net_amount: number;
   vat_amount: number;
   total_amount: number;
+  /** Coupon discount already taken off the lines' list price (borne by Technilium). */
+  discount_amount: number;
+  coupon_code: string | null;
   reason: string | null;
   issued_at: string;
   lines: InvoiceLine[] | null;

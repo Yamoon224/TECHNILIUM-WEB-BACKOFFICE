@@ -1,0 +1,182 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { BackofficeNav } from "@/components/BackofficeNav";
+import { useAuth } from "@/lib/useAuth";
+import {
+  CHANNEL_LABEL,
+  NOTIFICATION_STATUS_LABEL,
+  NotificationsError,
+  canRetry,
+  countByStatus,
+  eventLabel,
+  listNotifications,
+  retryNotification,
+  type Notification,
+  type NotificationStatus,
+} from "@/lib/notifications";
+
+const STATUSES: NotificationStatus[] = ["pending", "sent", "failed"];
+
+export default function NotificationsPage() {
+  const router = useRouter();
+  const { status: sessionStatus, token, user, logout } = useAuth();
+  const [items, setItems] = useState<Notification[]>([]);
+  const [filter, setFilter] = useState<NotificationStatus | null>(null);
+  const [reference, setReference] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<number | null>(null);
+
+  const refresh = useCallback(() => {
+    if (!token) return;
+
+    setLoading(true);
+    setError(null);
+
+    listNotifications(token, { status: filter ?? undefined, reference: reference.trim() || undefined })
+      .then(setItems)
+      .catch((caught) => setError(caught instanceof NotificationsError ? caught.message : "Journal indisponible."))
+      .finally(() => setLoading(false));
+  }, [token, filter, reference]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    refresh();
+  }, [refresh]);
+
+  async function handleLogout() {
+    await logout();
+    router.push("/");
+  }
+
+  async function handleRetry(item: Notification) {
+    if (!token) return;
+    setBusyId(item.id);
+    setError(null);
+    try {
+      const updated = await retryNotification(token, item.id);
+      setItems((current) => current.map((entry) => (entry.id === item.id ? updated : entry)));
+    } catch (caught) {
+      setError(caught instanceof NotificationsError ? caught.message : "La relance a échoué.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  if (sessionStatus === "checking") {
+    return <p className="px-4 py-16 text-center text-sm text-ink-soft">Vérification de la session…</p>;
+  }
+
+  if (!token) {
+    return (
+      <main className="flex min-h-screen flex-1 flex-col items-center justify-center gap-3 px-4">
+        <p className="text-ink-soft">Connectez-vous pour accéder aux notifications.</p>
+        <Link href="/" className="text-sm text-gold underline-offset-4 hover:underline">
+          Se connecter
+        </Link>
+      </main>
+    );
+  }
+
+  const counts = countByStatus(items);
+
+  return (
+    <div className="flex min-h-screen flex-1 flex-col">
+      <BackofficeNav onLogout={handleLogout} roles={user?.roles} />
+
+      <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h1 className="font-display text-2xl font-semibold text-ink">Notifications clients</h1>
+          <p className="text-sm text-ink-soft">
+            {counts.sent} envoyé(s) · {counts.pending} en attente ·{" "}
+            <span className={counts.failed > 0 ? "text-danger" : undefined}>{counts.failed} en échec</span>
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <nav className="flex flex-wrap gap-2">
+            {[null, ...STATUSES].map((value) => (
+              <button
+                key={value ?? "all"}
+                type="button"
+                onClick={() => setFilter(value)}
+                className={`rounded-full border px-3 py-1 text-sm transition-colors ${
+                  filter === value ? "border-gold bg-gold text-bg font-medium" : "border-line text-ink hover:border-gold"
+                }`}
+              >
+                {value === null ? "Tous" : NOTIFICATION_STATUS_LABEL[value]}
+              </button>
+            ))}
+          </nav>
+          <input
+            value={reference}
+            onChange={(event) => setReference(event.target.value)}
+            placeholder="N° de commande"
+            aria-label="Filtrer par numéro de commande"
+            className="w-52 rounded-sm border border-line bg-surface px-3 py-1.5 text-sm text-ink"
+          />
+        </div>
+
+        {error ? <p className="text-sm text-danger">{error}</p> : null}
+
+        {loading ? (
+          <p className="text-sm text-ink-soft">Chargement…</p>
+        ) : items.length === 0 ? (
+          <p className="text-sm text-ink-soft">Aucun message.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[900px] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-line text-left text-ink-soft">
+                  <th className="py-2 pr-4 font-medium">Date</th>
+                  <th className="py-2 pr-4 font-medium">Événement</th>
+                  <th className="py-2 pr-4 font-medium">Canal</th>
+                  <th className="py-2 pr-4 font-medium">Destinataire</th>
+                  <th className="py-2 pr-4 font-medium">Message</th>
+                  <th className="py-2 pr-4 font-medium">Statut</th>
+                  <th className="py-2 font-medium" />
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((item) => (
+                  <tr key={item.id} className="border-b border-line align-top">
+                    <td className="py-3 pr-4 text-ink-soft">{item.created_at?.slice(0, 16).replace("T", " ")}</td>
+                    <td className="py-3 pr-4 text-ink">
+                      {eventLabel(item.event)}
+                      {item.reference ? <span className="block text-xs text-ink-soft">{item.reference}</span> : null}
+                    </td>
+                    <td className="py-3 pr-4 text-ink-soft">{CHANNEL_LABEL[item.channel] ?? item.channel}</td>
+                    <td className="py-3 pr-4 text-ink-soft">{item.recipient}</td>
+                    <td className="max-w-md py-3 pr-4 text-xs text-ink-soft">{item.body}</td>
+                    <td className="py-3 pr-4">
+                      <span className={item.status === "failed" ? "text-danger" : "text-ink-soft"}>
+                        {NOTIFICATION_STATUS_LABEL[item.status]}
+                      </span>
+                      {item.attempts > 1 ? <span className="block text-xs text-ink-soft">{item.attempts} essais</span> : null}
+                      {item.error ? <span className="block text-xs text-danger">{item.error}</span> : null}
+                    </td>
+                    <td className="py-3">
+                      {canRetry(item) ? (
+                        <button
+                          type="button"
+                          disabled={busyId === item.id}
+                          onClick={() => handleRetry(item)}
+                          className="rounded-sm border border-gold px-2 py-1 text-xs text-gold transition-colors disabled:opacity-50"
+                        >
+                          Relancer
+                        </button>
+                      ) : null}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}

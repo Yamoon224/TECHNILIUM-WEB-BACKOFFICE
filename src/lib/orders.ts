@@ -29,7 +29,10 @@ export interface Order {
   delivery_address: string;
   delivery_city: string | null;
   notes: string | null;
+  /** What the customer owes, after any coupon. */
   subtotal: { amount: number; currency: string };
+  discount?: { amount: number; currency: string };
+  coupon_code?: string | null;
   items: OrderItem[];
   sub_orders?: SubOrder[];
   /** True when the sub-orders are at different stages (partially shipped / delivered). */
