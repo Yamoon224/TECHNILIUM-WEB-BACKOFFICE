@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { BackofficeNav } from "@/components/BackofficeNav";
 import { Button } from "@/components/Button";
 import { useAuth } from "@/lib/useAuth";
+import { parseOptionalAmount, parseReturnItems } from "@/lib/input";
 import { formatMoney } from "@/lib/money";
 import {
   RETURN_ACTION_LABEL,
@@ -56,7 +57,7 @@ export default function ReturnsPage() {
   async function handleAction(item: ReturnRequest, action: ReturnAction) {
     if (!token) return;
 
-    const body: { note?: string; amount?: number } = {};
+    const body: { note?: string; amount?: number; restock?: boolean } = {};
 
     if (action === "reject") {
       const note = window.prompt("Motif du refus ?");
@@ -64,12 +65,24 @@ export default function ReturnsPage() {
       body.note = note;
     }
 
+    if (action === "receive" && item.items.length > 0) {
+      // The inspector decides: resellable articles go back on sale, damaged ones do not.
+      body.restock = window.confirm(
+        "Articles revendables en l'état ? OK = remettre en stock, Annuler = ne pas remettre en stock.",
+      );
+    }
+
     if (action === "refund") {
       const input = window.prompt(
-        `Montant à rembourser (demandé : ${item.requested_amount}). Laisser vide pour le montant demandé.`,
+        `Montant à rembourser (demandé : ${item.requested_amount}). Laisser vide pour le montant demandé. Le paiement correspondant est remboursé automatiquement.`,
       );
       if (input === null) return;
-      if (input.trim() !== "") body.amount = Number(input);
+      const amount = parseOptionalAmount(input);
+      if (amount === null) {
+        setError("Montant invalide : saisissez un entier positif.");
+        return;
+      }
+      if (amount !== undefined) body.amount = amount;
     }
 
     setBusyId(item.id);
@@ -159,6 +172,12 @@ export default function ReturnsPage() {
                       <td className="py-3 pr-4 text-ink-soft">
                         {item.reason}
                         {item.decision_note ? ` — ${item.decision_note}` : ""}
+                        {item.items.length > 0 ? (
+                          <span className="block text-xs">
+                            {item.items.map((line) => `offre ${line.offer_id} × ${line.quantity}`).join(", ")}
+                            {item.restocked ? " · remis en stock" : ""}
+                          </span>
+                        ) : null}
                       </td>
                       <td className="py-3 pr-4 text-ink">{money(item.requested_amount)}</td>
                       <td className="py-3 pr-4 text-ink">
@@ -201,11 +220,17 @@ export default function ReturnsPage() {
 function NewReturnForm({
   onSubmit,
 }: {
-  onSubmit: (input: { order_number: string; reason: string; amount?: number }) => Promise<void>;
+  onSubmit: (input: {
+    order_number: string;
+    reason: string;
+    amount?: number;
+    items?: { offer_id: number; quantity: number }[];
+  }) => Promise<void>;
 }) {
   const [orderNumber, setOrderNumber] = useState("");
   const [reason, setReason] = useState("");
   const [amount, setAmount] = useState("");
+  const [articles, setArticles] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -218,16 +243,24 @@ function NewReturnForm({
       return;
     }
 
+    const items = parseReturnItems(articles);
+    if (items === null) {
+      setFormError("Articles invalides : saisissez des paires offre:quantité séparées par des virgules (ex. 12:2, 15).");
+      return;
+    }
+
     setSubmitting(true);
     try {
       await onSubmit({
         order_number: orderNumber,
         reason,
         amount: amount ? Number(amount) : undefined,
+        items: items.length > 0 ? items : undefined,
       });
       setOrderNumber("");
       setReason("");
       setAmount("");
+      setArticles("");
     } catch (caught) {
       setFormError(caught instanceof ReturnsError ? caught.message : "Ouverture impossible.");
     } finally {
@@ -254,6 +287,16 @@ function NewReturnForm({
           onChange={(event) => setReason(event.target.value)}
           placeholder="Produit défectueux"
           className="w-64 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
+        />
+      </label>
+
+      <label className="flex flex-col gap-1 text-xs text-ink-soft">
+        Articles (offre:qté, optionnel)
+        <input
+          value={articles}
+          onChange={(event) => setArticles(event.target.value)}
+          placeholder="12:2, 15"
+          className="w-40 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
       </label>
 

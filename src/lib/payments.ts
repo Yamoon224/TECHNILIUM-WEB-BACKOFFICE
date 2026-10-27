@@ -16,6 +16,10 @@ export interface Payment {
   method: PaymentMethod;
   status: PaymentStatus;
   amount_amount: number;
+  /** Running total of refunds; the payment is "refunded" once it reaches amount_amount. */
+  refunded_amount: number;
+  /** What can still be refunded (0 unless completed). */
+  refundable_amount: number;
   currency: string;
   provider: MobileMoneyProvider | null;
   provider_reference: string | null;
@@ -71,7 +75,7 @@ export async function recordPayment(token: string, input: RecordPaymentInput): P
   return response.json() as Promise<Payment>;
 }
 
-async function transition(token: string, id: number, action: "confirm" | "fail" | "refund"): Promise<Payment> {
+async function transition(token: string, id: number, action: "confirm" | "fail"): Promise<Payment> {
   const response = await fetch(`${API_BASE_URL}/admin/payments/${id}/${action}`, {
     method: "POST",
     headers: authHeaders(token),
@@ -82,4 +86,13 @@ async function transition(token: string, id: number, action: "confirm" | "fail" 
 
 export const confirmPayment = (token: string, id: number) => transition(token, id, "confirm");
 export const failPayment = (token: string, id: number) => transition(token, id, "fail");
-export const refundPayment = (token: string, id: number) => transition(token, id, "refund");
+/** Refunds all (amount omitted) or part of a collected payment. */
+export async function refundPayment(token: string, id: number, amount?: number): Promise<Payment> {
+  const response = await fetch(`${API_BASE_URL}/admin/payments/${id}/refund`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(amount === undefined ? {} : { amount }),
+  });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<Payment>;
+}

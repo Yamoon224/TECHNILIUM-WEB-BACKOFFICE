@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { BackofficeNav } from "@/components/BackofficeNav";
 import { Button } from "@/components/Button";
 import { useAuth } from "@/lib/useAuth";
+import { parseOptionalAmount } from "@/lib/input";
 import {
   PaymentsError,
   confirmPayment,
@@ -67,8 +68,22 @@ export default function PaymentsPage() {
     setPendingId(id);
     setError(null);
     try {
-      const fn = action === "confirm" ? confirmPayment : action === "fail" ? failPayment : refundPayment;
-      const updated = await fn(token, id);
+      let updated: Payment;
+      if (action === "refund") {
+        const current = payments.find((payment) => payment.id === id);
+        const raw = window.prompt(
+          `Montant à rembourser (reste remboursable : ${current?.refundable_amount ?? "?"}). Laisser vide pour tout rembourser.`,
+        );
+        if (raw === null) return;
+        const amount = parseOptionalAmount(raw);
+        if (amount === null) {
+          setError("Montant invalide : saisissez un entier positif.");
+          return;
+        }
+        updated = await refundPayment(token, id, amount);
+      } else {
+        updated = await (action === "confirm" ? confirmPayment : failPayment)(token, id);
+      }
       setPayments((current) => current.map((payment) => (payment.id === id ? updated : payment)));
     } catch (caught) {
       setError(caught instanceof PaymentsError ? caught.message : "L'action a échoué.");
@@ -147,6 +162,11 @@ export default function PaymentsPage() {
                     </td>
                     <td className="py-3 pr-4 text-ink">
                       {payment.amount_amount.toLocaleString("fr-FR")} {payment.currency}
+                      {payment.refunded_amount > 0 ? (
+                        <span className="block text-xs text-ink-soft">
+                          dont remboursé : {payment.refunded_amount.toLocaleString("fr-FR")}
+                        </span>
+                      ) : null}
                     </td>
                     <td className="py-3 pr-4 text-ink-soft">{payment.provider_reference ?? "—"}</td>
                     <td className="py-3 pr-4 text-ink-soft">{STATUS_LABEL[payment.status]}</td>
@@ -172,7 +192,7 @@ export default function PaymentsPage() {
                             Marquer échoué
                           </button>
                         ) : null}
-                        {payment.status === "completed" ? (
+                        {payment.status === "completed" && payment.refundable_amount > 0 ? (
                           <button
                             type="button"
                             disabled={pendingId === payment.id}

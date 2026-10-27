@@ -51,6 +51,9 @@ export interface ReturnRequest {
   currency: CurrencyCode;
   requested_amount: number;
   refunded_amount: number | null;
+  items: { offer_id: number; quantity: number }[];
+  /** Articles went back on sale when the parcel was received. */
+  restocked: boolean;
   refunded_at: string | null;
   created_at: string | null;
 }
@@ -85,7 +88,7 @@ export async function listReturns(token: string, filters: { status?: ReturnStatu
 
 export async function openReturn(
   token: string,
-  input: { order_number: string; reason: string; amount?: number },
+  input: { order_number: string; reason: string; amount?: number; items?: { offer_id: number; quantity: number }[] },
 ): Promise<ReturnRequest> {
   const response = await fetch(`${API_BASE_URL}/admin/returns`, {
     method: "POST",
@@ -100,7 +103,7 @@ export async function decideReturn(
   token: string,
   id: number,
   action: ReturnAction,
-  body: { note?: string; amount?: number } = {},
+  body: { note?: string; amount?: number; restock?: boolean } = {},
 ): Promise<ReturnRequest> {
   const response = await fetch(`${API_BASE_URL}/admin/returns/${id}/${action}`, {
     method: "POST",
