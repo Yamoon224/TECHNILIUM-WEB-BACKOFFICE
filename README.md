@@ -40,6 +40,7 @@ npm run test
 - `/factures` — factures et avoirs : liste, émission depuis un numéro de commande, avoir total avec motif (rôles `comptable` / `administrateur`).
 - `/comptabilite` — balance générale (alerte si déséquilibrée) et écritures par journal, en lecture seule.
 - `/reversements` — reversements vendeurs : calcul par vendeur (ventes livrées hors délai de retour, moins commission), relevé détaillé par commande, enregistrement du paiement avec référence, total restant dû.
+- `/rapports` — tableau de bord direction sur une période au choix (CA, commandes, panier moyen, graphique des ventes par jour avec vue tableau, meilleurs produits, finance, retours, alertes), ventes par vendeur et export CSV. Réservé aux rôles `administrateur` et `comptable`.
 - `/retours` — dossiers de retour (RMA) : ouverture sur une commande livrée, acceptation, réception, remboursement total ou partiel, refus motivé ; le remboursement émet un avoir partiel et réduit le reversement du vendeur.
 - `/espace-vendeur` — espace du vendeur tiers (cloisonné côté API) : synthèse, ses commandes (ses lignes et sa part uniquement), relevés de reversement, gestion de ses offres (soumission, prix, stock, retrait). Un compte vendeur seul voit ce menu à la place du menu équipe.
 

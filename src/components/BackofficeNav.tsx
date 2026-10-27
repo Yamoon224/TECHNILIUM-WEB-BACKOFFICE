@@ -19,6 +19,7 @@ const LINKS = [
   { href: "/comptabilite", label: "Comptabilité" },
   { href: "/reversements", label: "Reversements" },
   { href: "/retours", label: "Retours" },
+  { href: "/rapports", label: "Rapports" },
 ];
 
 /** A vendor-only account gets the vendor space instead of the staff menu (UI only; the API enforces access). */
