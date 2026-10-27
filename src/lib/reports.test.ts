@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { barPercent, defaultPeriod, isValidPeriod, maxRevenue, toDateInput } from "./reports";
+import { barPercent, defaultPeriod, hasCostGap, isValidPeriod, marginPercentLabel, maxRevenue, toDateInput } from "./reports";
 
 describe("period helpers", () => {
   it("formats a local date as YYYY-MM-DD", () => {
@@ -45,5 +45,22 @@ describe("bar scaling", () => {
         { date: "2026-10-02", orders: 2, revenue: 90 },
       ]),
     ).toBe(90);
+  });
+});
+
+describe("margin helpers", () => {
+  it("formats the margin rate with a decimal comma", () => {
+    expect(marginPercentLabel(76.4)).toBe("76,4 %");
+    expect(marginPercentLabel(30)).toBe("30,0 %");
+    expect(marginPercentLabel(-5.5)).toBe("-5,5 %");
+  });
+
+  it("shows a dash when there is no revenue to compare to", () => {
+    expect(marginPercentLabel(null)).toBe("—");
+  });
+
+  it("flags revenue without a recorded cost, which overstates the margin", () => {
+    expect(hasCostGap({ uncosted_lines: 0 })).toBe(false);
+    expect(hasCostGap({ uncosted_lines: 2 })).toBe(true);
   });
 });

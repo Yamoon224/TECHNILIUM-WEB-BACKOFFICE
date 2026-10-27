@@ -8,6 +8,7 @@ import { Button } from "@/components/Button";
 import { useAuth } from "@/lib/useAuth";
 import {
   INVOICE_TYPE_LABEL,
+  downloadInvoicePdf,
   InvoicingError,
   isCreditable,
   issueCreditNote,
@@ -45,6 +46,16 @@ export default function InvoicesPage() {
   async function handleLogout() {
     await logout();
     router.push("/");
+  }
+
+  async function handleDownload(invoice: Invoice) {
+    if (!token) return;
+    setError(null);
+    try {
+      await downloadInvoicePdf(token, invoice);
+    } catch (caught) {
+      setError(caught instanceof InvoicingError ? caught.message : "Le PDF n'a pas pu être téléchargé.");
+    }
   }
 
   async function handleCredit(invoice: Invoice) {
@@ -140,7 +151,14 @@ export default function InvoicesPage() {
                           </span>
                         ) : null}
                       </td>
-                      <td className="py-3">
+                      <td className="flex flex-wrap gap-2 py-3">
+                        <button
+                          type="button"
+                          onClick={() => handleDownload(invoice)}
+                          className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold"
+                        >
+                          PDF
+                        </button>
                         {isCreditable(invoice, invoices) ? (
                           <button
                             type="button"

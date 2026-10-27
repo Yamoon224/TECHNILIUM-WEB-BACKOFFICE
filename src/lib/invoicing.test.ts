@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isCreditable, remainingCreditable, type Invoice } from "./invoicing";
+import { isCreditable, pdfFilename, remainingCreditable, type Invoice } from "./invoicing";
 
 function doc(overrides: Partial<Invoice>): Invoice {
   return {
@@ -40,6 +40,11 @@ describe("isCreditable", () => {
     const partial = doc({ id: 2, type: "credit_note", credited_invoice_id: 1, total_amount: 50 });
     expect(isCreditable(invoice, [partial, invoice])).toBe(true);
     expect(remainingCreditable(invoice, [partial, invoice])).toBe(68);
+  });
+
+  it("names the PDF after the document number", () => {
+    expect(pdfFilename({ number: "FAC-2026-000042" })).toBe("FAC-2026-000042.pdf");
+    expect(pdfFilename({ number: "AV-2026-000001" })).toBe("AV-2026-000001.pdf");
   });
 
   it("refuses to credit a credit note", () => {

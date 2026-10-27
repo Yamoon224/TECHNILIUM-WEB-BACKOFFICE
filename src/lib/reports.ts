@@ -124,3 +124,60 @@ export async function downloadSalesCsv(token: string, period: Period): Promise<v
   link.click();
   URL.revokeObjectURL(url);
 }
+
+/* ---------------------------- Technilium's margin ---------------------------- */
+
+export interface MarginRow {
+  units: number;
+  revenue: number;
+  cost: number;
+  margin: number;
+  margin_percent: number | null;
+}
+
+export interface MarginReport {
+  currency: string;
+  period: { from: string; to: string };
+  vat_percent: number;
+  totals: MarginRow & { orders: number };
+  quality: { uncosted_lines: number; uncosted_revenue: number };
+  returns: { refunded_ttc: number; cost_given_back: number };
+  by_product: (MarginRow & { offer_id: number; product: string })[];
+  by_day: { date: string; revenue: number; cost: number; margin: number; margin_percent: number | null }[];
+}
+
+/** "76,4 %" with a decimal comma, or an em dash when there is no revenue to compare to. */
+export function marginPercentLabel(percent: number | null): string {
+  return percent === null ? "—" : `${percent.toFixed(1).replace(".", ",")} %`;
+}
+
+/**
+ * True when some revenue has no cost on record: the margin shown is then
+ * overstated, and the page must say so rather than present it as exact.
+ */
+export function hasCostGap(quality: Pick<MarginReport["quality"], "uncosted_lines">): boolean {
+  return quality.uncosted_lines > 0;
+}
+
+export async function getMargin(token: string, period: Period): Promise<MarginReport> {
+  const response = await fetch(`${API_BASE_URL}/admin/reports/margin?${query(period)}`, {
+    headers: headers(token),
+    cache: "no-store",
+  });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<MarginReport>;
+}
+
+export async function downloadMarginCsv(token: string, period: Period): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/admin/reports/margin.csv?${query(period)}`, {
+    headers: headers(token),
+  });
+  if (!response.ok) throw await parseError(response);
+
+  const url = URL.createObjectURL(await response.blob());
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `marge-${period.from}-${period.to}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}

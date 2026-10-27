@@ -13,12 +13,17 @@ import {
   ReportsError,
   barPercent,
   defaultPeriod,
+  downloadMarginCsv,
   downloadSalesCsv,
+  getMargin,
+  hasCostGap,
+  marginPercentLabel,
   getDashboard,
   getSalesBySeller,
   isValidPeriod,
   maxRevenue,
   type Dashboard,
+  type MarginReport,
   type Period,
   type SellerSales,
 } from "@/lib/reports";
@@ -148,6 +153,7 @@ export default function ReportsPage() {
 
         {error ? <p className="text-sm text-danger">{error}</p> : null}
         {!dashboard ? <p className="text-sm text-ink-soft">Chargement…</p> : <Report dashboard={dashboard} sellers={sellers} />}
+        {period ? <MarginSection token={token} period={period} /> : null}
       </main>
     </div>
   );
@@ -353,6 +359,104 @@ function SalesChart({ days }: { days: { date: string; orders: number; revenue: n
           ))}
         </div>
       )}
+    </section>
+  );
+}
+
+/**
+ * Technilium's own-stock gross margin. Revenue is excluding VAT and net of the
+ * coupon share borne by own lines; third-party vendors' sales and commissions
+ * are not in it. Returns are shown beside it, not netted.
+ */
+function MarginSection({ token, period }: { token: string; period: Period }) {
+  const [margin, setMargin] = useState<MarginReport | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getMargin(token, period)
+      .then((report) => {
+        if (cancelled) return;
+        setMargin(report);
+        setError(null);
+      })
+      .catch((caught) => {
+        if (!cancelled) setError(caught instanceof ReportsError ? caught.message : "Marge indisponible.");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token, period]);
+
+  if (error) return <p className="text-sm text-danger">{error}</p>;
+  if (!margin) return <p className="text-sm text-ink-soft">Chargement de la marge…</p>;
+
+  const { totals } = margin;
+
+  return (
+    <section className="flex flex-col gap-4 border-t border-line pt-8" aria-label="Marge de Technilium">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-display text-xl font-semibold text-ink">Marge de Technilium</h2>
+        <button
+          type="button"
+          onClick={() => downloadMarginCsv(token, period).catch((caught) => setError(caught instanceof ReportsError ? caught.message : "Export impossible."))}
+          className="rounded-sm border border-line px-3 py-2 text-sm text-ink transition-colors hover:border-gold"
+        >
+          Exporter la marge (CSV)
+        </button>
+      </div>
+
+      <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <Tile label="Chiffre d'affaires HT" value={xof(totals.revenue)} />
+        <Tile label="Coût des ventes" value={xof(totals.cost)} />
+        <Tile label="Marge brute" value={xof(totals.margin)} />
+        <Tile label="Taux de marge" value={marginPercentLabel(totals.margin_percent)} />
+      </dl>
+
+      {hasCostGap(margin.quality) ? (
+        <p role="alert" className="rounded-sm border border-gold-deep p-3 text-sm text-ink">
+          {margin.quality.uncosted_lines} ligne(s) vendue(s), soit {xof(margin.quality.uncosted_revenue)} de chiffre d&apos;affaires HT, n&apos;ont aucun
+          coût enregistré (produit jamais acheté par le module Achats) : la marge affichée est surestimée d&apos;autant.
+        </p>
+      ) : null}
+
+      {margin.by_product.length === 0 ? (
+        <p className="text-sm text-ink-soft">Aucune vente en propre livrée sur la période.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[720px] border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-line text-left text-ink-soft">
+                <th className="py-2 pr-4 font-medium">Produit</th>
+                <th className="py-2 pr-4 text-right font-medium">Unités</th>
+                <th className="py-2 pr-4 text-right font-medium">CA HT</th>
+                <th className="py-2 pr-4 text-right font-medium">Coût</th>
+                <th className="py-2 pr-4 text-right font-medium">Marge</th>
+                <th className="py-2 text-right font-medium">Taux</th>
+              </tr>
+            </thead>
+            <tbody>
+              {margin.by_product.map((row) => (
+                <tr key={row.offer_id} className="border-b border-line">
+                  <td className="py-2 pr-4 text-ink">{row.product}</td>
+                  <td className="py-2 pr-4 text-right text-ink-soft">{row.units}</td>
+                  <td className="py-2 pr-4 text-right text-ink-soft">{xof(row.revenue)}</td>
+                  <td className="py-2 pr-4 text-right text-ink-soft">{xof(row.cost)}</td>
+                  <td className={`py-2 pr-4 text-right ${row.margin < 0 ? "text-danger" : "text-ink"}`}>{xof(row.margin)}</td>
+                  <td className="py-2 text-right text-ink-soft">{marginPercentLabel(row.margin_percent)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <p className="text-xs text-ink-soft">
+        Retours sur la période (non déduits ci-dessus) : {xof(margin.returns.refunded_ttc)} remboursés TTC, {xof(margin.returns.cost_given_back)} de coût
+        repris. Montants hors TVA à {margin.vat_percent} %, remises comprises, ventes de vendeurs tiers et commissions exclues.
+      </p>
     </section>
   );
 }

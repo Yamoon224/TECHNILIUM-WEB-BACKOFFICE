@@ -97,6 +97,26 @@ export async function issueInvoice(token: string, orderNumber: string): Promise<
   return response.json() as Promise<Invoice>;
 }
 
+/** The PDF needs the bearer token, so it is fetched and saved as a blob rather than linked. */
+export async function downloadInvoicePdf(token: string, invoice: Pick<Invoice, "id" | "number">): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/admin/invoices/${invoice.id}/pdf`, {
+    headers: { Authorization: `Bearer ${token}`, Accept: "application/pdf" },
+  });
+  if (!response.ok) throw await parseError(response);
+
+  const url = URL.createObjectURL(await response.blob());
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = pdfFilename(invoice);
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+/** "FAC-2026-000042" -> "FAC-2026-000042.pdf", matching the server's Content-Disposition. */
+export function pdfFilename(invoice: Pick<Invoice, "number">): string {
+  return `${invoice.number}.pdf`;
+}
+
 export async function issueCreditNote(token: string, invoiceId: number, reason: string): Promise<Invoice> {
   const response = await fetch(`${API_BASE_URL}/admin/invoices/${invoiceId}/credit-note`, {
     method: "POST",
