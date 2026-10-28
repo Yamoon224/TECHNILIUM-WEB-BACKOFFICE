@@ -20,6 +20,7 @@ import {
   Undo2,
   Wallet,
   Bell,
+  ShoppingBasket,
   KeyRound,
   QrCode,
   LifeBuoy,
@@ -54,6 +55,7 @@ export const STAFF_NAV: NavGroup[] = [
     label: "nav.sales",
     items: [
       { href: "/commandes", label: "nav.orders", Icon: ShoppingCart, ability: "manage-orders" },
+      { href: "/ventes-internes", label: "nav.internalSales", Icon: ShoppingBasket, ability: "manage-internal-sales" },
       { href: "/paiements", label: "nav.payments", Icon: Wallet, ability: "manage-payments" },
       { href: "/livraisons", label: "nav.shipping", Icon: Truck, ability: "manage-shipments" },
       { href: "/factures", label: "nav.invoices", Icon: FileText, ability: "manage-invoices" },
