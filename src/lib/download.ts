@@ -30,6 +30,23 @@ export async function savePdf(token: string, path: string, filename: string): Pr
   URL.revokeObjectURL(url);
 }
 
+/** Opens a PDF in a new tab (to print it on the spot) instead of saving it. */
+export async function openPdf(token: string, path: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    headers: { Authorization: `Bearer ${token}`, Accept: "application/pdf" },
+  });
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as { message?: string } | null;
+    throw new DownloadError(body?.message ?? `Erreur inattendue (${response.status}).`);
+  }
+
+  const url = URL.createObjectURL(await response.blob());
+  window.open(url, "_blank");
+  // Revoked late: the new tab still has to load it.
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
+
 /** "BL-000012.pdf", matching the server's Content-Disposition. */
 export function deliveryNoteFilename(shipmentId: number): string {
   return `BL-${String(shipmentId).padStart(6, "0")}.pdf`;

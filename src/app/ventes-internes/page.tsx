@@ -7,18 +7,28 @@ import { BackofficeNav } from "@/components/BackofficeNav";
 import { Button } from "@/components/Button";
 import { DataTable } from "@/components/DataTable";
 import { useAppearance } from "@/components/AppearanceProvider";
-import { savePdf, withLanguage } from "@/lib/download";
+import { openPdf, savePdf, withLanguage } from "@/lib/download";
 import {
   InternalSalesError,
   addToCart,
+  cancelInternalSale,
   cartTotal,
   changeDue,
+  closeTill,
+  closingPdfPath,
+  currentTill,
+  formatVariance,
+  listClosings,
   listInternalSales,
+  tillVariance,
   recordInternalSale,
   saleReceiptPath,
   searchSellableOffers,
   setQuantity,
   type CartLine,
+  type CashClosing,
+  type ReceiptFormat,
+  type TillPeriod,
   type InternalSale,
   type MobileMoneyProvider,
   type SaleMethod,
@@ -54,9 +64,17 @@ export default function InternalSalesPage() {
   const [tendered, setTendered] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [completed, setCompleted] = useState<InternalSale | null>(null);
+  const [till, setTill] = useState<TillPeriod | null>(null);
+  const [closings, setClosings] = useState<CashClosing[]>([]);
+  const [counted, setCounted] = useState("");
+  const [closingNote, setClosingNote] = useState("");
+  const [closing, setClosing] = useState(false);
 
   const refresh = useCallback(() => {
     if (!token) return;
+
+    currentTill(token).then(setTill).catch(() => undefined);
+    listClosings(token).then(setClosings).catch(() => undefined);
 
     listInternalSales(token)
       .then(setSales)
@@ -87,12 +105,66 @@ export default function InternalSalesPage() {
     }
   }
 
-  function downloadReceipt(sale: InternalSale) {
+  function showError(caught: unknown) {
+    setError(caught instanceof Error ? caught.message : tr("Le PDF n'a pas pu être téléchargé."));
+  }
+
+  /** The A5 receipt is saved; the 80 mm ticket opens in a tab, ready to print on the roll. */
+  function receipt(sale: InternalSale, format: ReceiptFormat = "a5") {
     if (!token) return;
     setError(null);
-    savePdf(token, withLanguage(saleReceiptPath(sale.order_number), appearance.language), `${sale.payment?.receipt_number ?? sale.order_number}.pdf`).catch((caught) =>
-      setError(caught instanceof Error ? caught.message : tr("Le PDF n'a pas pu être téléchargé.")),
-    );
+    const path = withLanguage(saleReceiptPath(sale.order_number, format), appearance.language);
+
+    if (format === "ticket") {
+      openPdf(token, path).catch(showError);
+      return;
+    }
+
+    savePdf(token, path, `${sale.payment?.receipt_number ?? sale.order_number}.pdf`).catch(showError);
+  }
+
+  async function handleCancel(sale: InternalSale) {
+    if (!token) return;
+    const reason = window.prompt(tr("Motif de l'annulation (la vente sera intégralement remboursée) :"));
+    if (reason === null) return;
+    if (reason.trim().length < 3) {
+      setError(tr("Indiquez un motif d'au moins 3 caractères."));
+      return;
+    }
+
+    setError(null);
+    try {
+      const updated = await cancelInternalSale(token, sale.order_number, reason.trim());
+      setSales((current) => current.map((row) => (row.order_number === updated.order_number ? updated : row)));
+      setCompleted((current) => (current?.order_number === updated.order_number ? updated : current));
+      refresh();
+    } catch (caught) {
+      setError(caught instanceof InternalSalesError ? caught.message : tr("L'annulation a échoué."));
+    }
+  }
+
+  const countedAmount = counted.trim() === "" ? null : /^\d+$/.test(counted.trim()) ? Number(counted.trim()) : null;
+
+  async function handleClose(event: React.FormEvent) {
+    event.preventDefault();
+    if (!token || countedAmount === null) {
+      setError(tr("Saisissez les espèces comptées (nombre entier)."));
+      return;
+    }
+
+    setError(null);
+    setClosing(true);
+    try {
+      const closed = await closeTill(token, countedAmount, closingNote.trim() || undefined);
+      setCounted("");
+      setClosingNote("");
+      refresh();
+      savePdf(token, withLanguage(closingPdfPath(closed.id), appearance.language), `${closed.number}.pdf`).catch(showError);
+    } catch (caught) {
+      setError(caught instanceof InternalSalesError ? caught.message : tr("La clôture a échoué."));
+    } finally {
+      setClosing(false);
+    }
   }
 
   const total = cartTotal(cart);
@@ -195,8 +267,11 @@ export default function InternalSalesPage() {
               </p>
             ) : null}
             <div className="flex flex-wrap gap-2">
-              <Button type="button" onClick={() => downloadReceipt(completed)}>
+              <Button type="button" onClick={() => receipt(completed)}>
                 {tr("Télécharger le reçu (PDF)")}
+              </Button>
+              <Button type="button" variant="secondary" onClick={() => receipt(completed, "ticket")}>
+                {tr("Ticket 80 mm")}
               </Button>
               <Button type="button" variant="secondary" onClick={() => setCompleted(null)}>
                 {tr("Nouvelle vente")}
@@ -382,6 +457,84 @@ export default function InternalSalesPage() {
           </div>
         )}
 
+        <section className="flex flex-col gap-3 rounded-sm border border-line bg-surface p-4 shadow-card border-b-4 border-b-gold">
+          <h2 className="font-display text-lg font-semibold text-ink">{tr("Clôture de caisse")}</h2>
+          {till && (till.sales_count > 0 || till.cancellations_count > 0) ? (
+            <>
+              <ul className="grid gap-1 text-sm text-ink sm:grid-cols-2">
+                <li>{tr("Ventes")} : {till.sales_count}</li>
+                <li>{tr("Annulations")} : {till.cancellations_count}</li>
+                <li>{tr("Ventes en espèces")} : {money(till.cash_sales)}</li>
+                <li>{tr("Espèces remboursées")} : {money(till.cash_refunds)}</li>
+                <li className="font-semibold">{tr("Espèces attendues en caisse")} : {money(till.expected_cash)}</li>
+                <li>{tr("Mobile money (net)")} : {money(till.mobile_money_net)}</li>
+              </ul>
+              <form onSubmit={handleClose} className="flex flex-wrap items-end gap-3">
+                <label className="field">
+                  <input
+                    type="number"
+                    min={0}
+                    value={counted}
+                    onChange={(event) => setCounted(event.target.value)}
+                    placeholder={String(Math.max(0, till.expected_cash))}
+                    className="w-40 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
+                  />
+                  <span className="field-label">{tr("Espèces comptées (F CFA)")}</span>
+                </label>
+                <label className="field">
+                  <input
+                    value={closingNote}
+                    onChange={(event) => setClosingNote(event.target.value)}
+                    placeholder={tr("Billet de 1 000 manquant")}
+                    className="w-64 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
+                  />
+                  <span className="field-label">{tr("Note (facultatif)")}</span>
+                </label>
+                <Button type="submit" disabled={closing}>
+                  {tr("Clôturer la caisse")}
+                </Button>
+              </form>
+              {countedAmount !== null ? (
+                <p className="text-sm text-ink">
+                  {tr("Écart :")} <strong>{formatVariance(tillVariance(till.expected_cash, countedAmount))}</strong> {CURRENCY_LABEL}
+                </p>
+              ) : null}
+            </>
+          ) : (
+            <p className="text-sm text-ink-soft">{tr("Rien à clôturer : aucune vente depuis la dernière clôture.")}</p>
+          )}
+
+          {closings.length > 0 ? (
+            <div className="overflow-x-auto">
+              <DataTable
+                name="clotures-caisse"
+                rows={closings}
+                headers={[tr("N°"), tr("Date"), tr("Caissier"), tr("Attendu"), tr("Compté"), tr("Écart"), tr("Action")]}
+                actionColumns={[6]}
+                renderRow={(row) => (
+                  <tr key={row.id} className="border-b border-line">
+                    <td className="py-3 pr-4 text-ink">{row.number}</td>
+                    <td className="py-3 pr-4 text-ink-soft">{new Date(row.closed_at).toLocaleString(appearance.language === "en" ? "en-GB" : "fr-FR")}</td>
+                    <td className="py-3 pr-4 text-ink-soft">{row.user_name}</td>
+                    <td className="py-3 pr-4 text-ink">{money(row.expected_cash)}</td>
+                    <td className="py-3 pr-4 text-ink">{money(row.counted_cash)}</td>
+                    <td className={`py-3 pr-4 ${row.variance === 0 ? "text-ink-soft" : "text-danger"}`}>{formatVariance(row.variance)}</td>
+                    <td className="py-3">
+                      <button
+                        type="button"
+                        onClick={() => token && savePdf(token, withLanguage(closingPdfPath(row.id), appearance.language), `${row.number}.pdf`).catch(showError)}
+                        className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold"
+                      >
+                        {tr("Rapport PDF")}
+                      </button>
+                    </td>
+                  </tr>
+                )}
+              />
+            </div>
+          ) : null}
+        </section>
+
         <section className="flex flex-col gap-3">
           <h2 className="font-display text-lg font-semibold text-ink">{tr("Dernières ventes internes")}</h2>
           {sales.length === 0 ? (
@@ -401,15 +554,39 @@ export default function InternalSalesPage() {
                     <td className="py-3 pr-4 text-ink-soft">{sale.payment?.method === "mobile_money" ? tr("Mobile money") : tr("Espèces")}</td>
                     <td className="py-3 pr-4 text-ink-soft">{sale.payment?.receipt_number ?? "—"}</td>
                     <td className="py-3">
-                      {sale.payment ? (
-                        <button
-                          type="button"
-                          onClick={() => downloadReceipt(sale)}
-                          className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold"
-                        >
-                          {tr("Reçu de paiement")}
-                        </button>
-                      ) : null}
+                      <div className="flex flex-wrap gap-2">
+                        {sale.payment ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => receipt(sale)}
+                              className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold"
+                            >
+                              {tr("Reçu de paiement")}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => receipt(sale, "ticket")}
+                              className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold"
+                            >
+                              {tr("Ticket 80 mm")}
+                            </button>
+                          </>
+                        ) : null}
+                        {sale.cancelled_at ? (
+                          <span className="px-2 py-1 text-xs text-danger" title={sale.cancel_reason ?? undefined}>
+                            {tr("Annulée")}
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleCancel(sale)}
+                            className="rounded-sm border border-danger px-2 py-1 text-xs text-danger transition-colors"
+                          >
+                            {tr("Annuler la vente")}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 )}

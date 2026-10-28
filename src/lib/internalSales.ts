@@ -37,6 +37,8 @@ export interface InternalSale {
   discount_amount: number;
   coupon_code: string | null;
   created_at: string | null;
+  cancelled_at: string | null;
+  cancel_reason: string | null;
   lines: SaleLine[];
   payment: SalePayment | null;
 }
@@ -166,6 +168,87 @@ export function changeDue(total: number, tendered: number): number | null {
   return tendered >= total ? tendered - total : null;
 }
 
-export function saleReceiptPath(orderNumber: string): string {
-  return `/admin/internal-sales/${encodeURIComponent(orderNumber)}/receipt`;
+/** The A5 sheet, or the 80 mm roll of a thermal printer. */
+export type ReceiptFormat = "a5" | "ticket";
+
+export function saleReceiptPath(orderNumber: string, format: ReceiptFormat = "a5"): string {
+  const path = `/admin/internal-sales/${encodeURIComponent(orderNumber)}/receipt`;
+
+  return format === "ticket" ? `${path}?format=ticket` : path;
+}
+
+export async function cancelInternalSale(token: string, orderNumber: string, reason: string): Promise<InternalSale> {
+  const response = await fetch(`${API_BASE_URL}/admin/internal-sales/${encodeURIComponent(orderNumber)}/cancel`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ reason }),
+  });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<InternalSale>;
+}
+
+/** What the cashier's drawer should hold since their last closing. */
+export interface TillPeriod {
+  sales_count: number;
+  cancellations_count: number;
+  cash_sales: number;
+  cash_refunds: number;
+  expected_cash: number;
+  mobile_money_net: number;
+  period_start: string | null;
+  currency: string;
+}
+
+export interface CashClosing {
+  id: number;
+  number: string;
+  user_name: string;
+  currency: string;
+  period_start: string | null;
+  closed_at: string;
+  sales_count: number;
+  cancellations_count: number;
+  cash_sales: number;
+  cash_refunds: number;
+  expected_cash: number;
+  counted_cash: number;
+  variance: number;
+  mobile_money_net: number;
+  note: string | null;
+}
+
+export async function currentTill(token: string): Promise<TillPeriod> {
+  const response = await fetch(`${API_BASE_URL}/admin/cash-closings/current`, { headers: authHeaders(token), cache: "no-store" });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<TillPeriod>;
+}
+
+export async function listClosings(token: string): Promise<CashClosing[]> {
+  const response = await fetch(`${API_BASE_URL}/admin/cash-closings`, { headers: authHeaders(token), cache: "no-store" });
+  if (!response.ok) throw await parseError(response);
+  return ((await response.json()) as { data: CashClosing[] }).data;
+}
+
+export async function closeTill(token: string, countedCash: number, note?: string): Promise<CashClosing> {
+  const response = await fetch(`${API_BASE_URL}/admin/cash-closings`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ counted_cash: countedCash, note }),
+  });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<CashClosing>;
+}
+
+export const closingPdfPath = (id: number): string => `/admin/cash-closings/${id}/pdf`;
+
+/** counted - expected: negative = money missing, positive = surplus, 0 = balanced. */
+export function tillVariance(expected: number, counted: number): number {
+  return counted - expected;
+}
+
+/** "+1 000", "−1 000" or "0": signed, with a real minus sign. */
+export function formatVariance(variance: number): string {
+  const digits = Math.abs(variance).toLocaleString("fr-FR");
+
+  return variance > 0 ? `+${digits}` : variance < 0 ? `−${digits}` : "0";
 }

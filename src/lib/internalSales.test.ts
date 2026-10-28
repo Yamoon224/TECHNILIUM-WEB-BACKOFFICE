@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addToCart, cartTotal, changeDue, saleReceiptPath, sellableOffers, setQuantity, type SellableOffer } from "./internalSales";
+import { addToCart, cartTotal, changeDue, closingPdfPath, formatVariance, saleReceiptPath, tillVariance, sellableOffers, setQuantity, type SellableOffer } from "./internalSales";
 
 const phone: SellableOffer = { offerId: 1, label: "Samsung Galaxy A15", unitPrice: 59_000, currency: "XOF", stock: 2 };
 const cable: SellableOffer = { offerId: 2, label: "Câble USB-C", unitPrice: 2_500, currency: "XOF", stock: 10 };
@@ -67,5 +67,30 @@ describe("saleReceiptPath", () => {
   it("encodes the order number", () => {
     expect(saleReceiptPath("TCH-20261028-AB12CD")).toBe("/admin/internal-sales/TCH-20261028-AB12CD/receipt");
     expect(saleReceiptPath("a/b")).toBe("/admin/internal-sales/a%2Fb/receipt");
+  });
+});
+
+describe("ticket format", () => {
+  it("asks for the 80 mm roll only when told to", () => {
+    expect(saleReceiptPath("TCH-1", "ticket")).toBe("/admin/internal-sales/TCH-1/receipt?format=ticket");
+    expect(saleReceiptPath("TCH-1", "a5")).toBe("/admin/internal-sales/TCH-1/receipt");
+  });
+});
+
+describe("till variance", () => {
+  it("is counted minus expected", () => {
+    expect(tillVariance(100_000, 99_000)).toBe(-1_000);
+    expect(tillVariance(100_000, 101_500)).toBe(1_500);
+    expect(tillVariance(100_000, 100_000)).toBe(0);
+  });
+
+  it("is written with its sign", () => {
+    expect(formatVariance(1_500).replace(/\s/g, "")).toBe("+1500");
+    expect(formatVariance(-1_000).replace(/\s/g, "")).toBe("−1000");
+    expect(formatVariance(0)).toBe("0");
+  });
+
+  it("points at the closing report", () => {
+    expect(closingPdfPath(7)).toBe("/admin/cash-closings/7/pdf");
   });
 });
