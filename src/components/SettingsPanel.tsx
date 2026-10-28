@@ -13,14 +13,13 @@ import {
 } from "@/lib/appearance";
 import { LANGUAGE_LABEL, type MessageKey } from "@/lib/i18n";
 import { useAppearance } from "./AppearanceProvider";
+import { Flag } from "./Flag";
 
 const THEMES: { value: ThemeChoice; label: MessageKey }[] = [
   { value: "light", label: "settings.themeLight" },
   { value: "dark", label: "settings.themeDark" },
   { value: "auto", label: "settings.themeAuto" },
 ];
-
-const FLAGS: Record<Language, string> = { fr: "🇫🇷", en: "🇺🇸" };
 
 /** Right-hand drawer: colours, navigation layout, backgrounds, theme, full screen, language. */
 export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -131,7 +130,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
                     appearance.language === language ? "border-gold bg-bg text-ink" : "border-line text-ink-soft hover:border-gold"
                   }`}
                 >
-                  <span aria-hidden>{FLAGS[language]}</span>
+                  <Flag language={language} />
                   {LANGUAGE_LABEL[language]}
                 </button>
               ))}

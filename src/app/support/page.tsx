@@ -165,7 +165,7 @@ export default function SupportPage() {
         ) : tickets.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucun ticket.")}</p>
         ) : (
-          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
             <table className="w-full min-w-[820px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
@@ -228,7 +228,7 @@ function TicketPanel({
   ticket: Ticket;
   onUpdated: (ticket: Ticket) => void;
 }) {
-  const { tr } = useAppearance();
+  const { tr, trf } = useAppearance();
   const [body, setBody] = useState("");
   const [internal, setInternal] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -249,7 +249,7 @@ function TicketPanel({
   async function handleSend(event: React.FormEvent) {
     event.preventDefault();
     if (!body.trim()) return;
-    await run(() => replyToTicket(token, ticket.id, body.trim(), internal), "Envoi impossible.");
+    await run(() => replyToTicket(token, ticket.id, body.trim(), internal), tr("Envoi impossible."));
     setBody("");
   }
 
@@ -266,7 +266,7 @@ function TicketPanel({
           onClick={() =>
             run(
               () => updateTicket(token, ticket.id, { assigned_to_me: ticket.assigned_to === null }),
-              "Assignation impossible.",
+              tr("Assignation impossible."),
             )
           }
         >
@@ -280,7 +280,7 @@ function TicketPanel({
             onChange={(event) =>
               run(
                 () => updateTicket(token, ticket.id, { priority: event.target.value as TicketPriority }),
-                "Changement impossible.",
+                tr("Changement impossible."),
               )
             }
             className="rounded-sm border border-line bg-surface px-2 py-1 text-xs text-ink"
@@ -301,7 +301,7 @@ function TicketPanel({
             disabled={busy}
             className={small}
             onClick={() =>
-              run(() => updateTicket(token, ticket.id, { status: action.target }), "Changement impossible.")
+              run(() => updateTicket(token, ticket.id, { status: action.target }), tr("Changement impossible."))
             }
           >
             {tr(action.label)}
@@ -311,7 +311,7 @@ function TicketPanel({
         <span className="text-xs text-ink-soft">
           {tr("Client #")}
           {ticket.customer_id}
-          {ticket.order_number ? ` · commande ${ticket.order_number}` : ""}
+          {ticket.order_number ? trf(" · commande {number}", { number: ticket.order_number }) : ""}
         </span>
       </div>
 
@@ -332,7 +332,7 @@ function TicketPanel({
                 ? tr("Note interne")
                 : message.from === "customer"
                   ? "Client"
-                  : `Équipe #${message.author_id}`}
+                  : `${tr("Équipe")} #${message.author_id}`}
             </p>
             <p className="whitespace-pre-wrap text-ink">{message.body}</p>
           </li>

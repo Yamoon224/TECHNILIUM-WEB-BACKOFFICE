@@ -20,7 +20,7 @@ import {
 } from "@/lib/audit";
 
 export default function AuditPage() {
-  const { tr } = useAppearance();
+  const { tr, trf } = useAppearance();
   const router = useRouter();
   const { status: sessionStatus, token, user, logout } = useAuth();
   const [draft, setDraft] = useState<AuditFilters>({});
@@ -107,13 +107,13 @@ export default function AuditPage() {
             className={`rounded-sm border p-3 text-sm ${verification.valid ? "border-line text-ink" : "border-danger text-danger"}`}
           >
             {verification.valid
-              ? `Chaîne intacte : ${verification.checked} entrée(s) vérifiée(s).`
-              : `Intégrité compromise à l'entrée n° ${verification.broken_at} (${verification.checked} vérifiée(s) avant) — ${verification.reason}`}
+              ? trf("Chaîne intacte : {count} entrée(s) vérifiée(s).", { count: verification.checked })
+              : trf("Intégrité compromise à l'entrée n° {at} ({count} vérifiée(s) avant) — {reason}", { at: verification.broken_at ?? "?", count: verification.checked, reason: verification.reason ?? "" })}
           </p>
         ) : null}
 
         <form
-          className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+          className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold"
           onSubmit={(event) => {
             event.preventDefault();
             setFilters(draft);
@@ -191,7 +191,7 @@ export default function AuditPage() {
         ) : entries.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucune entrée.")}</p>
         ) : (
-          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
             <table className="w-full min-w-[900px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">

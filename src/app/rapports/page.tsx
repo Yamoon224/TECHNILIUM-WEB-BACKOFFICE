@@ -175,10 +175,10 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
     <>
       <section aria-label={tr("Indicateurs")}>
         <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <Tile label="Chiffre d'affaires" value={xof(sales.revenue)} />
-          <Tile label="Commandes" value={String(sales.orders)} />
-          <Tile label="Panier moyen" value={xof(sales.average_basket)} />
-          <Tile label="Taux de retour" value={`${returns.rate_percent} %`} />
+          <Tile label={tr("Chiffre d'affaires")} value={xof(sales.revenue)} />
+          <Tile label={tr("Commandes")} value={String(sales.orders)} />
+          <Tile label={tr("Panier moyen")} value={xof(sales.average_basket)} />
+          <Tile label={tr("Taux de retour")} value={`${returns.rate_percent} %`} />
         </dl>
       </section>
 
@@ -250,7 +250,7 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
         <section className="flex flex-col gap-3">
           <h2 className="font-display text-lg text-ink">{tr("Finance")}</h2>
           <dl className="flex flex-col gap-1 text-sm">
-            <Row label="Encaissé" value={xof(finance.collected)} />
+            <Row label={tr("Encaissé")} value={xof(finance.collected)} />
             {Object.entries(finance.collected_by_method).map(([method, amount]) => (
               <Row
                 key={method}
@@ -259,18 +259,18 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
                 muted
               />
             ))}
-            <Row label="Remboursé aux clients" value={xof(finance.refunded)} />
-            <Row label="Commissions" value={xof(finance.commissions)} />
-            <Row label="Reversé aux vendeurs" value={xof(finance.paid_to_vendors)} />
-            <Row label="Restant dû aux vendeurs" value={xof(finance.owed_to_vendors)} />
+            <Row label={tr("Remboursé aux clients")} value={xof(finance.refunded)} />
+            <Row label={tr("Commissions")} value={xof(finance.commissions)} />
+            <Row label={tr("Reversé aux vendeurs")} value={xof(finance.paid_to_vendors)} />
+            <Row label={tr("Restant dû aux vendeurs")} value={xof(finance.owed_to_vendors)} />
           </dl>
         </section>
 
         <section className="flex flex-col gap-3">
           <h2 className="font-display text-lg text-ink">{tr("Retours")}</h2>
           <dl className="flex flex-col gap-1 text-sm">
-            <Row label="Dossiers ouverts sur la période" value={String(returns.count)} />
-            <Row label="Montant remboursé" value={xof(returns.refunded_amount)} />
+            <Row label={tr("Dossiers ouverts sur la période")} value={String(returns.count)} />
+            <Row label={tr("Montant remboursé")} value={xof(returns.refunded_amount)} />
             {Object.entries(returns.by_status).map(([status, count]) => (
               <Row
                 key={status}
@@ -313,7 +313,7 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
 
 function Tile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-sm border border-line p-4 bg-surface shadow-card">
+    <div className="rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold">
       <dt className="text-xs text-ink-soft">{label}</dt>
       <dd className="mt-1 font-display text-xl text-ink">{value}</dd>
     </div>
@@ -384,7 +384,7 @@ function SalesChart({ days }: { days: { date: string; orders: number; revenue: n
           {days.map((day) => (
             <div
               key={day.date}
-              title={`${day.date} — ${xof(day.revenue)} (${day.orders} commande${day.orders > 1 ? "s" : ""})`}
+              title={`${day.date} — ${xof(day.revenue)} (${day.orders} ${tr(day.orders > 1 ? "commandes" : "commande")})`}
               className="min-w-1 flex-1 rounded-t-[4px] bg-gold hover:bg-gold-bright"
               style={{ height: `${barPercent(day.revenue, max)}%` }}
             />
@@ -446,10 +446,10 @@ function MarginSection({ token, period }: { token: string; period: Period }) {
       </div>
 
       <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Tile label="Chiffre d'affaires HT" value={xof(totals.revenue)} />
-        <Tile label="Coût des ventes" value={xof(totals.cost)} />
-        <Tile label="Marge brute" value={xof(totals.margin)} />
-        <Tile label="Taux de marge" value={marginPercentLabel(totals.margin_percent)} />
+        <Tile label={tr("Chiffre d'affaires HT")} value={xof(totals.revenue)} />
+        <Tile label={tr("Coût des ventes")} value={xof(totals.cost)} />
+        <Tile label={tr("Marge brute")} value={xof(totals.margin)} />
+        <Tile label={tr("Taux de marge")} value={marginPercentLabel(totals.margin_percent)} />
       </dl>
 
       {hasCostGap(margin.quality) ? (
@@ -464,7 +464,7 @@ function MarginSection({ token, period }: { token: string; period: Period }) {
       {margin.by_product.length === 0 ? (
         <p className="text-sm text-ink-soft">{tr("Aucune vente en propre livrée sur la période.")}</p>
       ) : (
-        <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
+        <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
           <table className="w-full min-w-[720px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-line text-left text-ink-soft">

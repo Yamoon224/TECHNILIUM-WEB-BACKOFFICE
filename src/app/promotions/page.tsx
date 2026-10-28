@@ -109,7 +109,7 @@ export default function PromotionsPage() {
         ) : coupons.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucun code promotionnel.")}</p>
         ) : (
-          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
             <table className="w-full min-w-[820px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
@@ -188,15 +188,15 @@ function NewCouponForm({ onSubmit }: { onSubmit: (input: NewCouponInput) => Prom
     const per = parseOptionalAmount(perCustomer);
 
     if (!code.trim() || amount === undefined || amount === null) {
-      setFormError("Le code et une valeur entière positive sont requis.");
+      setFormError(tr("Le code et une valeur entière positive sont requis."));
       return;
     }
     if (type === "percent" && amount > 100) {
-      setFormError("Un pourcentage ne peut pas dépasser 100.");
+      setFormError(tr("Un pourcentage ne peut pas dépasser 100."));
       return;
     }
     if (min === null || max === null || per === null) {
-      setFormError("Les limites doivent être des entiers positifs (ou vides).");
+      setFormError(tr("Les limites doivent être des entiers positifs (ou vides)."));
       return;
     }
 
@@ -231,7 +231,7 @@ function NewCouponForm({ onSubmit }: { onSubmit: (input: NewCouponInput) => Prom
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold"
     >
       <label className="field">
         <input

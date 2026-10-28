@@ -59,7 +59,7 @@ export default function CategoriesPage() {
     }
   }
 
-  async function handleSave(id: number, patch: { name: string; is_active: boolean; position: number }) {
+  async function handleSave(id: number, patch: { name: string; name_en: string; is_active: boolean; position: number }) {
     if (!token) return;
     setError(null);
     try {
@@ -113,7 +113,7 @@ export default function CategoriesPage() {
         ) : categories.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucune catégorie.")}</p>
         ) : (
-          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
             <table className="w-full min-w-[720px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
@@ -204,7 +204,7 @@ function NewCategoryForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold"
     >
       <label className="field">
         <input
@@ -245,11 +245,12 @@ function EditCategoryRow({
   onCancel,
 }: {
   category: Category;
-  onSave: (patch: { name: string; is_active: boolean; position: number }) => Promise<void>;
+  onSave: (patch: { name: string; name_en: string; is_active: boolean; position: number }) => Promise<void>;
   onCancel: () => void;
 }) {
   const { tr } = useAppearance();
   const [name, setName] = useState(category.name);
+  const [nameEn, setNameEn] = useState(category.name_en ?? "");
   const [isActive, setIsActive] = useState(category.is_active);
   const [position, setPosition] = useState(category.position);
   const [submitting, setSubmitting] = useState(false);
@@ -257,7 +258,7 @@ function EditCategoryRow({
   async function handleSave() {
     setSubmitting(true);
     try {
-      await onSave({ name, is_active: isActive, position });
+      await onSave({ name, name_en: nameEn.trim(), is_active: isActive, position });
     } finally {
       setSubmitting(false);
     }
@@ -270,6 +271,13 @@ function EditCategoryRow({
           value={name}
           onChange={(event) => setName(event.target.value)}
           className="w-full rounded-sm border border-line bg-surface px-2 py-1 text-sm text-ink"
+        />
+        <input
+          value={nameEn}
+          onChange={(event) => setNameEn(event.target.value)}
+          placeholder={tr("Nom en anglais")}
+          aria-label={tr("Nom en anglais")}
+          className="mt-1 w-full rounded-sm border border-line bg-surface px-2 py-1 text-xs text-ink"
         />
       </td>
       <td className="py-2 pr-4 text-ink-soft">{category.slug}</td>

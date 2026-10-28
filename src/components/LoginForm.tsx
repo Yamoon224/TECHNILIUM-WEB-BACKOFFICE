@@ -24,7 +24,7 @@ export function LoginForm({ onSubmit, submitting, error }: LoginFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex w-full max-w-sm flex-col gap-4 rounded-sm border border-line bg-surface p-6 shadow-card"
+      className="flex w-full max-w-sm flex-col gap-4 rounded-sm border border-line bg-surface p-6 shadow-card border-b-4 border-b-gold"
     >
       <div className="flex justify-center">
         <LogoMark />

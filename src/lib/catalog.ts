@@ -10,6 +10,8 @@ export interface Category {
   id: number;
   parent_id: number | null;
   name: string;
+  /** English wording; null falls back to the French name on the storefront. */
+  name_en?: string | null;
   slug: string;
   description: string | null;
   position: number;
@@ -19,6 +21,7 @@ export interface Category {
 
 export interface CategoryInput {
   name: string;
+  name_en?: string;
   slug?: string;
   description?: string;
   parent_id?: number | null;
@@ -41,8 +44,11 @@ export interface Product {
   category_id: number;
   brand: string;
   name: string;
+  /** English texts; empty means the storefront shows the French ones. */
+  name_en?: string | null;
   slug: string;
   description: string | null;
+  description_en?: string | null;
   image_url: string | null;
   /** The whole gallery, cover first. */
   images?: ProductImage[];
@@ -75,6 +81,8 @@ export interface ProductUpdateInput {
   name?: string;
   slug?: string;
   description?: string;
+  name_en?: string;
+  description_en?: string;
   condition_state?: ConditionState;
   status?: ProductStatus;
   price_amount?: number;

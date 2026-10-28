@@ -90,7 +90,7 @@ export default function StockPage() {
           ) : lowStock.length === 0 ? (
             <p className="text-sm text-ink-soft">{tr("Aucune offre en stock faible.")}</p>
           ) : (
-            <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
+            <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
               <table className="w-full min-w-[600px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-ink-soft">
@@ -122,7 +122,7 @@ export default function StockPage() {
           ) : movements.length === 0 ? (
             <p className="text-sm text-ink-soft">{tr("Aucun mouvement enregistré.")}</p>
           ) : (
-            <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
+            <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
               <table className="w-full min-w-[640px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-ink-soft">
@@ -191,7 +191,7 @@ function NewMovementForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold"
     >
       <label className="field">
         <input

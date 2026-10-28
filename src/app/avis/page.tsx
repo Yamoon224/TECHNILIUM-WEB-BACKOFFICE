@@ -23,7 +23,7 @@ import {
 const STATUSES: ReviewStatus[] = ["pending", "published", "rejected"];
 
 export default function ReviewsPage() {
-  const { tr } = useAppearance();
+  const { tr, trf } = useAppearance();
   const router = useRouter();
   const { status: sessionStatus, token, user, logout } = useAuth();
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -59,7 +59,7 @@ export default function ReviewsPage() {
 
     let reason: string | undefined;
     if (action === "reject") {
-      const input = window.prompt("Motif du rejet (montré à l'auteur) :");
+      const input = window.prompt(tr("Motif du rejet (montré à l'auteur) :"));
       if (input === null) return;
       reason = input.trim() || undefined;
     }
@@ -125,7 +125,7 @@ export default function ReviewsPage() {
         ) : (
           <ul className="flex flex-col gap-3">
             {reviews.map((review) => (
-              <li key={review.id} className="flex flex-col gap-2 rounded-sm border border-line p-4 text-sm bg-surface shadow-card">
+              <li key={review.id} className="flex flex-col gap-2 rounded-sm border border-line p-4 text-sm bg-surface shadow-card border-b-4 border-b-gold">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="flex items-center gap-2">
                     <span className="text-gold-bright">{stars(review.rating)}</span>
@@ -141,7 +141,7 @@ export default function ReviewsPage() {
                 <p className="text-xs text-ink-soft">
                   {review.author_name} {tr("· client #")}{review.customer_id} {tr("· produit #")}{review.product_id} {tr("· commande")}{" "}
                   {review.order_number}
-                  {review.rejection_reason ? ` · motif du rejet : ${review.rejection_reason}` : ""}
+                  {review.rejection_reason ? trf(" · motif du rejet : {reason}", { reason: review.rejection_reason }) : ""}
                 </p>
 
                 <div className="flex gap-2">

@@ -39,6 +39,7 @@ export default function ProductsPage() {
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [galleryId, setGalleryId] = useState<number | null>(null);
+  const [textsId, setTextsId] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
 
   const refresh = useCallback(() => {
@@ -167,7 +168,7 @@ export default function ProductsPage() {
         ) : products.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucun produit.")}</p>
         ) : (
-          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
             <table className="w-full min-w-[820px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
@@ -239,6 +240,13 @@ export default function ProductsPage() {
                             {tr("Photos (")}
                             {product.images?.length ?? 0})
                           </button>
+                          <button
+                            type="button"
+                            onClick={() => setTextsId(textsId === product.id ? null : product.id)}
+                            className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold"
+                          >
+                            {tr("Textes")}
+                          </button>
                           {product.status !== "archived" ? (
                             <button
                               type="button"
@@ -260,6 +268,25 @@ export default function ProductsPage() {
                           onAdd={(file) => handlePhoto(product, file)}
                           onCover={(imageId) => handleCover(product, imageId)}
                           onRemove={(imageId) => handleRemovePhoto(product, imageId)}
+                        />
+                      </td>
+                    </tr>
+                  ) : null,
+                  textsId === product.id ? (
+                    <tr key={`texts-${product.id}`} className="border-b border-line bg-surface-raised">
+                      <td colSpan={6} className="py-3 pr-4">
+                        <TextsPanel
+                          product={product}
+                          onSave={async (patch) => {
+                            if (!token) return;
+                            setError(null);
+                            try {
+                              replaceProduct(await updateProduct(token, product.id, patch));
+                              setTextsId(null);
+                            } catch (caught) {
+                              setError(caught instanceof CatalogError ? caught.message : tr("Mise à jour impossible."));
+                            }
+                          }}
                         />
                       </td>
                     </tr>
@@ -328,7 +355,7 @@ function NewProductForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold"
     >
       <label className="field">
         <select
@@ -531,5 +558,80 @@ function Gallery({
         </p>
       )}
     </div>
+  );
+}
+
+/** The product's descriptive texts: French (the reference) and the optional English wording. */
+function TextsPanel({
+  product,
+  onSave,
+}: {
+  product: Product;
+  onSave: (patch: { name_en: string; description: string; description_en: string }) => Promise<void>;
+}) {
+  const { tr } = useAppearance();
+  const [nameEn, setNameEn] = useState(product.name_en ?? "");
+  const [description, setDescription] = useState(product.description ?? "");
+  const [descriptionEn, setDescriptionEn] = useState(product.description_en ?? "");
+  const [saving, setSaving] = useState(false);
+
+  return (
+    <form
+      className="grid max-w-3xl gap-4"
+      onSubmit={async (event) => {
+        event.preventDefault();
+        setSaving(true);
+        try {
+          await onSave({ name_en: nameEn.trim(), description: description.trim(), description_en: descriptionEn.trim() });
+        } finally {
+          setSaving(false);
+        }
+      }}
+    >
+      <p className="text-xs text-ink-soft">
+        {tr("Le français est la référence. Sans texte anglais, la boutique en anglais affiche le texte français.")}
+      </p>
+
+      <label className="field">
+        <input
+          value={nameEn}
+          onChange={(event) => setNameEn(event.target.value)}
+          maxLength={255}
+          placeholder=" "
+          className="rounded-sm border border-line bg-surface px-3 text-sm text-ink focus:border-gold focus:outline-none"
+        />
+        <span className="field-label">{tr("Nom en anglais")}</span>
+      </label>
+
+      <label className="field">
+        <textarea
+          value={description}
+          onChange={(event) => setDescription(event.target.value)}
+          rows={3}
+          maxLength={5000}
+          placeholder=" "
+          className="rounded-sm border border-line bg-surface px-3 text-sm text-ink focus:border-gold focus:outline-none"
+        />
+        <span className="field-label">{tr("Description (français)")}</span>
+      </label>
+
+      <label className="field">
+        <textarea
+          value={descriptionEn}
+          onChange={(event) => setDescriptionEn(event.target.value)}
+          rows={3}
+          maxLength={5000}
+          placeholder=" "
+          className="rounded-sm border border-line bg-surface px-3 text-sm text-ink focus:border-gold focus:outline-none"
+        />
+        <span className="field-label">{tr("Description (anglais)")}</span>
+      </label>
+
+      <div>
+        <Button type="submit" disabled={saving}>
+          {tr("Enregistrer")}
+        </Button>
+      </div>
+    </form>
   );
 }

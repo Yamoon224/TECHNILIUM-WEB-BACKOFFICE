@@ -187,7 +187,7 @@ function Sidebar({
           <Brand collapsed={collapsed} />
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-3" aria-label="Navigation">
+        <nav className="flex-1 overflow-y-auto px-3 py-3" aria-label={tr("Navigation")}>
           {groups.map((group) => (
             <div key={group.label} className="mb-4">
               {collapsed ? (
@@ -309,7 +309,7 @@ function Topbar({
         )}
 
         {horizontal ? null : (
-          <nav className="hidden items-center gap-1 border-l border-line pl-3 md:flex" aria-label="Raccourcis">
+          <nav className="hidden items-center gap-1 border-l border-line pl-3 md:flex" aria-label={tr("Raccourcis")}>
             {items.map((item) => (
               <ShortcutLink key={item.href} item={item} active={isActive(item.href, pathname)} />
             ))}
@@ -377,7 +377,7 @@ function Topbar({
       </div>
 
       {horizontal ? (
-        <nav className="flex gap-1 overflow-x-auto border-t border-line px-4 py-1.5" aria-label="Navigation">
+        <nav className="flex gap-1 overflow-x-auto border-t border-line px-4 py-1.5" aria-label={tr("Navigation")}>
           {items.map((item) => (
             <ShortcutLink key={item.href} item={item} active={isActive(item.href, pathname)} />
           ))}

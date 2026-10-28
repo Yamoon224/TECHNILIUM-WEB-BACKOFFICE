@@ -25,7 +25,7 @@ import {
 const FILTERS: ReturnStatus[] = ["requested", "accepted", "received", "refunded", "rejected"];
 
 export default function ReturnsPage() {
-  const { tr } = useAppearance();
+  const { tr, trf } = useAppearance();
   const router = useRouter();
   const { status: sessionStatus, token, logout } = useAuth();
   const [returns, setReturns] = useState<ReturnRequest[]>([]);
@@ -62,7 +62,7 @@ export default function ReturnsPage() {
     const body: { note?: string; amount?: number; restock?: boolean } = {};
 
     if (action === "reject") {
-      const note = window.prompt("Motif du refus ?");
+      const note = window.prompt(tr("Motif du refus ?"));
       if (!note) return;
       body.note = note;
     }
@@ -70,18 +70,18 @@ export default function ReturnsPage() {
     if (action === "receive" && item.items.length > 0) {
       // The inspector decides: resellable articles go back on sale, damaged ones do not.
       body.restock = window.confirm(
-        "Articles revendables en l'état ? OK = remettre en stock, Annuler = ne pas remettre en stock.",
+        tr("Articles revendables en l'état ? OK = remettre en stock, Annuler = ne pas remettre en stock."),
       );
     }
 
     if (action === "refund") {
       const input = window.prompt(
-        `Montant à rembourser (demandé : ${item.requested_amount}). Laisser vide pour le montant demandé. Le paiement correspondant est remboursé automatiquement.`,
+        trf("Montant à rembourser (demandé : {amount}). Laisser vide pour le montant demandé. Le paiement correspondant est remboursé automatiquement.", { amount: item.requested_amount }),
       );
       if (input === null) return;
       const amount = parseOptionalAmount(input);
       if (amount === null) {
-        setError("Montant invalide : saisissez un entier positif.");
+        setError(tr("Montant invalide : saisissez un entier positif."));
         return;
       }
       if (amount !== undefined) body.amount = amount;
@@ -153,7 +153,7 @@ export default function ReturnsPage() {
         ) : returns.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucun retour.")}</p>
         ) : (
-          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
             <table className="w-full min-w-[860px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
@@ -244,14 +244,14 @@ function NewReturnForm({
     setFormError(null);
 
     if (!orderNumber || !reason) {
-      setFormError("La commande et le motif sont requis.");
+      setFormError(tr("La commande et le motif sont requis."));
       return;
     }
 
     const items = parseReturnItems(articles);
     if (items === null) {
       setFormError(
-        "Articles invalides : saisissez des paires offre:quantité séparées par des virgules (ex. 12:2, 15).",
+        tr("Articles invalides : saisissez des paires offre:quantité séparées par des virgules (ex. 12:2, 15)."),
       );
       return;
     }
@@ -278,7 +278,7 @@ function NewReturnForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold"
     >
       <label className="field">
         <input

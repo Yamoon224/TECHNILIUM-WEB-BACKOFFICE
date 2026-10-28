@@ -21,7 +21,7 @@ import {
 } from "@/lib/payouts";
 
 export default function PayoutsPage() {
-  const { tr } = useAppearance();
+  const { tr, trf } = useAppearance();
   const router = useRouter();
   const { status: sessionStatus, token, logout } = useAuth();
   const [payouts, setPayouts] = useState<Payout[]>([]);
@@ -77,14 +77,14 @@ export default function PayoutsPage() {
   function handleCalculate(event: React.FormEvent) {
     event.preventDefault();
     if (!token || !vendorId) return;
-    void run(() => calculatePayout(token, Number(vendorId)), "Calcul impossible.");
+    void run(() => calculatePayout(token, Number(vendorId)), tr("Calcul impossible."));
   }
 
   function handlePay(payout: Payout) {
     if (!token) return;
-    const reference = window.prompt(`Référence du virement / mobile money pour ${payout.vendor_name} ?`);
+    const reference = window.prompt(trf("Référence du virement / mobile money pour {name} ?", { name: payout.vendor_name }));
     if (!reference) return;
-    void run(() => markPayoutPaid(token, payout.id, reference), "Enregistrement impossible.");
+    void run(() => markPayoutPaid(token, payout.id, reference), tr("Enregistrement impossible."));
   }
 
   async function handleDetail(payout: Payout) {
@@ -132,7 +132,7 @@ export default function PayoutsPage() {
 
         <form
           onSubmit={handleCalculate}
-          className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+          className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold"
         >
           <label className="field">
             <select
@@ -166,7 +166,7 @@ export default function PayoutsPage() {
         ) : payouts.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucun reversement.")}</p>
         ) : (
-          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
             <table className="w-full min-w-[860px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">

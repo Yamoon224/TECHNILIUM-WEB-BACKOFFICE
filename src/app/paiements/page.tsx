@@ -1,6 +1,7 @@
 "use client";
 
 import { useAppearance } from "@/components/AppearanceProvider";
+import { receiptFilename, savePdf, withLanguage } from "@/lib/download";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -34,7 +35,7 @@ const METHOD_LABEL: Record<PaymentMethod, string> = {
 };
 
 export default function PaymentsPage() {
-  const { tr } = useAppearance();
+  const { tr, trf, appearance } = useAppearance();
   const router = useRouter();
   const { status: sessionStatus, token, logout } = useAuth();
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -74,12 +75,12 @@ export default function PaymentsPage() {
       if (action === "refund") {
         const current = payments.find((payment) => payment.id === id);
         const raw = window.prompt(
-          `Montant à rembourser (reste remboursable : ${current?.refundable_amount ?? "?"}). Laisser vide pour tout rembourser.`,
+          trf("Montant à rembourser (reste remboursable : {left}). Laisser vide pour tout rembourser.", { left: current?.refundable_amount ?? "?" }),
         );
         if (raw === null) return;
         const amount = parseOptionalAmount(raw);
         if (amount === null) {
-          setError("Montant invalide : saisissez un entier positif.");
+          setError(tr("Montant invalide : saisissez un entier positif."));
           return;
         }
         updated = await refundPayment(token, id, amount);
@@ -142,7 +143,7 @@ export default function PaymentsPage() {
         ) : payments.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucun paiement.")}</p>
         ) : (
-          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
             <table className="w-full min-w-[820px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
@@ -192,6 +193,21 @@ export default function PaymentsPage() {
                             className="rounded-sm border border-danger px-2 py-1 text-xs text-danger transition-colors disabled:opacity-50"
                           >
                             {tr("Marquer échoué")}
+                          </button>
+                        ) : null}
+                        {payment.status === "completed" || payment.status === "refunded" ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!token) return;
+                              setError(null);
+                              savePdf(token, withLanguage(`/admin/payments/${payment.id}/receipt`, appearance.language), receiptFilename(payment.id)).catch((caught) =>
+                                setError(caught instanceof Error ? caught.message : tr("Le PDF n'a pas pu être téléchargé.")),
+                              );
+                            }}
+                            className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold"
+                          >
+                            {tr("Reçu")}
                           </button>
                         ) : null}
                         {payment.status === "completed" && payment.refundable_amount > 0 ? (
@@ -264,7 +280,7 @@ function NewPaymentForm({
     setFormError(null);
 
     if (!orderNumber || !amount) {
-      setFormError("La commande et le montant sont requis.");
+      setFormError(tr("La commande et le montant sont requis."));
       return;
     }
 
@@ -290,7 +306,7 @@ function NewPaymentForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold"
     >
       <label className="field">
         <input

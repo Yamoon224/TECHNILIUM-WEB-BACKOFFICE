@@ -114,6 +114,7 @@ export default function ProcurementPage() {
 
 /** Loads on mount, and on demand through reload(). */
 function useLoader<T>(load: () => Promise<T>) {
+  const { tr } = useAppearance();
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -121,8 +122,8 @@ function useLoader<T>(load: () => Promise<T>) {
     setError(null);
     load()
       .then(setData)
-      .catch((caught) => setError(caught instanceof ProcurementError ? caught.message : "Données indisponibles."));
-  }, [load]);
+      .catch((caught) => setError(caught instanceof ProcurementError ? caught.message : tr("Données indisponibles.")));
+  }, [load, tr]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -153,7 +154,7 @@ function OrdersTab({ token }: { token: string }) {
       orders.reload();
       if (open) setOpen(await getPurchaseOrder(token, open.id));
     } catch (caught) {
-      orders.setError(caught instanceof ProcurementError ? caught.message : "L'action a échoué.");
+      orders.setError(caught instanceof ProcurementError ? caught.message : tr("L'action a échoué."));
     } finally {
       setBusy(false);
     }
@@ -164,15 +165,15 @@ function OrdersTab({ token }: { token: string }) {
     try {
       setOpen(await getPurchaseOrder(token, order.id));
     } catch (caught) {
-      orders.setError(caught instanceof ProcurementError ? caught.message : "Bon indisponible.");
+      orders.setError(caught instanceof ProcurementError ? caught.message : tr("Bon indisponible."));
     }
   }
 
   function addCost(order: PurchaseOrder) {
-    const label = window.prompt("Nature du frais (transport, douane, manutention…) :");
+    const label = window.prompt(tr("Nature du frais (transport, douane, manutention…) :"));
     if (!label?.trim()) return;
-    const amount = parseOptionalAmount(window.prompt("Montant (F CFA) :") ?? "");
-    if (!amount) return orders.setError("Montant invalide : saisissez un entier positif.");
+    const amount = parseOptionalAmount(window.prompt(tr("Montant (F CFA) :")) ?? "");
+    if (!amount) return orders.setError(tr("Montant invalide : saisissez un entier positif."));
     void run(() => addLandedCost(token, order.id, label.trim(), amount));
   }
 
@@ -193,7 +194,7 @@ function OrdersTab({ token }: { token: string }) {
       ) : orders.data.length === 0 ? (
         <p className="text-sm text-ink-soft">{tr("Aucun bon de commande.")}</p>
       ) : (
-        <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
+        <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
           <table className="w-full min-w-[760px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-line text-left text-ink-soft">
@@ -257,7 +258,7 @@ function OrderDetail({
   onLanded: () => void;
   onReceive: (lines: { line_id: number; accepted: number; rejected: number }[]) => void;
 }) {
-  const { tr } = useAppearance();
+  const { tr, trf } = useAppearance();
   const actions = purchaseActions(order.status);
   const [receipt, setReceipt] = useState<Record<number, { accepted: string; rejected: string }>>({});
   const [error, setError] = useState<string | null>(null);
@@ -274,12 +275,12 @@ function OrderDetail({
       if (accepted === 0 && rejected === 0) continue;
 
       if (!isValidReceipt(accepted, rejected, line.outstanding)) {
-        return setError(`${line.description} : quantités invalides (reste à recevoir : ${line.outstanding}).`);
+        return setError(trf("{item} : quantités invalides (reste à recevoir : {left}).", { item: line.description, left: line.outstanding }));
       }
       rows.push({ line_id: line.id, accepted, rejected });
     }
 
-    if (rows.length === 0) return setError("Saisissez au moins une quantité acceptée ou refusée.");
+    if (rows.length === 0) return setError(tr("Saisissez au moins une quantité acceptée ou refusée."));
     onReceive(rows);
     setReceipt({});
   }
@@ -342,7 +343,7 @@ function OrderDetail({
       ) : null}
 
       {actions.includes("receive") && toReceive.length > 0 ? (
-        <div className="flex flex-col gap-2 rounded-sm border border-line p-3 bg-surface shadow-card">
+        <div className="flex flex-col gap-2 rounded-sm border border-line p-3 bg-surface shadow-card border-b-4 border-b-gold">
           <p className="text-sm text-ink">
             {tr("Réception : contrôlez chaque ligne (acceptée = entre en stock, refusée = retour fournisseur).")}
           </p>
@@ -432,10 +433,10 @@ function NewOrderForm({
     event.preventDefault();
     setError(null);
 
-    if (!supplierId) return setError("Choisissez un fournisseur.");
+    if (!supplierId) return setError(tr("Choisissez un fournisseur."));
     if (!parsed || parsed.length === 0) {
       return setError(
-        "Lignes invalides : saisissez offre:quantité:coût unitaire, séparés par des virgules (ex. 12:10:5000, 15:4:20000). Une offre une seule fois.",
+        tr("Lignes invalides : saisissez offre:quantité:coût unitaire, séparés par des virgules (ex. 12:10:5000, 15:4:20000). Une offre une seule fois."),
       );
     }
 
@@ -454,7 +455,7 @@ function NewOrderForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold"
     >
       <label className="field">
         <select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} className={`${field} min-w-52`}>
@@ -515,7 +516,7 @@ function SuppliersTab({ token }: { token: string }) {
 
     const days = parseOptionalAmount(terms === "0" ? "" : terms);
     if (!name.trim() || days === null)
-      return setFormError("Un nom et des conditions de paiement valides (jours) sont requis.");
+      return setFormError(tr("Un nom et des conditions de paiement valides (jours) sont requis."));
 
     try {
       await createSupplier(token, {
@@ -537,7 +538,7 @@ function SuppliersTab({ token }: { token: string }) {
     <section className="flex flex-col gap-4">
       <form
         onSubmit={handleCreate}
-        className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+        className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold"
       >
         <label className="field">
           <input placeholder=" " value={name} onChange={(e) => setName(e.target.value)} className={`${field} w-56`} />
@@ -611,7 +612,7 @@ function SuppliersTab({ token }: { token: string }) {
 /* -------------------------------- Invoices ------------------------------- */
 
 function InvoicesTab({ token }: { token: string }) {
-  const { tr } = useAppearance();
+  const { tr, trf } = useAppearance();
   const [filter, setFilter] = useState<"open" | "overdue" | "settled" | undefined>("open");
   const invoices = useLoader<SupplierInvoice[]>(
     useCallback(() => listSupplierInvoices(token, filter), [token, filter]),
@@ -626,19 +627,19 @@ function InvoicesTab({ token }: { token: string }) {
 
   function pay(invoice: SupplierInvoice) {
     const raw = window.prompt(
-      `Montant à régler sur ${invoice.number} (reste ${invoice.outstanding}). Laisser vide pour tout régler :`,
+      trf("Montant à régler sur {number} (reste {left}). Laisser vide pour tout régler :", { number: invoice.number, left: invoice.outstanding }),
     );
     if (raw === null) return;
     const amount = parseOptionalAmount(raw);
-    if (amount === null) return invoices.setError("Montant invalide : saisissez un entier positif.");
+    if (amount === null) return invoices.setError(tr("Montant invalide : saisissez un entier positif."));
 
-    const method = window.prompt("Moyen (bank_transfer, mobile_money, cash, cheque) :", "bank_transfer");
+    const method = window.prompt(tr("Moyen (bank_transfer, mobile_money, cash, cheque) :"), "bank_transfer");
     if (!method) return;
 
     paySupplierInvoice(token, invoice.id, method.trim(), amount)
       .then(refreshAll)
       .catch((caught) =>
-        invoices.setError(caught instanceof ProcurementError ? caught.message : "Règlement impossible."),
+        invoices.setError(caught instanceof ProcurementError ? caught.message : tr("Règlement impossible.")),
       );
   }
 
@@ -646,11 +647,11 @@ function InvoicesTab({ token }: { token: string }) {
     <section className="flex flex-col gap-4">
       {payables.data ? (
         <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          <div className="rounded-sm border border-line p-4 bg-surface shadow-card">
+          <div className="rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold">
             <dt className="text-xs text-ink-soft">{tr("Dû aux fournisseurs")}</dt>
             <dd className="mt-1 font-display text-xl text-ink">{xof(payables.data.total_outstanding)}</dd>
           </div>
-          <div className="rounded-sm border border-line p-4 bg-surface shadow-card">
+          <div className="rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold">
             <dt className="text-xs text-ink-soft">{tr("Dont échu")}</dt>
             <dd className={`mt-1 font-display text-xl ${payables.data.total_overdue > 0 ? "text-danger" : "text-ink"}`}>
               {xof(payables.data.total_overdue)}
@@ -698,7 +699,7 @@ function InvoicesTab({ token }: { token: string }) {
       ) : invoices.data.length === 0 ? (
         <p className="text-sm text-ink-soft">{tr("Aucune facture.")}</p>
       ) : (
-        <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
+        <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
           <table className="w-full min-w-[760px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-line text-left text-ink-soft">
@@ -770,7 +771,7 @@ function NewInvoiceForm({
 
     const value = parseOptionalAmount(amount);
     if (!supplierId || !number.trim() || !date || !value)
-      return setError("Fournisseur, numéro, date et montant (entier positif) sont requis.");
+      return setError(tr("Fournisseur, numéro, date et montant (entier positif) sont requis."));
 
     try {
       await onSubmit({
@@ -790,7 +791,7 @@ function NewInvoiceForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold"
     >
       <label className="field">
         <select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} className={`${field} min-w-48`}>
@@ -855,7 +856,7 @@ function StockTab({ token }: { token: string }) {
       {data.offers.length === 0 ? (
         <p className="text-sm text-ink-soft">{tr("Aucun achat réceptionné pour l'instant.")}</p>
       ) : (
-        <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
+        <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
           <table className="w-full min-w-[640px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-line text-left text-ink-soft">

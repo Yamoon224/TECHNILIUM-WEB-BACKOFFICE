@@ -1,6 +1,7 @@
 "use client";
 
 import { useAppearance } from "@/components/AppearanceProvider";
+import { deliveryNoteFilename, savePdf, withLanguage } from "@/lib/download";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -31,7 +32,7 @@ const STATUS_LABEL: Record<ShipmentStatus, string> = {
 };
 
 export default function ShipmentsPage() {
-  const { tr } = useAppearance();
+  const { tr, trf, appearance } = useAppearance();
   const router = useRouter();
   const { status: sessionStatus, token, logout } = useAuth();
   const [shipments, setShipments] = useState<Shipment[]>([]);
@@ -123,7 +124,7 @@ export default function ShipmentsPage() {
         ) : shipments.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucune livraison.")}</p>
         ) : (
-          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
             <table className="w-full min-w-[900px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
@@ -170,6 +171,18 @@ export default function ShipmentsPage() {
                     </td>
                     <td className="py-3">
                       <div className="flex flex-wrap gap-2">
+                        <ActionButton
+                          disabled={false}
+                          onClick={() => {
+                            if (!token) return;
+                            setError(null);
+                            savePdf(token, withLanguage(`/admin/shipments/${shipment.id}/delivery-note`, appearance.language), deliveryNoteFilename(shipment.id)).catch((caught) =>
+                              setError(caught instanceof Error ? caught.message : tr("Le PDF n'a pas pu être téléchargé.")),
+                            );
+                          }}
+                        >
+                          {tr("Bon de livraison")}
+                        </ActionButton>
                         {shipment.status === "pending" ? (
                           <ActionButton
                             disabled={pendingId === shipment.id}
@@ -189,7 +202,7 @@ export default function ShipmentsPage() {
                               disabled={pendingId === shipment.id || shipment.code_locked}
                               onClick={() => {
                                 const code = window.prompt(
-                                  `Code de confirmation remis au client (${codeAttemptsLeft(shipment)} essai(s) restant(s)) :`,
+                                  trf("Code de confirmation remis au client ({count} essai(s) restant(s)) :", { count: codeAttemptsLeft(shipment) }),
                                 );
                                 if (!code) return;
                                 void handleAction(shipment.id, () => {
@@ -380,7 +393,7 @@ function NewShipmentForm({ onCreate }: { onCreate: (orderNumber: string, assigne
     setFormError(null);
 
     if (!orderNumber) {
-      setFormError("Le numéro de commande est requis.");
+      setFormError(tr("Le numéro de commande est requis."));
       return;
     }
 
@@ -399,7 +412,7 @@ function NewShipmentForm({ onCreate }: { onCreate: (orderNumber: string, assigne
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold"
     >
       <label className="field">
         <input

@@ -135,7 +135,7 @@ export default function NotificationsPage() {
         ) : items.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucun message.")}</p>
         ) : (
-          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
             <table className="w-full min-w-[900px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">

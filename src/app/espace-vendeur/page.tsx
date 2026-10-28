@@ -102,6 +102,7 @@ export default function VendorSpacePage() {
 
 /** Loads data once per mount and exposes loading/error/reload for a tab. */
 function useLoader<T>(load: () => Promise<T>) {
+  const { tr } = useAppearance();
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -109,8 +110,8 @@ function useLoader<T>(load: () => Promise<T>) {
     setError(null);
     load()
       .then(setData)
-      .catch((caught) => setError(caught instanceof VendorSpaceError ? caught.message : "Données indisponibles."));
-  }, [load]);
+      .catch((caught) => setError(caught instanceof VendorSpaceError ? caught.message : tr("Données indisponibles.")));
+  }, [load, tr]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -128,6 +129,7 @@ function Status({ error, loading }: { error: string | null; loading: boolean }) 
 }
 
 function SummaryTab({ token }: { token: string }) {
+  const { tr } = useAppearance();
   const { data, error } = useLoader<VendorSummary>(useCallback(() => getSummary(token), [token]));
 
   if (!data) return <Status error={error} loading />;
@@ -136,10 +138,10 @@ function SummaryTab({ token }: { token: string }) {
     <section className="flex flex-col gap-4">
       <p className="text-ink-soft">{data.company_name}</p>
       <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <Stat label="Commandes" value={String(totalCount(data.orders_by_status))} />
-        <Stat label="Offres" value={String(totalCount(data.offers_by_status))} />
-        <Stat label="À recevoir" value={xof(data.payout_pending_amount)} />
-        <Stat label="Déjà reversé" value={xof(data.payout_paid_amount)} />
+        <Stat label={tr("Commandes")} value={String(totalCount(data.orders_by_status))} />
+        <Stat label={tr("Offres")} value={String(totalCount(data.offers_by_status))} />
+        <Stat label={tr("À recevoir")} value={xof(data.payout_pending_amount)} />
+        <Stat label={tr("Déjà reversé")} value={xof(data.payout_paid_amount)} />
       </dl>
     </section>
   );
@@ -147,7 +149,7 @@ function SummaryTab({ token }: { token: string }) {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-sm border border-line p-4 bg-surface shadow-card">
+    <div className="rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold">
       <dt className="text-xs text-ink-soft">{label}</dt>
       <dd className="mt-1 font-display text-xl text-ink">{value}</dd>
     </div>
@@ -179,7 +181,7 @@ function OrdersTab({ token }: { token: string }) {
     <ul className="flex flex-col gap-3">
       {error ? <p className="text-sm text-danger">{error}</p> : null}
       {data.map((order) => (
-        <li key={order.order_number} className="rounded-sm border border-line p-4 text-sm bg-surface shadow-card">
+        <li key={order.order_number} className="rounded-sm border border-line p-4 text-sm bg-surface shadow-card border-b-4 border-b-gold">
           <div className="flex flex-wrap justify-between gap-2 text-ink">
             <span>{order.order_number}</span>
             <span className="text-ink-soft">
@@ -244,7 +246,7 @@ function PayoutsTab({ token }: { token: string }) {
   if (data.length === 0) return <p className="text-sm text-ink-soft">{tr("Aucun reversement pour le moment.")}</p>;
 
   return (
-    <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
+    <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
       {error ? <p className="mb-2 text-sm text-danger">{error}</p> : null}
       <table className="w-full min-w-[720px] border-collapse text-sm">
         <thead>
@@ -271,7 +273,7 @@ function PayoutsTab({ token }: { token: string }) {
                   <td className="py-3 pr-4 text-ink">{money(payout.net_amount)}</td>
                   <td className="py-3 pr-4 text-ink-soft">
                     {payout.status === "paid"
-                      ? `Payé${payout.payment_reference ? ` · ${payout.payment_reference}` : ""}`
+                      ? `${tr("Payé")}${payout.payment_reference ? ` · ${payout.payment_reference}` : ""}`
                       : tr("En cours")}
                   </td>
                   <td className="py-3">
@@ -313,7 +315,7 @@ function PayoutsTab({ token }: { token: string }) {
 }
 
 function OffersTab({ token }: { token: string }) {
-  const { tr } = useAppearance();
+  const { tr, trf } = useAppearance();
   const { data, error, reload, setError } = useLoader<VendorOffer[]>(useCallback(() => listOffers(token), [token]));
   const [busyId, setBusyId] = useState<number | null>(null);
 
@@ -332,26 +334,26 @@ function OffersTab({ token }: { token: string }) {
 
   function editPrice(offer: VendorOffer) {
     const input = window.prompt(
-      `Nouveau prix pour ${offer.product_name} (une modification renvoie l'offre en modération)`,
+      trf("Nouveau prix pour {name} (une modification renvoie l'offre en modération)", { name: offer.product_name }),
       String(offer.price_amount),
     );
     if (input === null || input.trim() === "") return;
-    void run(offer.id, () => updateOffer(token, offer.id, { price_amount: Number(input) }), "Mise à jour impossible.");
+    void run(offer.id, () => updateOffer(token, offer.id, { price_amount: Number(input) }), tr("Mise à jour impossible."));
   }
 
   function editStock(offer: VendorOffer) {
-    const input = window.prompt(`Nouveau stock pour ${offer.product_name}`, String(offer.stock_quantity));
+    const input = window.prompt(trf("Nouveau stock pour {name}", { name: offer.product_name }), String(offer.stock_quantity));
     if (input === null || input.trim() === "") return;
     void run(
       offer.id,
       () => updateOffer(token, offer.id, { stock_quantity: Number(input) }),
-      "Mise à jour impossible.",
+      tr("Mise à jour impossible."),
     );
   }
 
   function archive(offer: VendorOffer) {
     if (!window.confirm(`Retirer l'offre ${offer.product_name} ?`)) return;
-    void run(offer.id, () => archiveOffer(token, offer.id), "Retrait impossible.");
+    void run(offer.id, () => archiveOffer(token, offer.id), tr("Retrait impossible."));
   }
 
   return (
@@ -370,7 +372,7 @@ function OffersTab({ token }: { token: string }) {
       ) : data.length === 0 ? (
         <p className="text-sm text-ink-soft">{tr("Aucune offre.")}</p>
       ) : (
-        <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
+        <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
           <table className="w-full min-w-[780px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-line text-left text-ink-soft">
@@ -450,7 +452,7 @@ function NewOfferForm({
     setFormError(null);
 
     if (!variantId || !price || !stock) {
-      setFormError("La variante, le prix et le stock sont requis.");
+      setFormError(tr("La variante, le prix et le stock sont requis."));
       return;
     }
 
@@ -478,7 +480,7 @@ function NewOfferForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold"
     >
       <label className="field">
         <input

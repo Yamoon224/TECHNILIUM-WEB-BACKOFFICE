@@ -20,7 +20,7 @@ import {
 import { formatMoney } from "@/lib/money";
 
 export default function InvoicesPage() {
-  const { tr } = useAppearance();
+  const { tr, trf } = useAppearance();
   const router = useRouter();
   const { status: sessionStatus, token, logout } = useAuth();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -62,7 +62,7 @@ export default function InvoicesPage() {
 
   async function handleCredit(invoice: Invoice) {
     if (!token) return;
-    const reason = window.prompt(`Motif de l'avoir pour ${invoice.number} ?`);
+    const reason = window.prompt(trf("Motif de l'avoir pour {number} ?", { number: invoice.number }));
     if (!reason) return;
 
     setPendingId(invoice.id);
@@ -114,7 +114,7 @@ export default function InvoicesPage() {
         ) : invoices.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucun document.")}</p>
         ) : (
-          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
             <table className="w-full min-w-[860px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
@@ -195,7 +195,7 @@ function NewInvoiceForm({ onSubmit }: { onSubmit: (orderNumber: string) => Promi
     setFormError(null);
 
     if (!orderNumber) {
-      setFormError("Le numéro de commande est requis.");
+      setFormError(tr("Le numéro de commande est requis."));
       return;
     }
 
@@ -213,7 +213,7 @@ function NewInvoiceForm({ onSubmit }: { onSubmit: (orderNumber: string) => Promi
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold"
     >
       <label className="field">
         <input

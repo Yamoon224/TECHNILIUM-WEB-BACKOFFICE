@@ -74,7 +74,7 @@ export default function AccountingPage() {
         <section className="flex flex-col gap-3">
           <h2 className="font-display text-lg text-ink">{tr("Balance générale")}</h2>
           {balance ? (
-            <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
+            <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
               <table className="w-full min-w-[640px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-ink-soft">
@@ -135,7 +135,7 @@ export default function AccountingPage() {
               {entries.map((entry) => {
                 const totals = entryTotals(entry);
                 return (
-                  <li key={entry.id} className="rounded-sm border border-line p-3 text-sm bg-surface shadow-card">
+                  <li key={entry.id} className="rounded-sm border border-line p-3 text-sm bg-surface shadow-card border-b-4 border-b-gold">
                     <div className="flex flex-wrap justify-between gap-2 text-ink">
                       <span>
                         {entry.entry_date} · {tr(JOURNAL_LABEL[entry.journal] ?? entry.journal)} · {entry.description}
