@@ -53,3 +53,5 @@ npm run test
 ## État d'avancement
 
 Identity (connexion) et Orders (liste + changement de statut) sont câblés. Catalog (gestion produits/stocks), les vendeurs, la facturation et le reste suivront au fur et à mesure que les modules backend correspondants seront construits.
+
+`/produits` : photo par produit (ajout, remplacement, retrait ; JPG/PNG/WebP, 2 Mo max), miniature dans la liste. La boutique l'affiche à la place de la pastille à initiale ; sans photo, la pastille reste.

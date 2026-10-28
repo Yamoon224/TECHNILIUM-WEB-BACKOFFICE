@@ -10,9 +10,12 @@ import {
   CatalogError,
   archiveProduct,
   createProduct,
+  imageProblem,
   listCategories,
   listProducts,
+  removeProductImage,
   updateProduct,
+  uploadProductImage,
   type Category,
   type Product,
 } from "@/lib/catalog";
@@ -56,6 +59,34 @@ export default function ProductsPage() {
   async function handleLogout() {
     await logout();
     router.push("/");
+  }
+
+  async function handlePhoto(product: Product, file: File | null) {
+    if (!token || !file) return;
+    const problem = imageProblem(file);
+    if (problem) {
+      setError(problem);
+      return;
+    }
+
+    setError(null);
+    try {
+      const updated = await uploadProductImage(token, product.id, file);
+      setProducts((current) => current.map((p) => (p.id === product.id ? updated : p)));
+    } catch (caught) {
+      setError(caught instanceof CatalogError ? (caught.fieldErrors?.image?.[0] ?? caught.message) : "Envoi de la photo impossible.");
+    }
+  }
+
+  async function handleRemovePhoto(product: Product) {
+    if (!token) return;
+    setError(null);
+    try {
+      const updated = await removeProductImage(token, product.id);
+      setProducts((current) => current.map((p) => (p.id === product.id ? updated : p)));
+    } catch (caught) {
+      setError(caught instanceof CatalogError ? caught.message : "Suppression de la photo impossible.");
+    }
   }
 
   async function handleArchive(id: number) {
@@ -148,7 +179,17 @@ export default function ProductsPage() {
                   ) : (
                     <tr key={product.id} className="border-b border-line">
                       <td className="py-3 pr-4 text-ink">
-                        {product.brand} {product.name}
+                        <div className="flex items-center gap-3">
+                          {product.image_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={product.image_url} alt="" className="h-10 w-10 rounded-sm border border-line object-cover" />
+                          ) : (
+                            <span className="flex h-10 w-10 items-center justify-center rounded-sm border border-dashed border-line text-[10px] text-ink-soft">
+                              Aucune
+                            </span>
+                          )}
+                          {product.brand} {product.name}
+                        </div>
                       </td>
                       <td className="py-3 pr-4 text-ink-soft">{product.sku ?? "—"}</td>
                       <td className="py-3 pr-4 text-ink">
@@ -165,6 +206,27 @@ export default function ProductsPage() {
                           >
                             Modifier
                           </button>
+                          <label className="cursor-pointer rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold">
+                            {product.image_url ? "Changer la photo" : "Ajouter une photo"}
+                            <input
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp"
+                              className="sr-only"
+                              onChange={(event) => {
+                                void handlePhoto(product, event.target.files?.[0] ?? null);
+                                event.target.value = "";
+                              }}
+                            />
+                          </label>
+                          {product.image_url ? (
+                            <button
+                              type="button"
+                              onClick={() => handleRemovePhoto(product)}
+                              className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-danger"
+                            >
+                              Retirer la photo
+                            </button>
+                          ) : null}
                           {product.status !== "archived" ? (
                             <button
                               type="button"

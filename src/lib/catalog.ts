@@ -36,6 +36,7 @@ export interface Product {
   name: string;
   slug: string;
   description: string | null;
+  image_url: string | null;
   condition_state: ConditionState;
   status: ProductStatus;
   sku: string | null;
@@ -210,4 +211,37 @@ export async function rejectOffer(token: string, id: number): Promise<ModeratedO
   });
   if (!response.ok) throw await parseError(response);
   return response.json() as Promise<ModeratedOffer>;
+}
+
+export const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+/** Early, friendly refusal; the server validates the real content again. */
+export function imageProblem(file: Pick<File, "type" | "size">): string | null {
+  if (!IMAGE_TYPES.includes(file.type)) return "Format non accepté : utilisez JPG, PNG ou WebP.";
+  if (file.size > MAX_IMAGE_BYTES) return "L'image dépasse 2 Mo.";
+  return null;
+}
+
+export async function uploadProductImage(token: string, id: number, file: File): Promise<Product> {
+  const body = new FormData();
+  body.append("image", file);
+
+  // No Content-Type: the browser sets the multipart boundary itself.
+  const response = await fetch(`${API_BASE_URL}/admin/products/${id}/image`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+    body,
+  });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<Product>;
+}
+
+export async function removeProductImage(token: string, id: number): Promise<Product> {
+  const response = await fetch(`${API_BASE_URL}/admin/products/${id}/image`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<Product>;
 }
