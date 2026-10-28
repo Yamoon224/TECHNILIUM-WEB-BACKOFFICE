@@ -252,4 +252,4 @@ export function translate(language: Language, key: MessageKey): string {
   return DICTIONARIES[language][key] ?? FR[key];
 }
 
-export const LANGUAGE_LABEL: Record<Language, string> = { fr: "Français", en: "English" };
+export const LANGUAGE_LABEL: Record<Language, string> = { fr: "Français", en: "English (US)" };

@@ -191,3 +191,23 @@ body {
   padding-bottom: 0.2rem;
   border-bottom: 3px solid var(--gold);
 }
+
+/*
+ * The configured main colour is used as a gradient: toward white in the light theme, toward black
+ * in the dark theme, 15% either way. Everything that is filled with the accent (buttons, table
+ * headers, badges) gets it; the flat colour stays available as the "gold" token.
+ */
+:root {
+  --accent-gradient: linear-gradient(135deg, var(--gold) 0%, color-mix(in oklab, var(--gold) 85%, white) 100%);
+  --accent-gradient-hover: linear-gradient(135deg, var(--gold-bright) 0%, color-mix(in oklab, var(--gold-bright) 85%, white) 100%);
+}
+[data-theme="dark"] {
+  --accent-gradient: linear-gradient(135deg, var(--gold) 0%, color-mix(in oklab, var(--gold) 85%, black) 100%);
+  --accent-gradient-hover: linear-gradient(135deg, var(--gold-bright) 0%, color-mix(in oklab, var(--gold-bright) 85%, black) 100%);
+}
+.bg-gold {
+  background-image: var(--accent-gradient);
+}
+.hover\:bg-gold-bright:hover {
+  background-image: var(--accent-gradient-hover);
+}
