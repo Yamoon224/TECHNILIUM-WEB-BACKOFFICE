@@ -54,4 +54,4 @@ npm run test
 
 Identity (connexion) et Orders (liste + changement de statut) sont câblés. Catalog (gestion produits/stocks), les vendeurs, la facturation et le reste suivront au fur et à mesure que les modules backend correspondants seront construits.
 
-`/produits` : photo par produit (ajout, remplacement, retrait ; JPG/PNG/WebP, 2 Mo max), miniature dans la liste. La boutique l'affiche à la place de la pastille à initiale ; sans photo, la pastille reste.
+`/produits` : galerie par produit (bouton « Photos (n) » : ajout, photo de couverture, suppression ; 8 photos au plus, JPG/PNG/WebP, 2 Mo max), miniature de couverture dans la liste. La boutique affiche la couverture sur les cartes et la galerie sur la fiche produit ; sans photo, la pastille à initiale reste.

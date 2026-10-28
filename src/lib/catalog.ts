@@ -29,6 +29,13 @@ export interface CategoryInput {
 export type ProductStatus = "draft" | "published" | "archived";
 export type ConditionState = "neuf" | "reconditionne" | "occasion";
 
+export interface ProductImage {
+  id: number;
+  url: string;
+}
+
+export const MAX_GALLERY_IMAGES = 8;
+
 export interface Product {
   id: number;
   category_id: number;
@@ -37,6 +44,8 @@ export interface Product {
   slug: string;
   description: string | null;
   image_url: string | null;
+  /** The whole gallery, cover first. */
+  images?: ProductImage[];
   condition_state: ConditionState;
   status: ProductStatus;
   sku: string | null;
@@ -223,12 +232,12 @@ export function imageProblem(file: Pick<File, "type" | "size">): string | null {
   return null;
 }
 
-export async function uploadProductImage(token: string, id: number, file: File): Promise<Product> {
+export async function addProductImage(token: string, id: number, file: File): Promise<Product> {
   const body = new FormData();
   body.append("image", file);
 
   // No Content-Type: the browser sets the multipart boundary itself.
-  const response = await fetch(`${API_BASE_URL}/admin/products/${id}/image`, {
+  const response = await fetch(`${API_BASE_URL}/admin/products/${id}/images`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
     body,
@@ -237,8 +246,17 @@ export async function uploadProductImage(token: string, id: number, file: File):
   return response.json() as Promise<Product>;
 }
 
-export async function removeProductImage(token: string, id: number): Promise<Product> {
-  const response = await fetch(`${API_BASE_URL}/admin/products/${id}/image`, {
+export async function setProductCover(token: string, id: number, imageId: number): Promise<Product> {
+  const response = await fetch(`${API_BASE_URL}/admin/products/${id}/images/${imageId}/cover`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<Product>;
+}
+
+export async function removeProductImage(token: string, id: number, imageId: number): Promise<Product> {
+  const response = await fetch(`${API_BASE_URL}/admin/products/${id}/images/${imageId}`, {
     method: "DELETE",
     headers: authHeaders(token),
   });

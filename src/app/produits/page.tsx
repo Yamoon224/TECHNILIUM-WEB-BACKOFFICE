@@ -8,14 +8,16 @@ import { Button } from "@/components/Button";
 import { useAuth } from "@/lib/useAuth";
 import {
   CatalogError,
+  addProductImage,
   archiveProduct,
   createProduct,
   imageProblem,
+  MAX_GALLERY_IMAGES,
   listCategories,
   listProducts,
   removeProductImage,
+  setProductCover,
   updateProduct,
-  uploadProductImage,
   type Category,
   type Product,
 } from "@/lib/catalog";
@@ -34,6 +36,7 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [galleryId, setGalleryId] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
 
   const refresh = useCallback(() => {
@@ -61,6 +64,10 @@ export default function ProductsPage() {
     router.push("/");
   }
 
+  function replaceProduct(updated: Product) {
+    setProducts((current) => current.map((p) => (p.id === updated.id ? updated : p)));
+  }
+
   async function handlePhoto(product: Product, file: File | null) {
     if (!token || !file) return;
     const problem = imageProblem(file);
@@ -71,19 +78,27 @@ export default function ProductsPage() {
 
     setError(null);
     try {
-      const updated = await uploadProductImage(token, product.id, file);
-      setProducts((current) => current.map((p) => (p.id === product.id ? updated : p)));
+      replaceProduct(await addProductImage(token, product.id, file));
     } catch (caught) {
       setError(caught instanceof CatalogError ? (caught.fieldErrors?.image?.[0] ?? caught.message) : "Envoi de la photo impossible.");
     }
   }
 
-  async function handleRemovePhoto(product: Product) {
+  async function handleCover(product: Product, imageId: number) {
     if (!token) return;
     setError(null);
     try {
-      const updated = await removeProductImage(token, product.id);
-      setProducts((current) => current.map((p) => (p.id === product.id ? updated : p)));
+      replaceProduct(await setProductCover(token, product.id, imageId));
+    } catch (caught) {
+      setError(caught instanceof CatalogError ? caught.message : "Changement de couverture impossible.");
+    }
+  }
+
+  async function handleRemovePhoto(product: Product, imageId: number) {
+    if (!token) return;
+    setError(null);
+    try {
+      replaceProduct(await removeProductImage(token, product.id, imageId));
     } catch (caught) {
       setError(caught instanceof CatalogError ? caught.message : "Suppression de la photo impossible.");
     }
@@ -159,7 +174,7 @@ export default function ProductsPage() {
                 </tr>
               </thead>
               <tbody>
-                {products.map((product) =>
+                {products.flatMap((product) => [
                   editingId === product.id ? (
                     <EditProductRow
                       key={product.id}
@@ -206,27 +221,13 @@ export default function ProductsPage() {
                           >
                             Modifier
                           </button>
-                          <label className="cursor-pointer rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold">
-                            {product.image_url ? "Changer la photo" : "Ajouter une photo"}
-                            <input
-                              type="file"
-                              accept="image/jpeg,image/png,image/webp"
-                              className="sr-only"
-                              onChange={(event) => {
-                                void handlePhoto(product, event.target.files?.[0] ?? null);
-                                event.target.value = "";
-                              }}
-                            />
-                          </label>
-                          {product.image_url ? (
-                            <button
-                              type="button"
-                              onClick={() => handleRemovePhoto(product)}
-                              className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-danger"
-                            >
-                              Retirer la photo
-                            </button>
-                          ) : null}
+                          <button
+                            type="button"
+                            onClick={() => setGalleryId(galleryId === product.id ? null : product.id)}
+                            className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold"
+                          >
+                            Photos ({product.images?.length ?? 0})
+                          </button>
                           {product.status !== "archived" ? (
                             <button
                               type="button"
@@ -240,7 +241,19 @@ export default function ProductsPage() {
                       </td>
                     </tr>
                   ),
-                )}
+                  galleryId === product.id ? (
+                    <tr key={`gallery-${product.id}`} className="border-b border-line bg-surface-raised">
+                      <td colSpan={6} className="py-3 pr-4">
+                        <Gallery
+                          product={product}
+                          onAdd={(file) => handlePhoto(product, file)}
+                          onCover={(imageId) => handleCover(product, imageId)}
+                          onRemove={(imageId) => handleRemovePhoto(product, imageId)}
+                        />
+                      </td>
+                    </tr>
+                  ) : null,
+                ])}
               </tbody>
             </table>
           </div>
@@ -435,5 +448,58 @@ function EditProductRow({
         </div>
       </td>
     </tr>
+  );
+}
+
+function Gallery({
+  product,
+  onAdd,
+  onCover,
+  onRemove,
+}: {
+  product: Product;
+  onAdd: (file: File | null) => void;
+  onCover: (imageId: number) => void;
+  onRemove: (imageId: number) => void;
+}) {
+  const images = product.images ?? [];
+
+  return (
+    <div className="flex flex-wrap items-start gap-3">
+      {images.map((image, index) => (
+        <figure key={image.id} className="flex w-28 flex-col gap-1">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={image.url} alt="" className="h-28 w-28 rounded-sm border border-line object-cover" />
+          {index === 0 ? (
+            <figcaption className="text-xs font-medium text-gold">Couverture</figcaption>
+          ) : (
+            <button type="button" onClick={() => onCover(image.id)} className="text-left text-xs text-ink underline-offset-4 hover:text-gold hover:underline">
+              Définir comme couverture
+            </button>
+          )}
+          <button type="button" onClick={() => onRemove(image.id)} className="text-left text-xs text-danger underline-offset-4 hover:underline">
+            Supprimer
+          </button>
+        </figure>
+      ))}
+
+      {images.length < MAX_GALLERY_IMAGES ? (
+        <label className="flex h-28 w-28 cursor-pointer flex-col items-center justify-center gap-1 rounded-sm border border-dashed border-line text-center text-xs text-ink-soft transition-colors hover:border-gold">
+          + Ajouter
+          <span className="px-1 text-[10px]">JPG, PNG, WebP, 2 Mo</span>
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="sr-only"
+            onChange={(event) => {
+              onAdd(event.target.files?.[0] ?? null);
+              event.target.value = "";
+            }}
+          />
+        </label>
+      ) : (
+        <p className="text-xs text-ink-soft">Galerie pleine ({MAX_GALLERY_IMAGES} photos).</p>
+      )}
+    </div>
   );
 }
