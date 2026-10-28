@@ -1,5 +1,6 @@
 "use client";
 
+import { QrLink } from "@/components/QrLink";
 import { DataTable } from "@/components/DataTable";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { Fragment, useCallback, useEffect, useState } from "react";
@@ -209,7 +210,12 @@ function OrdersTab({ token }: { token: string }) {
                     <td className="py-3 pr-4 text-ink">{xof(order.goods_total ?? 0)}</td>
                     <td className="py-3 pr-4 text-ink-soft">{xof(order.landed_total ?? 0)}</td>
                     <td className="py-3 pr-4 text-ink-soft">{tr(PO_STATUS_LABEL[order.status])}</td>
-                    <td className="py-3 text-xs text-ink-soft">{tr("Détail")}</td>
+                    <td className="py-3 text-xs text-ink-soft">
+                      <div className="flex items-center gap-2">
+                        <QrLink kind="supply" reference={order.number} />
+                        {tr("Détail")}
+                      </div>
+                    </td>
                   </tr>
                   {open?.id === order.id ? (
                     <tr className="border-b border-line bg-surface">

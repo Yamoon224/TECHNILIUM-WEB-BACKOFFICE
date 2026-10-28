@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildQuery, isFailure, outcomeLabel } from "./audit";
+import { buildQuery, describeAction, isFailure, outcomeLabel } from "./audit";
 
 describe("audit helpers", () => {
   it("flags refused and failed requests", () => {
@@ -28,5 +28,17 @@ describe("audit helpers", () => {
 
   it("sends the failed-only filter as 1", () => {
     expect(new URLSearchParams(buildQuery({ failed: true })).get("failed")).toBe("1");
+  });
+});
+
+describe("describeAction", () => {
+  it("puts the access-management routes in plain words", () => {
+    expect(describeAction({ method: "PUT", route: "api/v1/admin/access/switches" })).toBe("Activation ou désactivation d'une fonctionnalité");
+    expect(describeAction({ method: "DELETE", route: "api/v1/admin/access/groups/{name}" })).toBe("Suppression d'un groupe d'utilisateurs");
+  });
+
+  it("has nothing to say about other routes", () => {
+    expect(describeAction({ method: "POST", route: "api/v1/admin/payments" })).toBeNull();
+    expect(describeAction({ method: "POST", route: null })).toBeNull();
   });
 });

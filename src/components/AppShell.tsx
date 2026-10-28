@@ -6,11 +6,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { fetchCurrentUser, logout as logoutRequest, TOKEN_STORAGE_KEY, type User } from "@/lib/auth";
-import { isActive, navFor, shortcutsFor, type NavGroup, type NavItem } from "@/lib/navigation";
+import { isActive, isPageForbidden, navFor, shortcutsFor, type NavGroup, type NavItem } from "@/lib/navigation";
 import { listNotifications } from "@/lib/notifications";
 import { ROLE_LABEL } from "@/lib/roles";
 import { AUTH_CHANGED_EVENT } from "@/lib/useAuth";
 import { useAppearance } from "./AppearanceProvider";
+import { AbilitiesContext } from "./QrLink";
 import { SettingsPanel } from "./SettingsPanel";
 
 const SIDEBAR_WIDTH = "16rem";
@@ -98,7 +99,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const side = appearance.layout === "side";
   const sidebarWidth = appearance.collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
-  const groups = navFor(session.user.roles);
+  const groups = navFor(session.user.roles, session.user.abilities);
+  const forbidden = isPageForbidden(pathname, { roles: session.user.roles, abilities: session.user.abilities });
 
   return (
     <div style={{ "--sidebar-w": side ? sidebarWidth : "0rem" } as React.CSSProperties} className="min-h-screen">
@@ -126,7 +128,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           onOpenSettings={() => setSettingsOpen(true)}
           onLogout={handleLogout}
         />
-        <div className="flex flex-1 flex-col">{children}</div>
+        <div className="flex flex-1 flex-col">{forbidden ? <FeatureUnavailable /> : <AbilitiesContext.Provider value={session.user.abilities}>{children}</AbilitiesContext.Provider>}</div>
       </div>
 
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
@@ -284,7 +286,7 @@ function Topbar({
   const pathname = usePathname();
   const { theme, update, t, tr } = useAppearance();
   const [accountOpen, setAccountOpen] = useState(false);
-  const shortcuts = shortcutsFor(user.roles);
+  const shortcuts = shortcutsFor(user.roles, user.abilities);
   const items = horizontal ? groups.flatMap((group) => group.items) : shortcuts;
 
   return (
@@ -401,5 +403,20 @@ function ShortcutLink({ item, active }: { item: NavItem; active: boolean }) {
       <item.Icon className="h-4 w-4 shrink-0" aria-hidden />
       {t(item.label)}
     </Link>
+  );
+}
+
+/** Shown instead of a page whose feature is not available to this account (it is not in the menu either). */
+function FeatureUnavailable() {
+  const { tr } = useAppearance();
+
+  return (
+    <main className="flex flex-1 flex-col items-center justify-center gap-3 px-4 py-16 text-center">
+      <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Fonctionnalité indisponible")}</h1>
+      <p className="max-w-md text-sm text-ink-soft">{tr("Cette fonctionnalité n'est pas activée pour votre compte. Contactez le super administrateur si vous en avez besoin.")}</p>
+      <Link href="/" className="text-sm text-gold underline-offset-4 hover:underline">
+        {tr("Retour à l'accueil")}
+      </Link>
+    </main>
   );
 }

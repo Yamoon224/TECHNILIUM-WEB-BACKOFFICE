@@ -11,6 +11,7 @@ export function isVendorOnly(roles: readonly string[]): boolean {
 
 /** Display names of the role slugs. */
 export const ROLE_LABEL: Record<string, string> = {
+  super_admin: "Super administrateur",
   administrateur: "Administrateur",
   gestionnaire_catalogue: "Gestionnaire catalogue",
   gestionnaire_stock: "Gestionnaire de stock",

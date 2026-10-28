@@ -20,6 +20,8 @@ import {
   Undo2,
   Wallet,
   Bell,
+  KeyRound,
+  QrCode,
   LifeBuoy,
   UserRound,
   type LucideIcon,
@@ -31,6 +33,10 @@ export interface NavItem {
   href: string;
   label: MessageKey;
   Icon: LucideIcon;
+  /** The feature this page belongs to: without it (or with it switched off) the entry is not shown. */
+  ability?: string;
+  /** Only the super admin sees it. */
+  superAdminOnly?: boolean;
 }
 
 export interface NavGroup {
@@ -47,45 +53,52 @@ export const STAFF_NAV: NavGroup[] = [
   {
     label: "nav.sales",
     items: [
-      { href: "/commandes", label: "nav.orders", Icon: ShoppingCart },
-      { href: "/paiements", label: "nav.payments", Icon: Wallet },
-      { href: "/livraisons", label: "nav.shipping", Icon: Truck },
-      { href: "/factures", label: "nav.invoices", Icon: FileText },
-      { href: "/retours", label: "nav.returns", Icon: Undo2 },
-      { href: "/promotions", label: "nav.promotions", Icon: Tag },
+      { href: "/commandes", label: "nav.orders", Icon: ShoppingCart, ability: "manage-orders" },
+      { href: "/paiements", label: "nav.payments", Icon: Wallet, ability: "manage-payments" },
+      { href: "/livraisons", label: "nav.shipping", Icon: Truck, ability: "manage-shipments" },
+      { href: "/factures", label: "nav.invoices", Icon: FileText, ability: "manage-invoices" },
+      { href: "/retours", label: "nav.returns", Icon: Undo2, ability: "manage-returns" },
+      { href: "/promotions", label: "nav.promotions", Icon: Tag, ability: "manage-promotions" },
     ],
   },
   {
     label: "nav.catalog",
     items: [
-      { href: "/categories", label: "nav.categories", Icon: Tags },
-      { href: "/produits", label: "nav.products", Icon: Package },
-      { href: "/offres", label: "nav.moderation", Icon: PackageCheck },
-      { href: "/stock", label: "nav.stock", Icon: Boxes },
-      { href: "/vendeurs", label: "nav.vendors", Icon: Store },
+      { href: "/categories", label: "nav.categories", Icon: Tags, ability: "manage-catalog" },
+      { href: "/produits", label: "nav.products", Icon: Package, ability: "manage-catalog" },
+      { href: "/offres", label: "nav.moderation", Icon: PackageCheck, ability: "manage-catalog" },
+      { href: "/stock", label: "nav.stock", Icon: Boxes, ability: "manage-stock" },
+      { href: "/vendeurs", label: "nav.vendors", Icon: Store, ability: "manage-vendors" },
     ],
   },
   {
     label: "nav.finance",
     items: [
-      { href: "/achats", label: "nav.purchases", Icon: ShoppingBag },
-      { href: "/comptabilite", label: "nav.accounting", Icon: Calculator },
-      { href: "/reversements", label: "nav.payouts", Icon: BadgeEuro },
+      { href: "/achats", label: "nav.purchases", Icon: ShoppingBag, ability: "manage-procurement" },
+      { href: "/comptabilite", label: "nav.accounting", Icon: Calculator, ability: "manage-accounting" },
+      { href: "/reversements", label: "nav.payouts", Icon: BadgeEuro, ability: "manage-payouts" },
     ],
   },
   {
     label: "nav.customers",
     items: [
-      { href: "/support", label: "nav.support", Icon: LifeBuoy },
-      { href: "/avis", label: "nav.reviews", Icon: Star },
-      { href: "/notifications", label: "nav.notifications", Icon: MessageSquare },
+      { href: "/support", label: "nav.support", Icon: LifeBuoy, ability: "manage-support" },
+      { href: "/avis", label: "nav.reviews", Icon: Star, ability: "manage-reviews" },
+      { href: "/notifications", label: "nav.notifications", Icon: MessageSquare, ability: "manage-notifications" },
     ],
   },
   {
     label: "nav.insight",
     items: [
-      { href: "/rapports", label: "nav.reports", Icon: BarChart3 },
-      { href: "/audit", label: "nav.audit", Icon: ShieldCheck },
+      { href: "/rapports", label: "nav.reports", Icon: BarChart3, ability: "view-reports" },
+      { href: "/audit", label: "nav.audit", Icon: ShieldCheck, ability: "view-audit" },
+    ],
+  },
+  {
+    label: "nav.tools",
+    items: [
+      { href: "/qrcodes", label: "nav.qrcodes", Icon: QrCode, ability: "generate-qrcodes" },
+      { href: "/acces", label: "nav.access", Icon: KeyRound, superAdminOnly: true },
     ],
   },
 ];
@@ -97,21 +110,53 @@ export const VENDOR_NAV: NavGroup[] = [
 /** Shortcuts of the top bar: the pages used all day. */
 export const SHORTCUTS: NavItem[] = [
   { href: "/", label: "nav.dashboard", Icon: LayoutDashboard },
-  { href: "/commandes", label: "nav.orders", Icon: ShoppingCart },
-  { href: "/produits", label: "nav.products", Icon: Package },
-  { href: "/stock", label: "nav.stock", Icon: Boxes },
-  { href: "/factures", label: "nav.invoices", Icon: ReceiptText },
+  { href: "/commandes", label: "nav.orders", Icon: ShoppingCart, ability: "manage-orders" },
+  { href: "/produits", label: "nav.products", Icon: Package, ability: "manage-catalog" },
+  { href: "/stock", label: "nav.stock", Icon: Boxes, ability: "manage-stock" },
+  { href: "/factures", label: "nav.invoices", Icon: ReceiptText, ability: "manage-invoices" },
 ];
 
 export const BELL_ICON = Bell;
 
-export function navFor(roles: readonly string[]): NavGroup[] {
-  return isVendorOnly(roles) ? VENDOR_NAV : STAFF_NAV;
+export const SUPER_ADMIN_ROLE = "super_admin";
+
+/** What a signed-in account has: its roles and, from the API, the features it may use. */
+export interface Access {
+  roles: readonly string[];
+  /** Features the account may use; undefined while unknown (then nothing is hidden). */
+  abilities?: readonly string[];
+}
+
+function allowed(item: NavItem, access: Access): boolean {
+  if (item.superAdminOnly) return access.roles.includes(SUPER_ADMIN_ROLE);
+  if (!item.ability || access.abilities === undefined) return true;
+
+  return access.abilities.includes(item.ability);
+}
+
+/** The menu of this account: what it may not use is not shown at all, and a section left empty goes too. */
+export function navFor(roles: readonly string[], abilities?: readonly string[]): NavGroup[] {
+  if (isVendorOnly(roles)) return VENDOR_NAV;
+
+  const access = { roles, abilities };
+
+  return STAFF_NAV.map((group) => ({ ...group, items: group.items.filter((item) => allowed(item, access)) })).filter((group) => group.items.length > 0);
 }
 
 /** The shortcuts a user can see: a vendor-only account has no staff pages. */
-export function shortcutsFor(roles: readonly string[]): NavItem[] {
-  return isVendorOnly(roles) ? VENDOR_NAV[0].items : SHORTCUTS;
+export function shortcutsFor(roles: readonly string[], abilities?: readonly string[]): NavItem[] {
+  if (isVendorOnly(roles)) return VENDOR_NAV[0].items;
+
+  return SHORTCUTS.filter((item) => allowed(item, { roles, abilities }));
+}
+
+/** Whether this account is kept away from the page: a known feature page it may not use. */
+export function isPageForbidden(pathname: string, access: Access): boolean {
+  if (isVendorOnly(access.roles)) return false;
+
+  const item = STAFF_NAV.flatMap((group) => group.items).find((candidate) => candidate.href !== "/" && isActive(candidate.href, pathname));
+
+  return item !== undefined && !allowed(item, access);
 }
 
 /** Whether a menu entry is the current page ("/" only matches exactly). */

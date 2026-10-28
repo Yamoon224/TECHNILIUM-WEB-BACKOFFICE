@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/useAuth";
 import {
   AUDIT_METHODS,
   AuditError,
+  describeAction,
   isFailure,
   listAuditEntries,
   outcomeLabel,
@@ -209,6 +210,7 @@ export default function AuditPage() {
                         </span>
                       </td>
                       <td className="py-3 pr-4 text-ink">
+                        {describeAction(entry) ? <span className="block font-medium">{tr(describeAction(entry) ?? "")}</span> : null}
                         <span className="text-ink-soft">{entry.method}</span> {entry.path}
                       </td>
                       <td className={`py-3 pr-4 ${isFailure(entry) ? "text-danger" : "text-ink-soft"}`}>

@@ -16,6 +16,9 @@ export interface User {
   phone: string | null;
   locale: string;
   roles: string[];
+  /** Features this account may use, and the ones switched off for it (absent on an older API). */
+  abilities?: string[];
+  disabled_features?: string[];
   created_at: string | null;
 }
 

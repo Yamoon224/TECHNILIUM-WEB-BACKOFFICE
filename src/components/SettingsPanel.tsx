@@ -73,6 +73,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
               {PRIMARY_COLORS.map((color) => (
                 <Swatch key={color} color={color} selected={appearance.primary === color} onClick={() => update({ primary: color })} size="lg" />
               ))}
+              <PrimaryColorPicker appearance={appearance} update={update} />
             </div>
           </Section>
 
@@ -276,5 +277,30 @@ function BackgroundPicker({
         </label>
       </div>
     </div>
+  );
+}
+
+/** Any colour through the browser's colour picker, next to the ready-made swatches. */
+function PrimaryColorPicker({ appearance, update }: { appearance: Appearance; update: (patch: Partial<Appearance>) => void }) {
+  const { t } = useAppearance();
+  const custom = !(PRIMARY_COLORS as readonly string[]).includes(appearance.primary);
+
+  return (
+    <label
+      title={t("settings.custom")}
+      style={custom ? { backgroundColor: appearance.primary } : undefined}
+      className={`relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-dashed border-ink-soft text-ink-soft ${
+        custom ? "ring-2 ring-gold ring-offset-2 ring-offset-surface" : ""
+      }`}
+    >
+      <Plus className="h-4 w-4" aria-hidden />
+      <input
+        type="color"
+        aria-label={`${t("settings.primary")} — ${t("settings.custom")}`}
+        value={appearance.primary}
+        onChange={(event) => isHexColor(event.target.value) && update({ primary: event.target.value })}
+        className="absolute inset-0 cursor-pointer opacity-0"
+      />
+    </label>
   );
 }

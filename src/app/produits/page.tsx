@@ -1,5 +1,6 @@
 "use client";
 
+import { QrLink } from "@/components/QrLink";
 import { DataTable } from "@/components/DataTable";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
@@ -219,6 +220,7 @@ export default function ProductsPage() {
                       <td className="py-3 pr-4 text-ink-soft">{tr(STATUS_LABEL[product.status])}</td>
                       <td className="py-3">
                         <div className="flex flex-wrap gap-2">
+                          {product.sku ? <QrLink kind="product" reference={product.sku} /> : null}
                           <button
                             type="button"
                             onClick={() => setEditingId(product.id)}

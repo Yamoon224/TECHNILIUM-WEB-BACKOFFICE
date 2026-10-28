@@ -92,3 +92,16 @@ export async function verifyAuditChain(token: string): Promise<AuditVerification
   if (!response.ok) throw await parseError(response);
   return response.json() as Promise<AuditVerification>;
 }
+
+/** What the access-management routes mean in plain words; null for any other route. */
+export function describeAction(entry: Pick<AuditEntry, "method" | "route">): string | null {
+  const route = (entry.route ?? "").replace(/^api\/v1\//, "");
+
+  if (route === "admin/access/groups" && entry.method === "POST") return "Création d'un groupe d'utilisateurs";
+  if (route === "admin/access/groups/{name}" && entry.method === "PUT") return "Modification d'un groupe d'utilisateurs";
+  if (route === "admin/access/groups/{name}" && entry.method === "DELETE") return "Suppression d'un groupe d'utilisateurs";
+  if (route === "admin/access/switches") return "Activation ou désactivation d'une fonctionnalité";
+  if (route === "admin/access/users/{user}/roles") return "Changement des groupes d'un compte";
+
+  return null;
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import { QrLink } from "@/components/QrLink";
 import { DataTable } from "@/components/DataTable";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
@@ -146,6 +147,7 @@ export default function InvoicesPage() {
                         ) : null}
                       </td>
                       <td className="flex flex-wrap gap-2 py-3">
+                        <QrLink kind="invoice" reference={invoice.number} />
                         <button
                           type="button"
                           onClick={() => handleDownload(invoice)}

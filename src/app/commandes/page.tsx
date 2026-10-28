@@ -1,5 +1,6 @@
 "use client";
 
+import { QrLink } from "@/components/QrLink";
 import { DataTable } from "@/components/DataTable";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -155,6 +156,7 @@ export default function OrdersPage() {
                     </td>
                     <td className="py-3">
                       <div className="flex flex-wrap gap-2">
+                        <QrLink kind="order" reference={order.order_number} />
                         {ORDER_STATUS_TRANSITIONS[order.status].map((target) => (
                           <button
                             key={target}

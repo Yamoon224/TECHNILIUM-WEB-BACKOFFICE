@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isActive, navFor, shortcutsFor, STAFF_NAV } from "./navigation";
+import { isActive, isPageForbidden, navFor, shortcutsFor, STAFF_NAV } from "./navigation";
 
 describe("navFor", () => {
   it("gives a vendor-only account just its own space", () => {
@@ -21,6 +21,7 @@ describe("navFor", () => {
     const former = [
       "/", "/commandes", "/categories", "/produits", "/offres", "/vendeurs", "/stock", "/achats", "/paiements", "/livraisons",
       "/factures", "/comptabilite", "/reversements", "/retours", "/rapports", "/promotions", "/support", "/avis", "/notifications", "/audit",
+      "/qrcodes", "/acces",
     ];
 
     expect(hrefs.sort()).toEqual([...former].sort());
@@ -34,5 +35,55 @@ describe("isActive", () => {
     expect(isActive("/commandes", "/commandesx")).toBe(false);
     expect(isActive("/", "/")).toBe(true);
     expect(isActive("/", "/stock")).toBe(false);
+  });
+});
+
+describe("navFor with the features of an account", () => {
+  const hrefs = (roles: string[], abilities?: string[]) => navFor(roles, abilities).flatMap((group) => group.items.map((item) => item.href));
+
+  it("hides what the account may not use, and the sections left empty", () => {
+    const shown = hrefs(["comptable"], ["manage-payments", "manage-invoices"]);
+
+    expect(shown).toEqual(expect.arrayContaining(["/", "/paiements", "/factures"]));
+    expect(shown).not.toContain("/commandes");
+    expect(shown).not.toContain("/audit");
+    expect(navFor(["comptable"], ["manage-payments"]).map((group) => group.label)).not.toContain("nav.insight");
+  });
+
+  it("hides a feature switched off even for a role that normally has it", () => {
+    expect(hrefs(["administrateur"], ["manage-orders"])).not.toContain("/audit");
+  });
+
+  it("shows access management to the super admin only", () => {
+    expect(hrefs(["super_admin"], [])).toContain("/acces");
+    expect(hrefs(["administrateur"], ["generate-qrcodes"])).not.toContain("/acces");
+    expect(hrefs(["administrateur"], ["generate-qrcodes"])).toContain("/qrcodes");
+  });
+
+  it("hides nothing while the features are not known yet", () => {
+    expect(hrefs(["comptable"])).toContain("/commandes");
+  });
+
+  it("filters the top-bar shortcuts the same way", () => {
+    expect(shortcutsFor(["comptable"], ["manage-invoices"]).map((item) => item.href)).toEqual(["/", "/factures"]);
+  });
+});
+
+describe("isPageForbidden", () => {
+  it("keeps an account away from a page of a feature it does not have", () => {
+    expect(isPageForbidden("/commandes", { roles: ["comptable"], abilities: ["manage-invoices"] })).toBe(true);
+    expect(isPageForbidden("/commandes/12", { roles: ["comptable"], abilities: ["manage-invoices"] })).toBe(true);
+    expect(isPageForbidden("/factures", { roles: ["comptable"], abilities: ["manage-invoices"] })).toBe(false);
+  });
+
+  it("leaves the home page, unknown pages and vendor accounts alone", () => {
+    expect(isPageForbidden("/", { roles: ["comptable"], abilities: [] })).toBe(false);
+    expect(isPageForbidden("/mot-de-passe-oublie", { roles: ["comptable"], abilities: [] })).toBe(false);
+    expect(isPageForbidden("/espace-vendeur", { roles: ["vendeur_tiers"], abilities: [] })).toBe(false);
+  });
+
+  it("reserves /acces for the super admin", () => {
+    expect(isPageForbidden("/acces", { roles: ["administrateur"], abilities: [] })).toBe(true);
+    expect(isPageForbidden("/acces", { roles: ["super_admin"], abilities: [] })).toBe(false);
   });
 });
