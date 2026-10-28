@@ -110,6 +110,18 @@ const FR = {
   "status.exchanged": "Échangée",
   "status.disputed": "En litige",
   "status.cancelled": "Annulée",
+  "table.pageSize": "Lignes par page",
+  "table.all": "Tous",
+  "table.previous": "Précédent",
+  "table.next": "Suivant",
+  "table.items": "Éléments affichés",
+  "table.empty": "Aucune donnée.",
+  "table.export": "Exporter",
+  "table.sortAsc": "Trier par ordre croissant",
+  "table.sortDesc": "Trier par ordre décroissant",
+  "table.sortNone": "Trier",
+  "table.page": "Page",
+  "table.exportFailed": "L'export a échoué.",
 } as const;
 
 export type MessageKey = keyof typeof FR;
@@ -220,6 +232,18 @@ const EN: Record<MessageKey, string> = {
   "status.exchanged": "Exchanged",
   "status.disputed": "Disputed",
   "status.cancelled": "Cancelled",
+  "table.pageSize": "Rows per page",
+  "table.all": "All",
+  "table.previous": "Previous",
+  "table.next": "Next",
+  "table.items": "Items shown",
+  "table.empty": "No data.",
+  "table.export": "Export",
+  "table.sortAsc": "Sort ascending",
+  "table.sortDesc": "Sort descending",
+  "table.sortNone": "Sort",
+  "table.page": "Page",
+  "table.exportFailed": "The export failed.",
 };
 
 const DICTIONARIES: Record<Language, Record<MessageKey, string>> = { fr: FR, en: EN };

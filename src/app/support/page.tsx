@@ -1,5 +1,6 @@
 "use client";
 
+import { DataTable } from "@/components/DataTable";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -106,7 +107,7 @@ export default function SupportPage() {
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h1 className="font-display text-2xl font-semibold text-ink">{tr("Support client")}</h1>
+          <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Support client")}</h1>
           <p className="text-sm text-ink-soft">
             {countOpen(tickets)} {tr("à traiter dans cette vue")}
           </p>
@@ -166,19 +167,11 @@ export default function SupportPage() {
           <p className="text-sm text-ink-soft">{tr("Aucun ticket.")}</p>
         ) : (
           <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
-            <table className="w-full min-w-[820px] border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-line text-left text-ink-soft">
-                  <th className="py-2 pr-4 font-medium">{tr("Ticket")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Sujet")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Catégorie")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Priorité")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Statut")}</th>
-                  <th className="py-2 font-medium">{tr("Assigné")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tickets.map((ticket) => (
+            <DataTable
+  name="support"
+  rows={tickets}
+  headers={[tr("Ticket"), tr("Sujet"), tr("Catégorie"), tr("Priorité"), tr("Statut"), tr("Assigné")]}
+  renderRow={(ticket) => (
                   <Fragment key={ticket.id}>
                     <tr onClick={() => toggle(ticket)} className="cursor-pointer border-b border-line hover:bg-surface">
                       <td className="py-3 pr-4 text-ink">{ticket.number}</td>
@@ -209,9 +202,8 @@ export default function SupportPage() {
                       </tr>
                     ) : null}
                   </Fragment>
-                ))}
-              </tbody>
-            </table>
+                )}
+/>
           </div>
         )}
       </main>

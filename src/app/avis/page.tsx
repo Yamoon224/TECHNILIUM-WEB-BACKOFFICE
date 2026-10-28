@@ -1,5 +1,6 @@
 "use client";
 
+import { DataTable } from "@/components/DataTable";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -97,7 +98,7 @@ export default function ReviewsPage() {
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h1 className="font-display text-2xl font-semibold text-ink">{tr("Avis clients")}</h1>
+          <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Avis clients")}</h1>
           <p className="text-sm text-ink-soft">{pendingCount(reviews)} {tr("à modérer dans cette vue")}</p>
         </div>
 
@@ -123,52 +124,57 @@ export default function ReviewsPage() {
         ) : reviews.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucun avis.")}</p>
         ) : (
-          <ul className="flex flex-col gap-3">
-            {reviews.map((review) => (
-              <li key={review.id} className="flex flex-col gap-2 rounded-sm border border-line p-4 text-sm bg-surface shadow-card border-b-4 border-b-gold">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="flex items-center gap-2">
-                    <span className="text-gold-bright">{stars(review.rating)}</span>
-                    {review.title ? <span className="font-medium text-ink">{review.title}</span> : null}
-                  </p>
-                  <span className={review.status === "pending" ? "text-gold-bright" : "text-ink-soft"}>
+          <div className="rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
+            <DataTable
+              name="avis"
+              title={tr("Avis clients")}
+              rows={reviews}
+              headers={[tr("Note"), tr("Avis"), tr("Auteur"), tr("Statut"), tr("Action")]}
+              actionColumns={[4]}
+              renderRow={(review) => (
+                <tr key={review.id} className="border-b border-line align-top">
+                  <td className="py-3 text-gold-bright">{stars(review.rating)}</td>
+                  <td className="py-3">
+                    {review.title ? <p className="font-medium text-ink">{review.title}</p> : null}
+                    {review.body ? <p className="whitespace-pre-wrap text-ink-soft">{review.body}</p> : null}
+                  </td>
+                  <td className="py-3 text-xs text-ink-soft">
+                    {review.author_name} {tr("· client #")}
+                    {review.customer_id} {tr("· produit #")}
+                    {review.product_id} {tr("· commande")} {review.order_number}
+                    {review.rejection_reason ? trf(" · motif du rejet : {reason}", { reason: review.rejection_reason }) : ""}
+                  </td>
+                  <td className={`py-3 ${review.status === "pending" ? "text-gold-bright" : "text-ink-soft"}`}>
                     {tr(REVIEW_STATUS_LABEL[review.status])}
-                  </span>
-                </div>
-
-                {review.body ? <p className="whitespace-pre-wrap text-ink-soft">{review.body}</p> : null}
-
-                <p className="text-xs text-ink-soft">
-                  {review.author_name} {tr("· client #")}{review.customer_id} {tr("· produit #")}{review.product_id} {tr("· commande")}{" "}
-                  {review.order_number}
-                  {review.rejection_reason ? trf(" · motif du rejet : {reason}", { reason: review.rejection_reason }) : ""}
-                </p>
-
-                <div className="flex gap-2">
-                  {canPublish(review) ? (
-                    <button
-                      type="button"
-                      disabled={busyId === review.id}
-                      onClick={() => decide(review, "publish")}
-                      className="rounded-sm border border-gold px-2 py-1 text-xs text-gold transition-colors disabled:opacity-50"
-                    >
-                      {review.status === "rejected" ? tr("Rétablir") : tr("Publier")}
-                    </button>
-                  ) : null}
-                  {canReject(review) ? (
-                    <button
-                      type="button"
-                      disabled={busyId === review.id}
-                      onClick={() => decide(review, "reject")}
-                      className="rounded-sm border border-danger px-2 py-1 text-xs text-danger transition-colors disabled:opacity-50"
-                    >
-                      {review.status === "published" ? tr("Retirer") : tr("Rejeter")}
-                    </button>
-                  ) : null}
-                </div>
-              </li>
-            ))}
-          </ul>
+                  </td>
+                  <td className="py-3">
+                    <div className="flex gap-2">
+                      {canPublish(review) ? (
+                        <button
+                          type="button"
+                          disabled={busyId === review.id}
+                          onClick={() => decide(review, "publish")}
+                          className="rounded-sm border border-gold px-2 py-1 text-xs text-gold transition-colors disabled:opacity-50"
+                        >
+                          {review.status === "rejected" ? tr("Rétablir") : tr("Publier")}
+                        </button>
+                      ) : null}
+                      {canReject(review) ? (
+                        <button
+                          type="button"
+                          disabled={busyId === review.id}
+                          onClick={() => decide(review, "reject")}
+                          className="rounded-sm border border-danger px-2 py-1 text-xs text-danger transition-colors disabled:opacity-50"
+                        >
+                          {review.status === "published" ? tr("Retirer") : tr("Rejeter")}
+                        </button>
+                      ) : null}
+                    </div>
+                  </td>
+                </tr>
+              )}
+            />
+          </div>
         )}
 
         <p className="text-xs text-ink-soft">

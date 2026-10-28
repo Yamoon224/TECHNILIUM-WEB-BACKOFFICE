@@ -1,5 +1,6 @@
 "use client";
 
+import { DataTable } from "@/components/DataTable";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -70,7 +71,7 @@ export default function StockPage() {
       <BackofficeNav onLogout={handleLogout} />
 
       <main className="flex w-full flex-1 flex-col gap-8 px-4 py-8">
-        <h1 className="font-display text-2xl font-semibold text-ink">{tr("Stock")}</h1>
+        <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Stock")}</h1>
 
         {error ? <p className="text-sm text-danger">{error}</p> : null}
 
@@ -84,23 +85,18 @@ export default function StockPage() {
         />
 
         <section className="flex flex-col gap-3">
-          <h2 className="font-display text-lg font-semibold text-ink">{tr("Stock faible")}</h2>
+          <h2 className="section-title font-display text-lg font-semibold text-ink">{tr("Stock faible")}</h2>
           {loading ? (
             <p className="text-sm text-ink-soft">{tr("Chargement…")}</p>
           ) : lowStock.length === 0 ? (
             <p className="text-sm text-ink-soft">{tr("Aucune offre en stock faible.")}</p>
           ) : (
             <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
-              <table className="w-full min-w-[600px] border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-line text-left text-ink-soft">
-                    <th className="py-2 pr-4 font-medium">{tr("Produit")}</th>
-                    <th className="py-2 pr-4 font-medium">{tr("SKU")}</th>
-                    <th className="py-2 font-medium">{tr("Stock")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lowStock.map((offer) => (
+              <DataTable
+  name="stock-faible"
+  rows={lowStock}
+  headers={[tr("Produit"), tr("SKU"), tr("Stock")]}
+  renderRow={(offer) => (
                     <tr key={offer.offer_id} className="border-b border-line">
                       <td className="py-3 pr-4 text-ink">
                         {offer.brand} {offer.product_name}
@@ -108,32 +104,25 @@ export default function StockPage() {
                       <td className="py-3 pr-4 text-ink-soft">{offer.sku}</td>
                       <td className="py-3 text-danger">{offer.stock_quantity}</td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  )}
+/>
             </div>
           )}
         </section>
 
         <section className="flex flex-col gap-3">
-          <h2 className="font-display text-lg font-semibold text-ink">{tr("Historique des mouvements")}</h2>
+          <h2 className="section-title font-display text-lg font-semibold text-ink">{tr("Historique des mouvements")}</h2>
           {loading ? (
             <p className="text-sm text-ink-soft">{tr("Chargement…")}</p>
           ) : movements.length === 0 ? (
             <p className="text-sm text-ink-soft">{tr("Aucun mouvement enregistré.")}</p>
           ) : (
             <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
-              <table className="w-full min-w-[640px] border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-line text-left text-ink-soft">
-                    <th className="py-2 pr-4 font-medium">{tr("Offre")}</th>
-                    <th className="py-2 pr-4 font-medium">{tr("Variation")}</th>
-                    <th className="py-2 pr-4 font-medium">{tr("Stock après")}</th>
-                    <th className="py-2 font-medium">{tr("Motif")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {movements.map((movement) => (
+              <DataTable
+  name="mouvements-de-stock"
+  rows={movements}
+  headers={[tr("Offre"), tr("Variation"), tr("Stock après"), tr("Motif")]}
+  renderRow={(movement) => (
                     <tr key={movement.id} className="border-b border-line">
                       <td className="py-3 pr-4 text-ink-soft">#{movement.offer_id}</td>
                       <td className={`py-3 pr-4 ${movement.quantity_delta >= 0 ? "text-gold" : "text-danger"}`}>
@@ -143,9 +132,8 @@ export default function StockPage() {
                       <td className="py-3 pr-4 text-ink">{movement.quantity_after}</td>
                       <td className="py-3 text-ink-soft">{movement.reason ?? "—"}</td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  )}
+/>
             </div>
           )}
         </section>

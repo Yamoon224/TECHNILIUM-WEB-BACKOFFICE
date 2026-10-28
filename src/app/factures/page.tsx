@@ -1,5 +1,6 @@
 "use client";
 
+import { DataTable } from "@/components/DataTable";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -97,7 +98,7 @@ export default function InvoicesPage() {
       <BackofficeNav onLogout={handleLogout} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
-        <h1 className="font-display text-2xl font-semibold text-ink">{tr("Factures et avoirs")}</h1>
+        <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Factures et avoirs")}</h1>
 
         <NewInvoiceForm
           onSubmit={async (orderNumber) => {
@@ -115,21 +116,12 @@ export default function InvoicesPage() {
           <p className="text-sm text-ink-soft">{tr("Aucun document.")}</p>
         ) : (
           <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
-            <table className="w-full min-w-[860px] border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-line text-left text-ink-soft">
-                  <th className="py-2 pr-4 font-medium">{tr("Numéro")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Type")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Commande")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Client")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("HT")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("TVA")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("TTC")}</th>
-                  <th className="py-2 font-medium">{tr("Action")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {invoices.map((invoice) => {
+            <DataTable
+  name="factures"
+  rows={invoices}
+  headers={[tr("Numéro"), tr("Type"), tr("Commande"), tr("Client"), tr("HT"), tr("TVA"), tr("TTC"), tr("Action")]}
+  actionColumns={[7]}
+  renderRow={(invoice) => {
                   const money = (amount: number) => formatMoney({ amount, currency: invoice.currency });
                   return (
                     <tr key={invoice.id} className="border-b border-line">
@@ -174,9 +166,8 @@ export default function InvoicesPage() {
                       </td>
                     </tr>
                   );
-                })}
-              </tbody>
-            </table>
+                }}
+/>
           </div>
         )}
       </main>

@@ -1,5 +1,6 @@
 "use client";
 
+import { DataTable } from "@/components/DataTable";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -90,7 +91,7 @@ export default function AuditPage() {
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="font-display text-2xl font-semibold text-ink">{tr("Journal d'audit")}</h1>
+          <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Journal d'audit")}</h1>
           <button
             type="button"
             onClick={handleVerify}
@@ -192,19 +193,12 @@ export default function AuditPage() {
           <p className="text-sm text-ink-soft">{tr("Aucune entrée.")}</p>
         ) : (
           <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
-            <table className="w-full min-w-[900px] border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-line text-left text-ink-soft">
-                  <th className="py-2 pr-4 font-medium">{tr("Date")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Utilisateur")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Action")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Résultat")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("IP")}</th>
-                  <th className="py-2 font-medium" />
-                </tr>
-              </thead>
-              <tbody>
-                {entries.map((entry) => (
+            <DataTable
+  name="audit"
+  rows={entries}
+  headers={[tr("Date"), tr("Utilisateur"), tr("Action"), tr("Résultat"), tr("IP"), ""]}
+  actionColumns={[5]}
+  renderRow={(entry) => (
                   <Fragment key={entry.id}>
                     <tr className="border-b border-line align-top">
                       <td className="py-3 pr-4 text-ink-soft">{entry.occurred_at.slice(0, 19).replace("T", " ")}</td>
@@ -243,9 +237,8 @@ export default function AuditPage() {
                       </tr>
                     ) : null}
                   </Fragment>
-                ))}
-              </tbody>
-            </table>
+                )}
+/>
           </div>
         )}
 

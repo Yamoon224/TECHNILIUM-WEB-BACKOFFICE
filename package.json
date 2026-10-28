@@ -13,11 +13,14 @@
     "generate:api-client": "openapi-typescript http://localhost:8000/docs -o src/lib/api-client/schema.d.ts"
   },
   "dependencies": {
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.9",
     "lucide-react": "^1.63.0",
     "next": "16.4.3",
     "openapi-fetch": "^0.13.4",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "write-excel-file": "^4.1.1"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",

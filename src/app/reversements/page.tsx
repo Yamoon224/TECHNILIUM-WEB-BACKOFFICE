@@ -1,5 +1,6 @@
 "use client";
 
+import { DataTable } from "@/components/DataTable";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -123,7 +124,7 @@ export default function PayoutsPage() {
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h1 className="font-display text-2xl font-semibold text-ink">{tr("Reversements vendeurs")}</h1>
+          <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Reversements vendeurs")}</h1>
           <p className="text-sm text-ink-soft">
             {tr("Restant dû aux vendeurs :")}{" "}
             <span className="text-ink">{formatMoney({ amount: owed, currency: "XOF" })}</span>
@@ -167,19 +168,12 @@ export default function PayoutsPage() {
           <p className="text-sm text-ink-soft">{tr("Aucun reversement.")}</p>
         ) : (
           <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
-            <table className="w-full min-w-[860px] border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-line text-left text-ink-soft">
-                  <th className="py-2 pr-4 font-medium">{tr("Vendeur")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Ventes")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Commission")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Net à verser")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Statut")}</th>
-                  <th className="py-2 font-medium">{tr("Actions")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {payouts.map((payout) => {
+            <DataTable
+  name="reversements"
+  rows={payouts}
+  headers={[tr("Vendeur"), tr("Ventes"), tr("Commission"), tr("Net à verser"), tr("Statut"), tr("Actions")]}
+  actionColumns={[5]}
+  renderRow={(payout) => {
                   const money = (amount: number) => formatMoney({ amount, currency: payout.currency });
                   return (
                     <Fragment key={payout.id}>
@@ -237,9 +231,8 @@ export default function PayoutsPage() {
                       ) : null}
                     </Fragment>
                   );
-                })}
-              </tbody>
-            </table>
+                }}
+/>
           </div>
         )}
       </main>

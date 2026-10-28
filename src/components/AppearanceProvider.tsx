@@ -25,7 +25,7 @@ interface AppearanceContextValue {
   trf: (french: string, values: Record<string, string | number>) => string;
 }
 
-const AppearanceContext = createContext<AppearanceContextValue | null>(null);
+export const AppearanceContext = createContext<AppearanceContextValue | null>(null);
 
 /**
  * Holds the appearance choices, persists them on this device and applies them

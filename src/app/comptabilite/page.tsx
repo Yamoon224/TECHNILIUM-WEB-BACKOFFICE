@@ -1,7 +1,8 @@
 "use client";
 
+import { DataTable } from "@/components/DataTable";
 import { useAppearance } from "@/components/AppearanceProvider";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BackofficeNav } from "@/components/BackofficeNav";
@@ -67,44 +68,39 @@ export default function AccountingPage() {
       <BackofficeNav onLogout={handleLogout} />
 
       <main className="flex w-full flex-1 flex-col gap-8 px-4 py-8">
-        <h1 className="font-display text-2xl font-semibold text-ink">{tr("Comptabilité")}</h1>
+        <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Comptabilité")}</h1>
 
         {error ? <p className="text-sm text-danger">{error}</p> : null}
 
         <section className="flex flex-col gap-3">
-          <h2 className="font-display text-lg text-ink">{tr("Balance générale")}</h2>
+          <h2 className="section-title font-display text-lg text-ink">{tr("Balance générale")}</h2>
           {balance ? (
-            <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
-              <table className="w-full min-w-[640px] border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-line text-left text-ink-soft">
-                    <th className="py-2 pr-4 font-medium">{tr("Compte")}</th>
-                    <th className="py-2 pr-4 font-medium">{tr("Libellé")}</th>
-                    <th className="py-2 pr-4 text-right font-medium">{tr("Débit")}</th>
-                    <th className="py-2 pr-4 text-right font-medium">{tr("Crédit")}</th>
-                    <th className="py-2 text-right font-medium">{tr("Solde")}</th>
+            <div className="rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
+              <DataTable
+                name="balance-generale"
+                title={tr("Balance générale")}
+                rows={balance.accounts}
+                headers={[tr("Compte"), tr("Libellé"), tr("Débit"), tr("Crédit"), tr("Solde")]}
+                renderRow={(account) => (
+                  <tr key={account.code} className="border-b border-line">
+                    <td className="py-2 text-ink">{account.code}</td>
+                    <td className="py-2 text-ink-soft">{account.name}</td>
+                    <td className="py-2 text-right text-ink">{fmt(account.debit)}</td>
+                    <td className="py-2 text-right text-ink">{fmt(account.credit)}</td>
+                    <td className="py-2 text-right text-ink">{fmt(account.balance)}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {balance.accounts.map((account) => (
-                    <tr key={account.code} className="border-b border-line">
-                      <td className="py-2 pr-4 text-ink">{account.code}</td>
-                      <td className="py-2 pr-4 text-ink-soft">{account.name}</td>
-                      <td className="py-2 pr-4 text-right text-ink">{fmt(account.debit)}</td>
-                      <td className="py-2 pr-4 text-right text-ink">{fmt(account.credit)}</td>
-                      <td className="py-2 text-right text-ink">{fmt(account.balance)}</td>
-                    </tr>
-                  ))}
+                )}
+                footer={
                   <tr className="font-medium">
-                    <td className="py-2 pr-4 text-ink" colSpan={2}>
+                    <td className="py-2 text-ink" colSpan={2}>
                       {tr("Total")} {isTrialBalanced(balance) ? "" : tr("— DÉSÉQUILIBRÉ")}
                     </td>
-                    <td className="py-2 pr-4 text-right text-ink">{fmt(balance.total_debit)}</td>
-                    <td className="py-2 pr-4 text-right text-ink">{fmt(balance.total_credit)}</td>
+                    <td className="py-2 text-right text-ink">{fmt(balance.total_debit)}</td>
+                    <td className="py-2 text-right text-ink">{fmt(balance.total_credit)}</td>
                     <td />
                   </tr>
-                </tbody>
-              </table>
+                }
+              />
             </div>
           ) : (
             <p className="text-sm text-ink-soft">{tr("Chargement…")}</p>
@@ -112,7 +108,7 @@ export default function AccountingPage() {
         </section>
 
         <section className="flex flex-col gap-3">
-          <h2 className="font-display text-lg text-ink">{tr("Écritures")}</h2>
+          <h2 className="section-title font-display text-lg text-ink">{tr("Écritures")}</h2>
           <nav className="flex flex-wrap gap-2">
             {[null, ...Object.keys(JOURNAL_LABEL)].map((code) => (
               <button
@@ -131,37 +127,44 @@ export default function AccountingPage() {
           {entries.length === 0 ? (
             <p className="text-sm text-ink-soft">{tr("Aucune écriture.")}</p>
           ) : (
-            <ul className="flex flex-col gap-3">
-              {entries.map((entry) => {
-                const totals = entryTotals(entry);
-                return (
-                  <li key={entry.id} className="rounded-sm border border-line p-3 text-sm bg-surface shadow-card border-b-4 border-b-gold">
-                    <div className="flex flex-wrap justify-between gap-2 text-ink">
-                      <span>
-                        {entry.entry_date} · {tr(JOURNAL_LABEL[entry.journal] ?? entry.journal)} · {entry.description}
-                      </span>
-                      <span className="text-ink-soft">{entry.reference}</span>
-                    </div>
-                    <table className="mt-2 w-full text-xs">
-                      <tbody>
-                        {entry.lines.map((line, index) => (
-                          <tr key={index} className="text-ink-soft">
-                            <td className="py-0.5 pr-4">{line.account}</td>
-                            <td className="py-0.5 pr-4 text-right">{line.debit ? fmt(line.debit) : ""}</td>
-                            <td className="py-0.5 text-right">{line.credit ? fmt(line.credit) : ""}</td>
-                          </tr>
-                        ))}
-                        <tr className="border-t border-line text-ink">
-                          <td className="py-0.5 pr-4">{tr("Total")}</td>
-                          <td className="py-0.5 pr-4 text-right">{fmt(totals.debit)}</td>
-                          <td className="py-0.5 text-right">{fmt(totals.credit)}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </li>
-                );
-              })}
-            </ul>
+            <div className="rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
+              <DataTable
+                name="ecritures"
+                title={tr("Écritures")}
+                rows={entries}
+                headers={[tr("Date"), tr("Journal"), tr("Libellé"), tr("Référence"), tr("Débit"), tr("Crédit")]}
+                renderRow={(entry) => {
+                  const totals = entryTotals(entry);
+                  return (
+                    <Fragment key={entry.id}>
+                      <tr className="border-t border-line text-ink">
+                        <td className="py-2">{entry.entry_date}</td>
+                        <td className="py-2">{tr(JOURNAL_LABEL[entry.journal] ?? entry.journal)}</td>
+                        <td className="py-2">{entry.description}</td>
+                        <td className="py-2 text-ink-soft">{entry.reference}</td>
+                        <td className="py-2 text-right">{fmt(totals.debit)}</td>
+                        <td className="py-2 text-right">{fmt(totals.credit)}</td>
+                      </tr>
+                      <tr className="border-b border-line">
+                        <td colSpan={6} className="pb-2 pl-6">
+                          <table className="w-full text-xs">
+                            <tbody>
+                              {entry.lines.map((line, index) => (
+                                <tr key={index} className="text-ink-soft">
+                                  <td className="py-0.5 pr-4">{line.account}</td>
+                                  <td className="py-0.5 pr-4 text-right">{line.debit ? fmt(line.debit) : ""}</td>
+                                  <td className="py-0.5 text-right">{line.credit ? fmt(line.credit) : ""}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+                    </Fragment>
+                  );
+                }}
+              />
+            </div>
           )}
         </section>
       </main>

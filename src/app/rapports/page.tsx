@@ -1,5 +1,6 @@
 "use client";
 
+import { DataTable } from "@/components/DataTable";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -112,7 +113,7 @@ export default function ReportsPage() {
 
       <main className="flex w-full flex-1 flex-col gap-8 px-4 py-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <h1 className="font-display text-2xl font-semibold text-ink">{tr("Rapports")}</h1>
+          <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Rapports")}</h1>
 
           <form
             className="flex flex-wrap items-end gap-3"
@@ -187,7 +188,7 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
           aria-label={tr("Alertes")}
           className="flex flex-col gap-2 rounded-sm border border-gold-deep p-4 text-sm"
         >
-          <h2 className="font-display text-lg text-ink">{tr("Alertes")}</h2>
+          <h2 className="section-title font-display text-lg text-ink">{tr("Alertes")}</h2>
           {alerts.stalled_orders > 0 ? (
             <p className="text-ink">
               {alerts.stalled_orders} {tr("commande(s) en attente ou confirmée(s) depuis plus de quelques jours.")}
@@ -215,26 +216,28 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
 
       <div className="grid gap-8 lg:grid-cols-2">
         <section className="flex flex-col gap-3">
-          <h2 className="font-display text-lg text-ink">{tr("Meilleurs produits")}</h2>
+          <h2 className="section-title font-display text-lg text-ink">{tr("Meilleurs produits")}</h2>
           {dashboard.top_products.length === 0 ? (
             <p className="text-sm text-ink-soft">{tr("Aucune vente sur la période.")}</p>
           ) : (
-            <table className="w-full border-collapse text-sm">
-              <tbody>
-                {dashboard.top_products.map((product) => (
-                  <tr key={product.product} className="border-b border-line">
-                    <td className="py-2 pr-4 text-ink">{product.product}</td>
-                    <td className="py-2 pr-4 text-right text-ink-soft">× {product.quantity}</td>
-                    <td className="py-2 text-right text-ink">{xof(product.revenue)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <DataTable
+              name="meilleurs-produits"
+              title={tr("Meilleurs produits")}
+              rows={dashboard.top_products}
+              headers={[tr("Produit"), tr("Quantité"), tr("Chiffre d'affaires")]}
+              renderRow={(product) => (
+                <tr key={product.product} className="border-b border-line">
+                  <td className="py-2 text-ink">{product.product}</td>
+                  <td className="py-2 text-right text-ink-soft">× {product.quantity}</td>
+                  <td className="py-2 text-right text-ink">{xof(product.revenue)}</td>
+                </tr>
+              )}
+            />
           )}
         </section>
 
         <section className="flex flex-col gap-3">
-          <h2 className="font-display text-lg text-ink">{tr("Commandes par statut")}</h2>
+          <h2 className="section-title font-display text-lg text-ink">{tr("Commandes par statut")}</h2>
           <ul className="flex flex-col gap-1 text-sm">
             {Object.entries(dashboard.orders_by_status).map(([status, count]) => (
               <li key={status} className="flex justify-between border-b border-line py-1">
@@ -248,7 +251,7 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
 
       <div className="grid gap-8 lg:grid-cols-2">
         <section className="flex flex-col gap-3">
-          <h2 className="font-display text-lg text-ink">{tr("Finance")}</h2>
+          <h2 className="section-title font-display text-lg text-ink">{tr("Finance")}</h2>
           <dl className="flex flex-col gap-1 text-sm">
             <Row label={tr("Encaissé")} value={xof(finance.collected)} />
             {Object.entries(finance.collected_by_method).map(([method, amount]) => (
@@ -267,7 +270,7 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
         </section>
 
         <section className="flex flex-col gap-3">
-          <h2 className="font-display text-lg text-ink">{tr("Retours")}</h2>
+          <h2 className="section-title font-display text-lg text-ink">{tr("Retours")}</h2>
           <dl className="flex flex-col gap-1 text-sm">
             <Row label={tr("Dossiers ouverts sur la période")} value={String(returns.count)} />
             <Row label={tr("Montant remboursé")} value={xof(returns.refunded_amount)} />
@@ -284,23 +287,25 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
       </div>
 
       <section className="flex flex-col gap-3">
-        <h2 className="font-display text-lg text-ink">{tr("Ventes par vendeur")}</h2>
+        <h2 className="section-title font-display text-lg text-ink">{tr("Ventes par vendeur")}</h2>
         {sellers.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucune vente sur la période.")}</p>
         ) : (
-          <table className="w-full max-w-xl border-collapse text-sm">
-            <tbody>
-              {sellers.map((seller) => (
-                <tr key={seller.vendor_id ?? "own"} className="border-b border-line">
-                  <td className="py-2 pr-4 text-ink">{seller.seller}</td>
-                  <td className="py-2 pr-4 text-right text-ink-soft">
-                    {seller.orders} {tr("cmd")}
-                  </td>
-                  <td className="py-2 text-right text-ink">{xof(seller.revenue)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable
+            name="ventes-par-vendeur"
+            title={tr("Ventes par vendeur")}
+            rows={sellers}
+            headers={[tr("Vendeur"), tr("Commandes"), tr("Chiffre d'affaires")]}
+            renderRow={(seller) => (
+              <tr key={seller.vendor_id ?? "own"} className="border-b border-line">
+                <td className="py-2 text-ink">{seller.seller}</td>
+                <td className="py-2 text-right text-ink-soft">
+                  {seller.orders} {tr("cmd")}
+                </td>
+                <td className="py-2 text-right text-ink">{xof(seller.revenue)}</td>
+              </tr>
+            )}
+          />
         )}
       </section>
 
@@ -342,7 +347,7 @@ function SalesChart({ days }: { days: { date: string; orders: number; revenue: n
   return (
     <section className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-lg text-ink">{tr("Chiffre d'affaires par jour")}</h2>
+        <h2 className="section-title font-display text-lg text-ink">{tr("Chiffre d'affaires par jour")}</h2>
         {days.length > 0 ? (
           <button
             type="button"
@@ -357,24 +362,18 @@ function SalesChart({ days }: { days: { date: string; orders: number; revenue: n
       {days.length === 0 ? (
         <p className="text-sm text-ink-soft">{tr("Aucune vente sur la période.")}</p>
       ) : showTable ? (
-        <table className="w-full max-w-xl border-collapse text-sm">
-          <thead>
-            <tr className="border-b border-line text-left text-ink-soft">
-              <th className="py-1 pr-4 font-medium">{tr("Jour")}</th>
-              <th className="py-1 pr-4 text-right font-medium">{tr("Commandes")}</th>
-              <th className="py-1 text-right font-medium">{tr("Chiffre d'affaires")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {days.map((day) => (
+        <DataTable
+  name="chiffre-daffaires-par-jour"
+  rows={days}
+  headers={[tr("Jour"), tr("Commandes"), tr("Chiffre d'affaires")]}
+  renderRow={(day) => (
               <tr key={day.date} className="border-b border-line">
                 <td className="py-1 pr-4 text-ink">{day.date}</td>
                 <td className="py-1 pr-4 text-right text-ink-soft">{day.orders}</td>
                 <td className="py-1 text-right text-ink">{xof(day.revenue)}</td>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            )}
+/>
       ) : (
         <div
           role="img"
@@ -431,7 +430,7 @@ function MarginSection({ token, period }: { token: string; period: Period }) {
   return (
     <section className="flex flex-col gap-4 border-t border-line pt-8" aria-label={tr("Marge de Technilium")}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-display text-xl font-semibold text-ink">{tr("Marge de Technilium")}</h2>
+        <h2 className="section-title font-display text-xl font-semibold text-ink">{tr("Marge de Technilium")}</h2>
         <button
           type="button"
           onClick={() =>
@@ -465,19 +464,11 @@ function MarginSection({ token, period }: { token: string; period: Period }) {
         <p className="text-sm text-ink-soft">{tr("Aucune vente en propre livrée sur la période.")}</p>
       ) : (
         <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
-          <table className="w-full min-w-[720px] border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-line text-left text-ink-soft">
-                <th className="py-2 pr-4 font-medium">{tr("Produit")}</th>
-                <th className="py-2 pr-4 text-right font-medium">{tr("Unités")}</th>
-                <th className="py-2 pr-4 text-right font-medium">{tr("CA HT")}</th>
-                <th className="py-2 pr-4 text-right font-medium">{tr("Coût")}</th>
-                <th className="py-2 pr-4 text-right font-medium">{tr("Marge")}</th>
-                <th className="py-2 text-right font-medium">{tr("Taux")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {margin.by_product.map((row) => (
+          <DataTable
+  name="marge-technilium"
+  rows={margin.by_product}
+  headers={[tr("Produit"), tr("Unités"), tr("CA HT"), tr("Coût"), tr("Marge"), tr("Taux")]}
+  renderRow={(row) => (
                 <tr key={row.offer_id} className="border-b border-line">
                   <td className="py-2 pr-4 text-ink">{row.product}</td>
                   <td className="py-2 pr-4 text-right text-ink-soft">{row.units}</td>
@@ -488,9 +479,8 @@ function MarginSection({ token, period }: { token: string; period: Period }) {
                   </td>
                   <td className="py-2 text-right text-ink-soft">{marginPercentLabel(row.margin_percent)}</td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              )}
+/>
         </div>
       )}
 

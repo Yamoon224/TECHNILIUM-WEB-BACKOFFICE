@@ -1,5 +1,6 @@
 "use client";
 
+import { DataTable } from "@/components/DataTable";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -143,7 +144,7 @@ export default function ProductsPage() {
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
         <div className="flex items-center justify-between">
-          <h1 className="font-display text-2xl font-semibold text-ink">{tr("Produits")}</h1>
+          <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Produits")}</h1>
           <Button onClick={() => setShowForm((current) => !current)}>
             {showForm ? tr("Fermer") : tr("Nouveau produit")}
           </Button>
@@ -169,19 +170,12 @@ export default function ProductsPage() {
           <p className="text-sm text-ink-soft">{tr("Aucun produit.")}</p>
         ) : (
           <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
-            <table className="w-full min-w-[820px] border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-line text-left text-ink-soft">
-                  <th className="py-2 pr-4 font-medium">{tr("Produit")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("SKU")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Prix")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Stock")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Statut")}</th>
-                  <th className="py-2 font-medium">{tr("Action")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.flatMap((product) => [
+            <DataTable
+  name="produits"
+  rows={products}
+  headers={[tr("Produit"), tr("SKU"), tr("Prix"), tr("Stock"), tr("Statut"), tr("Action")]}
+  actionColumns={[5]}
+  renderRow={(product) => [
                   editingId === product.id ? (
                     <EditProductRow
                       key={product.id}
@@ -291,9 +285,8 @@ export default function ProductsPage() {
                       </td>
                     </tr>
                   ) : null,
-                ])}
-              </tbody>
-            </table>
+                ]}
+/>
           </div>
         )}
       </main>

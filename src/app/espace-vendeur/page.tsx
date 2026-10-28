@@ -1,5 +1,6 @@
 "use client";
 
+import { DataTable } from "@/components/DataTable";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -72,7 +73,7 @@ export default function VendorSpacePage() {
       <BackofficeNav onLogout={handleLogout} roles={user?.roles} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
-        <h1 className="font-display text-2xl font-semibold text-ink">{tr("Espace vendeur")}</h1>
+        <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Espace vendeur")}</h1>
 
         <nav className="flex flex-wrap gap-2">
           {TABS.map(({ id, label }) => (
@@ -178,32 +179,28 @@ function OrdersTab({ token }: { token: string }) {
   if (data.length === 0) return <p className="text-sm text-ink-soft">{tr("Aucune commande.")}</p>;
 
   return (
-    <ul className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3">
       {error ? <p className="text-sm text-danger">{error}</p> : null}
-      {data.map((order) => (
-        <li key={order.order_number} className="rounded-sm border border-line p-4 text-sm bg-surface shadow-card border-b-4 border-b-gold">
-          <div className="flex flex-wrap justify-between gap-2 text-ink">
-            <span>{order.order_number}</span>
-            <span className="text-ink-soft">
-              {tr(ORDER_STATUS_META[order.status as OrderStatus]?.label ?? order.status)}
-            </span>
-          </div>
-          <p className="mt-1 text-ink-soft">
-            {order.customer_name} · {order.customer_phone} · {order.delivery_address}
-            {order.delivery_city ? `, ${order.delivery_city}` : ""}
-          </p>
-          <ul className="mt-2 flex flex-col gap-1 text-xs text-ink-soft">
-            {order.lines.map((line, index) => (
-              <li key={index} className="flex justify-between gap-4">
-                <span>
-                  {line.quantity} × {line.description}
-                </span>
-                <span>{formatMoney({ amount: line.line_total_amount, currency: order.currency })}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-            {canShip(order) ? (
+      <DataTable
+        name="mes-commandes"
+        title={tr("Commandes")}
+        rows={data}
+        headers={[tr("Commande"), tr("Statut"), tr("Client"), tr("Articles"), tr("Votre part"), tr("Action")]}
+        actionColumns={[5]}
+        renderRow={(order) => (
+          <tr key={order.order_number} className="border-b border-line align-top">
+            <td className="py-3 text-ink">{order.order_number}</td>
+            <td className="py-3 text-ink-soft">{tr(ORDER_STATUS_META[order.status as OrderStatus]?.label ?? order.status)}</td>
+            <td className="py-3 text-ink-soft">
+              {order.customer_name} · {order.customer_phone} · {order.delivery_address}
+              {order.delivery_city ? `, ${order.delivery_city}` : ""}
+            </td>
+            <td className="py-3 text-xs text-ink-soft">
+              {order.lines.map((line) => `${line.quantity} × ${line.description}`).join(" ; ")}
+            </td>
+            <td className="py-3 text-ink">{formatMoney({ amount: order.vendor_subtotal_amount, currency: order.currency })}</td>
+            <td className="py-3">
+              {canShip(order) ? (
               <button
                 type="button"
                 disabled={busy === order.order_number}
@@ -215,13 +212,11 @@ function OrdersTab({ token }: { token: string }) {
             ) : (
               <span />
             )}
-            <p className="text-ink">
-              {tr("Votre part :")} {formatMoney({ amount: order.vendor_subtotal_amount, currency: order.currency })}
-            </p>
-          </div>
-        </li>
-      ))}
-    </ul>
+            </td>
+          </tr>
+        )}
+      />
+    </div>
   );
 }
 
@@ -248,19 +243,12 @@ function PayoutsTab({ token }: { token: string }) {
   return (
     <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
       {error ? <p className="mb-2 text-sm text-danger">{error}</p> : null}
-      <table className="w-full min-w-[720px] border-collapse text-sm">
-        <thead>
-          <tr className="border-b border-line text-left text-ink-soft">
-            <th className="py-2 pr-4 font-medium">{tr("Date")}</th>
-            <th className="py-2 pr-4 font-medium">{tr("Ventes")}</th>
-            <th className="py-2 pr-4 font-medium">{tr("Commission")}</th>
-            <th className="py-2 pr-4 font-medium">{tr("Net")}</th>
-            <th className="py-2 pr-4 font-medium">{tr("Statut")}</th>
-            <th className="py-2 font-medium" />
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((payout) => {
+      <DataTable
+  name="mes-reversements"
+  rows={data}
+  headers={[tr("Date"), tr("Ventes"), tr("Commission"), tr("Net"), tr("Statut"), ""]}
+  actionColumns={[5]}
+  renderRow={(payout) => {
             const money = (amount: number) => formatMoney({ amount, currency: payout.currency });
             return (
               <Fragment key={payout.id}>
@@ -307,9 +295,8 @@ function PayoutsTab({ token }: { token: string }) {
                 ) : null}
               </Fragment>
             );
-          })}
-        </tbody>
-      </table>
+          }}
+/>
     </div>
   );
 }
@@ -373,19 +360,12 @@ function OffersTab({ token }: { token: string }) {
         <p className="text-sm text-ink-soft">{tr("Aucune offre.")}</p>
       ) : (
         <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
-          <table className="w-full min-w-[780px] border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-line text-left text-ink-soft">
-                <th className="py-2 pr-4 font-medium">{tr("Produit")}</th>
-                <th className="py-2 pr-4 font-medium">{tr("SKU")}</th>
-                <th className="py-2 pr-4 font-medium">{tr("Prix")}</th>
-                <th className="py-2 pr-4 font-medium">{tr("Stock")}</th>
-                <th className="py-2 pr-4 font-medium">{tr("Statut")}</th>
-                <th className="py-2 font-medium">{tr("Actions")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((offer) => (
+          <DataTable
+  name="mes-offres"
+  rows={data}
+  headers={[tr("Produit"), tr("SKU"), tr("Prix"), tr("Stock"), tr("Statut"), tr("Actions")]}
+  actionColumns={[5]}
+  renderRow={(offer) => (
                 <tr key={offer.id} className="border-b border-line">
                   <td className="py-3 pr-4 text-ink">
                     {offer.brand} {offer.product_name}
@@ -420,9 +400,8 @@ function OffersTab({ token }: { token: string }) {
                     ) : null}
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              )}
+/>
         </div>
       )}
     </section>

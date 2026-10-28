@@ -570,6 +570,14 @@ export const PHRASES_EN: Record<string, string> = {
   "Nom en anglais": "Name in English",
   "Description (français)": "Description (French)",
   "Description (anglais)": "Description (English)",
+  "Articles": "Items",
+  "Auteur": "Author",
+  "Avis": "Review",
+  "Journal": "Journal",
+  "Note": "Rating",
+  "Quantité": "Quantity",
+  "Votre part": "Your share",
+  "Langue": "Language",
 };
 
 /** Fills {name} placeholders: format("Hello {who}", { who: "Awa" }) -> "Hello Awa". */

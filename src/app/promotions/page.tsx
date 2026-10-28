@@ -1,5 +1,6 @@
 "use client";
 
+import { DataTable } from "@/components/DataTable";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -92,7 +93,7 @@ export default function PromotionsPage() {
       <BackofficeNav onLogout={handleLogout} roles={user?.roles} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
-        <h1 className="font-display text-2xl font-semibold text-ink">{tr("Promotions")}</h1>
+        <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Promotions")}</h1>
 
         <NewCouponForm
           onSubmit={async (input) => {
@@ -110,20 +111,12 @@ export default function PromotionsPage() {
           <p className="text-sm text-ink-soft">{tr("Aucun code promotionnel.")}</p>
         ) : (
           <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
-            <table className="w-full min-w-[820px] border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-line text-left text-ink-soft">
-                  <th className="py-2 pr-4 font-medium">{tr("Code")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Remise")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Minimum")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Utilisations")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Validité")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("État")}</th>
-                  <th className="py-2 font-medium" />
-                </tr>
-              </thead>
-              <tbody>
-                {coupons.map((coupon) => (
+            <DataTable
+  name="promotions"
+  rows={coupons}
+  headers={[tr("Code"), tr("Remise"), tr("Minimum"), tr("Utilisations"), tr("Validité"), tr("État"), ""]}
+  actionColumns={[6]}
+  renderRow={(coupon) => (
                   <tr key={coupon.id} className="border-b border-line">
                     <td className="py-3 pr-4 text-ink">{coupon.code}</td>
                     <td className="py-3 pr-4 text-ink">{describeDiscount(coupon)}</td>
@@ -151,9 +144,8 @@ export default function PromotionsPage() {
                       </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                )}
+/>
           </div>
         )}
 

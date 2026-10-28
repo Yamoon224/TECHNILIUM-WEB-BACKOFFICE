@@ -32,6 +32,8 @@ export interface Notification {
   id: number;
   event: string;
   channel: string;
+  /** Language the message was written in (fr | en). */
+  locale?: string;
   recipient: string;
   body: string;
   reference: string | null;

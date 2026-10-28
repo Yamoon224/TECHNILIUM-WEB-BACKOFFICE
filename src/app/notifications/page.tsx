@@ -1,5 +1,6 @@
 "use client";
 
+import { DataTable } from "@/components/DataTable";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -91,7 +92,7 @@ export default function NotificationsPage() {
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h1 className="font-display text-2xl font-semibold text-ink">{tr("Notifications clients")}</h1>
+          <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Notifications clients")}</h1>
           <p className="text-sm text-ink-soft">
             {counts.sent} {tr("envoyé(s) ·")} {counts.pending} {tr("en attente ·")}{" "}
             <span className={counts.failed > 0 ? "text-danger" : undefined}>
@@ -136,20 +137,12 @@ export default function NotificationsPage() {
           <p className="text-sm text-ink-soft">{tr("Aucun message.")}</p>
         ) : (
           <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
-            <table className="w-full min-w-[900px] border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-line text-left text-ink-soft">
-                  <th className="py-2 pr-4 font-medium">{tr("Date")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Événement")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Canal")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Destinataire")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Message")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Statut")}</th>
-                  <th className="py-2 font-medium" />
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item) => (
+            <DataTable
+  name="notifications"
+  rows={items}
+  headers={[tr("Date"), tr("Événement"), tr("Canal"), tr("Langue"), tr("Destinataire"), tr("Message"), tr("Statut"), ""]}
+  actionColumns={[7]}
+  renderRow={(item) => (
                   <tr key={item.id} className="border-b border-line align-top">
                     <td className="py-3 pr-4 text-ink-soft">{item.created_at?.slice(0, 16).replace("T", " ")}</td>
                     <td className="py-3 pr-4 text-ink">
@@ -157,6 +150,7 @@ export default function NotificationsPage() {
                       {item.reference ? <span className="block text-xs text-ink-soft">{item.reference}</span> : null}
                     </td>
                     <td className="py-3 pr-4 text-ink-soft">{tr(CHANNEL_LABEL[item.channel] ?? item.channel)}</td>
+                    <td className="py-3 pr-4 text-ink-soft">{(item.locale ?? "fr").toUpperCase()}</td>
                     <td className="py-3 pr-4 text-ink-soft">{item.recipient}</td>
                     <td className="max-w-md py-3 pr-4 text-xs text-ink-soft">{item.body}</td>
                     <td className="py-3 pr-4">
@@ -183,9 +177,8 @@ export default function NotificationsPage() {
                       ) : null}
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                )}
+/>
           </div>
         )}
       </main>

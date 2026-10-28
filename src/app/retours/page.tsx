@@ -1,5 +1,6 @@
 "use client";
 
+import { DataTable } from "@/components/DataTable";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -119,7 +120,7 @@ export default function ReturnsPage() {
       <BackofficeNav onLogout={handleLogout} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
-        <h1 className="font-display text-2xl font-semibold text-ink">{tr("Retours et SAV")}</h1>
+        <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Retours et SAV")}</h1>
 
         <NewReturnForm
           onSubmit={async (input) => {
@@ -154,20 +155,12 @@ export default function ReturnsPage() {
           <p className="text-sm text-ink-soft">{tr("Aucun retour.")}</p>
         ) : (
           <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
-            <table className="w-full min-w-[860px] border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-line text-left text-ink-soft">
-                  <th className="py-2 pr-4 font-medium">{tr("RMA")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Commande")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Motif")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Demandé")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Remboursé")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Statut")}</th>
-                  <th className="py-2 font-medium">{tr("Actions")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {returns.map((item) => {
+            <DataTable
+  name="retours"
+  rows={returns}
+  headers={[tr("RMA"), tr("Commande"), tr("Motif"), tr("Demandé"), tr("Remboursé"), tr("Statut"), tr("Actions")]}
+  actionColumns={[6]}
+  renderRow={(item) => {
                   const money = (amount: number) => formatMoney({ amount, currency: item.currency });
                   return (
                     <tr key={item.id} className="border-b border-line">
@@ -211,9 +204,8 @@ export default function ReturnsPage() {
                       </td>
                     </tr>
                   );
-                })}
-              </tbody>
-            </table>
+                }}
+/>
           </div>
         )}
       </main>

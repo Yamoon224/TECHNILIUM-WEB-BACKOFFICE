@@ -29,7 +29,7 @@ export function PasswordInput({ label, className = "", ...rest }: PasswordInputP
         onClick={() => setVisible((current) => !current)}
         aria-label={visible ? tr("Masquer le mot de passe") : tr("Afficher le mot de passe")}
         aria-pressed={visible}
-        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-sm p-1.5 text-ink-soft transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-gold"
+        className="absolute bottom-0.5 right-0 rounded-sm p-1.5 text-ink-soft transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-gold"
       >
         <Icon className="h-5 w-5" aria-hidden />
       </button>

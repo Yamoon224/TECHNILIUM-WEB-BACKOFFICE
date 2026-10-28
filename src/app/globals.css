@@ -85,51 +85,109 @@ body {
 }
 
 /*
- * Floating labels: <label class="field"><input placeholder=" "><span class="field-label">Text</span></label>.
- * The label sits inside the empty field and floats up when it is focused or filled
- * (selects and date fields are always floated). A real placeholder shows only on focus.
+ * Floating labels, Materialize style: <label class="field"><input placeholder=" "><span class="field-label">Text</span></label>.
+ * Underline-only fields. At rest the label sits on the line like a placeholder; on focus
+ * or when filled it floats up, small and in the accent colour, and the underline thickens.
+ * Selects and date fields are always floated. A real placeholder shows only on focus.
  */
 .field {
+  --field-line: color-mix(in oklab, var(--ink-soft) 55%, transparent);
   position: relative;
   display: flex;
   flex-direction: column;
+  padding-top: 1rem;
 }
 .field > :is(input, textarea, select) {
-  padding: 1.35rem 0.75rem 0.45rem;
-  border-radius: 0.125rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.3rem 0 0.35rem;
+  border: 0;
+  border-bottom: 1px solid var(--field-line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+  color: var(--ink);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.field > select {
+  appearance: none;
+  padding-right: 1.5rem;
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink-soft) 50%), linear-gradient(135deg, var(--ink-soft) 50%, transparent 50%);
+  background-position:
+    calc(100% - 0.5rem) 55%,
+    calc(100% - 0.2rem) 55%;
+  background-size:
+    0.3rem 0.3rem,
+    0.3rem 0.3rem;
+  background-repeat: no-repeat;
+}
+.field > :is(input, textarea, select):focus {
+  border-bottom-color: var(--gold);
+  box-shadow: 0 1px 0 0 var(--gold);
+}
+.field > :is(input, textarea, select):disabled {
+  border-bottom-style: dotted;
+  color: var(--ink-soft);
 }
 .field > :is(input, textarea)::placeholder {
   color: transparent;
 }
 .field > :is(input, textarea):focus::placeholder {
   color: var(--ink-soft);
-  opacity: 0.7;
+  opacity: 0.6;
 }
 .field > .field-label {
   position: absolute;
-  top: 0.8rem;
-  left: 0.75rem;
-  max-width: calc(100% - 1.5rem);
+  top: 1.35rem;
+  left: 0;
+  max-width: 100%;
   overflow: hidden;
   color: var(--ink-soft);
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   line-height: 1.25rem;
   text-overflow: ellipsis;
   white-space: nowrap;
   pointer-events: none;
   transform-origin: left top;
   transition:
-    transform 0.15s ease,
-    color 0.15s ease,
-    max-width 0.15s ease;
+    transform 0.2s ease,
+    color 0.2s ease,
+    max-width 0.2s ease;
 }
 .field > :is(input, textarea, select):focus ~ .field-label,
 .field > :is(input, textarea):not(:placeholder-shown) ~ .field-label,
 .field > select ~ .field-label,
 .field > input:is([type="date"], [type="datetime-local"], [type="month"], [type="time"]) ~ .field-label {
-  max-width: calc((100% - 1.5rem) / 0.75);
-  transform: translateY(-0.6rem) scale(0.75);
+  max-width: 125%;
+  transform: translateY(-1.35rem) scale(0.8);
 }
 .field > :is(input, textarea, select):focus ~ .field-label {
   color: var(--gold);
+}
+/* Room for an action button (the password eye) on the right. */
+.field:has(> button) > input {
+  padding-right: 2.5rem;
+}
+/* Browser autofill must not paint its own yellow/blue box over the underline style. */
+.field > :is(input, textarea):-webkit-autofill {
+  -webkit-text-fill-color: var(--ink);
+  box-shadow: 0 0 0 1000px var(--surface) inset;
+  transition: background-color 9999s ease-out;
+}
+
+/* Page and section titles: underlined in the configured main colour. */
+.page-title {
+  display: inline-block;
+  align-self: flex-start;
+  padding-bottom: 0.3rem;
+  border-bottom: 4px solid var(--gold);
+}
+.section-title {
+  display: inline-block;
+  align-self: flex-start;
+  padding-bottom: 0.2rem;
+  border-bottom: 3px solid var(--gold);
 }

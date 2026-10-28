@@ -1,5 +1,6 @@
 "use client";
 
+import { DataTable } from "@/components/DataTable";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -73,7 +74,7 @@ export default function OfferModerationPage() {
       <BackofficeNav onLogout={handleLogout} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
-        <h1 className="font-display text-2xl font-semibold text-ink">{tr("Modération des offres vendeurs")}</h1>
+        <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Modération des offres vendeurs")}</h1>
         <p className="text-sm text-ink-soft">{tr("Offres soumises par des vendeurs tiers, en attente de publication.")}</p>
 
         {error ? <p className="text-sm text-danger">{error}</p> : null}
@@ -84,18 +85,12 @@ export default function OfferModerationPage() {
           <p className="text-sm text-ink-soft">{tr("Aucune offre en attente.")}</p>
         ) : (
           <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
-            <table className="w-full min-w-[760px] border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-line text-left text-ink-soft">
-                  <th className="py-2 pr-4 font-medium">{tr("Produit")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Vendeur")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Prix")}</th>
-                  <th className="py-2 pr-4 font-medium">{tr("Stock")}</th>
-                  <th className="py-2 font-medium">{tr("Décision")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {offers.map((offer) => (
+            <DataTable
+  name="offres"
+  rows={offers}
+  headers={[tr("Produit"), tr("Vendeur"), tr("Prix"), tr("Stock"), tr("Décision")]}
+  actionColumns={[4]}
+  renderRow={(offer) => (
                   <tr key={offer.id} className="border-b border-line">
                     <td className="py-3 pr-4 text-ink">
                       {offer.brand} {offer.product_name}
@@ -126,9 +121,8 @@ export default function OfferModerationPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                )}
+/>
           </div>
         )}
       </main>

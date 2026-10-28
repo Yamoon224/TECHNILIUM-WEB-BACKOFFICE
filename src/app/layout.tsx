@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans, Space_Grotesk } from "next/font/google";
 import { AppearanceProvider } from "@/components/AppearanceProvider";
 import { AppShell } from "@/components/AppShell";
+import { PageTitle } from "@/components/PageTitle";
 import { STORAGE_KEY } from "@/lib/appearance";
 import "./globals.css";
 
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-full flex flex-col antialiased">
         <AppearanceProvider>
+          <PageTitle />
           <AppShell>{children}</AppShell>
         </AppearanceProvider>
       </body>

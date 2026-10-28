@@ -1,5 +1,6 @@
 "use client";
 
+import { DataTable } from "@/components/DataTable";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -84,7 +85,7 @@ export default function ProcurementPage() {
       <BackofficeNav onLogout={handleLogout} roles={user?.roles} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
-        <h1 className="font-display text-2xl font-semibold text-ink">{tr("Achats")}</h1>
+        <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Achats")}</h1>
 
         <nav className="flex flex-wrap gap-2">
           {TABS.map(({ id, label }) => (
@@ -195,19 +196,12 @@ function OrdersTab({ token }: { token: string }) {
         <p className="text-sm text-ink-soft">{tr("Aucun bon de commande.")}</p>
       ) : (
         <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
-          <table className="w-full min-w-[760px] border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-line text-left text-ink-soft">
-                <th className="py-2 pr-4 font-medium">{tr("Bon")}</th>
-                <th className="py-2 pr-4 font-medium">{tr("Fournisseur")}</th>
-                <th className="py-2 pr-4 font-medium">{tr("Marchandises")}</th>
-                <th className="py-2 pr-4 font-medium">{tr("Frais d'approche")}</th>
-                <th className="py-2 pr-4 font-medium">{tr("Statut")}</th>
-                <th className="py-2 font-medium" />
-              </tr>
-            </thead>
-            <tbody>
-              {orders.data.map((order) => (
+          <DataTable
+  name="bons-de-commande"
+  rows={orders.data}
+  headers={[tr("Bon"), tr("Fournisseur"), tr("Marchandises"), tr("Frais d'approche"), tr("Statut"), ""]}
+  actionColumns={[5]}
+  renderRow={(order) => (
                 <Fragment key={order.id}>
                   <tr className="cursor-pointer border-b border-line hover:bg-surface" onClick={() => toggle(order)}>
                     <td className="py-3 pr-4 text-ink">{order.number}</td>
@@ -234,9 +228,8 @@ function OrdersTab({ token }: { token: string }) {
                     </tr>
                   ) : null}
                 </Fragment>
-              ))}
-            </tbody>
-          </table>
+              )}
+/>
         </div>
       )}
     </section>
@@ -310,19 +303,11 @@ function OrderDetail({
         ) : null}
       </div>
 
-      <table className="w-full max-w-3xl border-collapse text-xs">
-        <thead>
-          <tr className="border-b border-line text-left text-ink-soft">
-            <th className="py-1 pr-3 font-medium">{tr("Article")}</th>
-            <th className="py-1 pr-3 text-right font-medium">{tr("Coût unit.")}</th>
-            <th className="py-1 pr-3 text-right font-medium">{tr("Commandé")}</th>
-            <th className="py-1 pr-3 text-right font-medium">{tr("Reçu")}</th>
-            <th className="py-1 pr-3 text-right font-medium">{tr("Refusé")}</th>
-            <th className="py-1 text-right font-medium">{tr("Reste")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(order.lines ?? []).map((line) => (
+      <DataTable
+  name="lignes-de-reception"
+  rows={(order.lines ?? [])}
+  headers={[tr("Article"), tr("Coût unit."), tr("Commandé"), tr("Reçu"), tr("Refusé"), tr("Reste")]}
+  renderRow={(line) => (
             <tr key={line.id} className="border-b border-line text-ink-soft">
               <td className="py-1 pr-3 text-ink">{line.description}</td>
               <td className="py-1 pr-3 text-right">{xof(line.unit_cost_amount)}</td>
@@ -331,9 +316,8 @@ function OrderDetail({
               <td className="py-1 pr-3 text-right">{line.quantity_rejected}</td>
               <td className="py-1 text-right text-ink">{line.outstanding}</td>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          )}
+/>
 
       {(order.landed_costs ?? []).length > 0 ? (
         <p className="text-xs text-ink-soft">
@@ -700,19 +684,12 @@ function InvoicesTab({ token }: { token: string }) {
         <p className="text-sm text-ink-soft">{tr("Aucune facture.")}</p>
       ) : (
         <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
-          <table className="w-full min-w-[760px] border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-line text-left text-ink-soft">
-                <th className="py-2 pr-4 font-medium">{tr("Facture")}</th>
-                <th className="py-2 pr-4 font-medium">{tr("Fournisseur")}</th>
-                <th className="py-2 pr-4 font-medium">{tr("Montant")}</th>
-                <th className="py-2 pr-4 font-medium">{tr("Reste dû")}</th>
-                <th className="py-2 pr-4 font-medium">{tr("Échéance")}</th>
-                <th className="py-2 font-medium" />
-              </tr>
-            </thead>
-            <tbody>
-              {invoices.data.map((invoice) => (
+          <DataTable
+  name="factures-fournisseurs"
+  rows={invoices.data}
+  headers={[tr("Facture"), tr("Fournisseur"), tr("Montant"), tr("Reste dû"), tr("Échéance"), ""]}
+  actionColumns={[5]}
+  renderRow={(invoice) => (
                 <tr key={invoice.id} className="border-b border-line">
                   <td className="py-3 pr-4 text-ink">
                     {invoice.number}
@@ -735,9 +712,8 @@ function InvoicesTab({ token }: { token: string }) {
                     ) : null}
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              )}
+/>
         </div>
       )}
     </section>
@@ -857,18 +833,11 @@ function StockTab({ token }: { token: string }) {
         <p className="text-sm text-ink-soft">{tr("Aucun achat réceptionné pour l'instant.")}</p>
       ) : (
         <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
-          <table className="w-full min-w-[640px] border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-line text-left text-ink-soft">
-                <th className="py-2 pr-4 font-medium">{tr("Produit")}</th>
-                <th className="py-2 pr-4 font-medium">{tr("SKU")}</th>
-                <th className="py-2 pr-4 text-right font-medium">{tr("Stock")}</th>
-                <th className="py-2 pr-4 text-right font-medium">{tr("Coût moyen")}</th>
-                <th className="py-2 text-right font-medium">{tr("Valeur")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.offers.map((offer) => (
+          <DataTable
+  name="stock-valorise"
+  rows={data.offers}
+  headers={[tr("Produit"), tr("SKU"), tr("Stock"), tr("Coût moyen"), tr("Valeur")]}
+  renderRow={(offer) => (
                 <tr key={offer.offer_id} className="border-b border-line">
                   <td className="py-3 pr-4 text-ink">{offer.product}</td>
                   <td className="py-3 pr-4 text-ink-soft">{offer.sku ?? "—"}</td>
@@ -876,9 +845,8 @@ function StockTab({ token }: { token: string }) {
                   <td className="py-3 pr-4 text-right text-ink-soft">{xof(offer.average_cost)}</td>
                   <td className="py-3 text-right text-ink">{xof(offer.value)}</td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              )}
+/>
         </div>
       )}
     </section>
