@@ -319,7 +319,7 @@ function AssignForm({ onAssign }: { onAssign: (assignedTo: number) => void }) {
           type="number"
           value={value}
           onChange={(event) => setValue(event.target.value)}
-          placeholder=" "
+          placeholder="7"
           className="rounded-sm border border-line bg-surface px-2 text-xs text-ink"
         />
         <span className="field-label">{tr("ID livreur")}</span>
@@ -361,7 +361,7 @@ function FailForm({ onFail }: { onFail: (notes?: string) => void }) {
         <input
           value={notes}
           onChange={(event) => setNotes(event.target.value)}
-          placeholder=" "
+          placeholder={tr("Ex. Client absent")}
           className="rounded-sm border border-line bg-surface px-2 text-xs text-ink"
         />
         <span className="field-label">{tr("Motif (optionnel)")}</span>
@@ -418,7 +418,7 @@ function NewShipmentForm({ onCreate }: { onCreate: (orderNumber: string, assigne
 
       <label className="field">
         <input
-          placeholder=" "
+          placeholder="7"
           type="number"
           value={assignedTo}
           onChange={(event) => setAssignedTo(event.target.value)}

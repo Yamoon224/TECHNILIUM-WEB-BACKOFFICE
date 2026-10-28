@@ -122,7 +122,7 @@ export default function AuditPage() {
         >
           <label className="field">
             <input
-              placeholder=" "
+              placeholder="12"
               value={draft.user_id ?? ""}
               onChange={(e) => setDraft({ ...draft, user_id: e.target.value })}
               inputMode="numeric"

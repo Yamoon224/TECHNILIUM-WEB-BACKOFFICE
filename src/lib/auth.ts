@@ -62,3 +62,31 @@ export async function logout(token: string): Promise<void> {
     headers: { Authorization: `Bearer ${token}` },
   });
 }
+
+/** Asks for a reset link. The answer is the same whether or not the address has an account. */
+export async function requestPasswordReset(email: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) throw new AuthError(await parseErrorMessage(response));
+}
+
+export interface PasswordResetInput {
+  token: string;
+  email: string;
+  password: string;
+}
+
+/** Sets the new password with the token from the e-mail (single use, limited time). */
+export async function resetPassword({ token, email, password }: PasswordResetInput): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({ token, email, password, password_confirmation: password }),
+  });
+
+  if (!response.ok) throw new AuthError(await parseErrorMessage(response));
+}

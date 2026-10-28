@@ -152,7 +152,7 @@ export default function SupportPage() {
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder=" "
+              placeholder={tr("Ex. livraison, paiement…")}
               className="rounded-sm border border-line bg-surface px-3 text-sm text-ink"
             />
             <span className="field-label">{tr("Rechercher un sujet")}</span>
@@ -341,7 +341,7 @@ function TicketPanel({
               onChange={(event) => setBody(event.target.value)}
               rows={3}
               maxLength={5000}
-              placeholder=" "
+              placeholder={tr("Écrivez votre réponse au client…")}
               className="rounded-sm border border-line bg-bg px-3 text-sm text-ink"
             />
             <span className="field-label">

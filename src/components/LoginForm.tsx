@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { useAppearance } from "./AppearanceProvider";
 import { LogoMark } from "./LogoMark";
@@ -12,7 +13,7 @@ export interface LoginFormProps {
 }
 
 export function LoginForm({ onSubmit, submitting, error }: LoginFormProps) {
-  const { t } = useAppearance();
+  const { t, tr } = useAppearance();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -55,6 +56,10 @@ export function LoginForm({ onSubmit, submitting, error }: LoginFormProps) {
         onChange={(event) => setPassword(event.target.value)}
         label={t("login.password")}
       />
+
+      <Link href="/mot-de-passe-oublie" className="-mt-2 self-end text-xs text-gold-bright underline-offset-4 hover:underline">
+        {tr("Mot de passe oublié ?")}
+      </Link>
 
       {error ? <p className="text-sm text-danger">{error}</p> : null}
 

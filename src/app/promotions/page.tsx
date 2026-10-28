@@ -243,7 +243,7 @@ function NewCouponForm({ onSubmit }: { onSubmit: (input: NewCouponInput) => Prom
       </label>
       <label className="field">
         <input
-          placeholder=" "
+          placeholder="10"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           inputMode="numeric"
@@ -253,7 +253,7 @@ function NewCouponForm({ onSubmit }: { onSubmit: (input: NewCouponInput) => Prom
       </label>
       <label className="field">
         <input
-          placeholder=" "
+          placeholder="20000"
           value={minOrder}
           onChange={(e) => setMinOrder(e.target.value)}
           inputMode="numeric"
@@ -263,7 +263,7 @@ function NewCouponForm({ onSubmit }: { onSubmit: (input: NewCouponInput) => Prom
       </label>
       <label className="field">
         <input
-          placeholder=" "
+          placeholder="100"
           value={maxUses}
           onChange={(e) => setMaxUses(e.target.value)}
           inputMode="numeric"
@@ -273,7 +273,7 @@ function NewCouponForm({ onSubmit }: { onSubmit: (input: NewCouponInput) => Prom
       </label>
       <label className="field">
         <input
-          placeholder=" "
+          placeholder="1"
           value={perCustomer}
           onChange={(e) => setPerCustomer(e.target.value)}
           inputMode="numeric"

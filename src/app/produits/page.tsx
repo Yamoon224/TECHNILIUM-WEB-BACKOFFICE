@@ -387,7 +387,7 @@ function NewProductForm({
 
       <label className="field">
         <input
-          placeholder=" "
+          placeholder="59000"
           type="number"
           min={0}
           value={price}
@@ -399,7 +399,7 @@ function NewProductForm({
 
       <label className="field">
         <input
-          placeholder=" "
+          placeholder="25"
           type="number"
           min={0}
           value={stock}
@@ -590,7 +590,7 @@ function TextsPanel({
           value={nameEn}
           onChange={(event) => setNameEn(event.target.value)}
           maxLength={255}
-          placeholder=" "
+          placeholder={tr("Ex. 27-inch monitor")}
           className="rounded-sm border border-line bg-surface px-3 text-sm text-ink focus:border-gold focus:outline-none"
         />
         <span className="field-label">{tr("Nom en anglais")}</span>
@@ -602,7 +602,7 @@ function TextsPanel({
           onChange={(event) => setDescription(event.target.value)}
           rows={3}
           maxLength={5000}
-          placeholder=" "
+          placeholder={tr("Décrivez le produit en quelques lignes")}
           className="rounded-sm border border-line bg-surface px-3 text-sm text-ink focus:border-gold focus:outline-none"
         />
         <span className="field-label">{tr("Description (français)")}</span>
@@ -614,7 +614,7 @@ function TextsPanel({
           onChange={(event) => setDescriptionEn(event.target.value)}
           rows={3}
           maxLength={5000}
-          placeholder=" "
+          placeholder={tr("Describe the product in a few lines")}
           className="rounded-sm border border-line bg-surface px-3 text-sm text-ink focus:border-gold focus:outline-none"
         />
         <span className="field-label">{tr("Description (anglais)")}</span>

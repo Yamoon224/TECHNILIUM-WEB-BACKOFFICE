@@ -183,7 +183,7 @@ function NewMovementForm({
     >
       <label className="field">
         <input
-          placeholder=" "
+          placeholder="15"
           type="number"
           value={offerId}
           onChange={(event) => setOfferId(event.target.value)}

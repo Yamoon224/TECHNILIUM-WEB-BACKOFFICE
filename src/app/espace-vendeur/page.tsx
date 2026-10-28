@@ -463,7 +463,7 @@ function NewOfferForm({
     >
       <label className="field">
         <input
-          placeholder=" "
+          placeholder="42"
           type="number"
           min={1}
           value={variantId}
@@ -474,7 +474,7 @@ function NewOfferForm({
       </label>
       <label className="field">
         <input
-          placeholder=" "
+          placeholder="59000"
           type="number"
           min={0}
           value={price}
@@ -485,7 +485,7 @@ function NewOfferForm({
       </label>
       <label className="field">
         <input
-          placeholder=" "
+          placeholder="25"
           type="number"
           min={0}
           value={stock}
@@ -496,7 +496,7 @@ function NewOfferForm({
       </label>
       <label className="field">
         <input
-          placeholder=" "
+          placeholder="12"
           type="number"
           min={0}
           value={warranty}

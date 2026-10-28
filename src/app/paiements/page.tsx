@@ -352,7 +352,7 @@ function NewPaymentForm({
 
       <label className="field">
         <input
-          placeholder=" "
+          placeholder="118000"
           type="number"
           min={0}
           value={amount}

@@ -122,7 +122,7 @@ export default function NotificationsPage() {
             <input
               value={reference}
               onChange={(event) => setReference(event.target.value)}
-              placeholder=" "
+              placeholder="TCH-20261025-XXXXXX"
               className="rounded-sm border border-line bg-surface px-3 text-sm text-ink"
             />
             <span className="field-label">{tr("N° de commande")}</span>

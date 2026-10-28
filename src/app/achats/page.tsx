@@ -336,7 +336,7 @@ function OrderDetail({
               <span className="w-64 text-ink">{line.description}</span>
               <label className="field items-center">
                 <input
-                  placeholder=" "
+                  placeholder="0"
                   inputMode="numeric"
                   value={receipt[line.id]?.accepted ?? ""}
                   onChange={(e) =>
@@ -351,7 +351,7 @@ function OrderDetail({
               </label>
               <label className="field items-center">
                 <input
-                  placeholder=" "
+                  placeholder="0"
                   inputMode="numeric"
                   value={receipt[line.id]?.rejected ?? ""}
                   onChange={(e) =>
@@ -525,12 +525,12 @@ function SuppliersTab({ token }: { token: string }) {
         className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold"
       >
         <label className="field">
-          <input placeholder=" " value={name} onChange={(e) => setName(e.target.value)} className={`${field} w-56`} />
+          <input placeholder={tr("Ex. Mobile Distribution CI")} value={name} onChange={(e) => setName(e.target.value)} className={`${field} w-56`} />
           <span className="field-label">{tr("Nom")}</span>
         </label>
         <label className="field">
           <input
-            placeholder=" "
+            placeholder={tr("Ex. Moussa Koné, +225 07 00 00 00 00")}
             value={contact}
             onChange={(e) => setContact(e.target.value)}
             className={`${field} w-44`}
@@ -538,12 +538,12 @@ function SuppliersTab({ token }: { token: string }) {
           <span className="field-label">{tr("Contact")}</span>
         </label>
         <label className="field">
-          <input placeholder=" " value={phone} onChange={(e) => setPhone(e.target.value)} className={`${field} w-36`} />
+          <input placeholder="07 00 00 00 00" value={phone} onChange={(e) => setPhone(e.target.value)} className={`${field} w-36`} />
           <span className="field-label">{tr("Téléphone")}</span>
         </label>
         <label className="field">
           <input
-            placeholder=" "
+            placeholder="30"
             value={terms}
             onChange={(e) => setTerms(e.target.value)}
             inputMode="numeric"
@@ -781,7 +781,7 @@ function NewInvoiceForm({
         <span className="field-label">{tr("Fournisseur")}</span>
       </label>
       <label className="field">
-        <input placeholder=" " value={number} onChange={(e) => setNumber(e.target.value)} className={`${field} w-36`} />
+        <input placeholder="F-2026-0042" value={number} onChange={(e) => setNumber(e.target.value)} className={`${field} w-36`} />
         <span className="field-label">{tr("N° de facture")}</span>
       </label>
       <label className="field">
@@ -793,7 +793,7 @@ function NewInvoiceForm({
       </label>
       <label className="field">
         <input
-          placeholder=" "
+          placeholder="250000"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           inputMode="numeric"
