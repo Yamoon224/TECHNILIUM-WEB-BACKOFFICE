@@ -66,7 +66,7 @@ export default function VendorSpacePage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-1 flex-col">
+    <div className="flex flex-1 flex-col">
       <BackofficeNav onLogout={handleLogout} roles={user?.roles} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
@@ -79,7 +79,7 @@ export default function VendorSpacePage() {
               type="button"
               onClick={() => setTab(id)}
               className={`rounded-full border px-3 py-1 text-sm transition-colors ${
-                tab === id ? "border-gold bg-gold text-bg font-medium" : "border-line text-ink hover:border-gold"
+                tab === id ? "border-gold bg-gold text-on-primary font-medium" : "border-line text-ink hover:border-gold"
               }`}
             >
               {label}

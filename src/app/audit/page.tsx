@@ -83,7 +83,7 @@ export default function AuditPage() {
   const field = "rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink";
 
   return (
-    <div className="flex min-h-screen flex-1 flex-col">
+    <div className="flex flex-1 flex-col">
       <BackofficeNav onLogout={handleLogout} roles={user?.roles} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">

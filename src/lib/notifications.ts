@@ -20,6 +20,9 @@ export const NOTIFICATION_EVENT_LABEL: Record<string, string> = {
   "order.shipped": "Commande expédiée",
   "order.delivered": "Commande livrée",
   "order.cancelled": "Commande annulée",
+  "return.accepted": "Retour accepté",
+  "return.received": "Colis de retour reçu",
+  "return.rejected": "Retour refusé",
   "return.refunded": "Retour remboursé",
 };
 

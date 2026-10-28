@@ -84,7 +84,7 @@ export default function NotificationsPage() {
   const counts = countByStatus(items);
 
   return (
-    <div className="flex min-h-screen flex-1 flex-col">
+    <div className="flex flex-1 flex-col">
       <BackofficeNav onLogout={handleLogout} roles={user?.roles} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
@@ -104,7 +104,7 @@ export default function NotificationsPage() {
                 type="button"
                 onClick={() => setFilter(value)}
                 className={`rounded-full border px-3 py-1 text-sm transition-colors ${
-                  filter === value ? "border-gold bg-gold text-bg font-medium" : "border-line text-ink hover:border-gold"
+                  filter === value ? "border-gold bg-gold text-on-primary font-medium" : "border-line text-ink hover:border-gold"
                 }`}
               >
                 {value === null ? "Tous" : NOTIFICATION_STATUS_LABEL[value]}

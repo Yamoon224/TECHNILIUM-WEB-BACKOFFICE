@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { useAppearance } from "./AppearanceProvider";
 
 export interface LoginFormProps {
   onSubmit: (email: string, password: string) => void;
@@ -9,6 +10,7 @@ export interface LoginFormProps {
 }
 
 export function LoginForm({ onSubmit, submitting, error }: LoginFormProps) {
+  const { t } = useAppearance();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -23,12 +25,12 @@ export function LoginForm({ onSubmit, submitting, error }: LoginFormProps) {
       className="flex w-full max-w-sm flex-col gap-4 rounded-sm border border-line bg-surface p-6"
     >
       <div className="flex flex-col gap-1">
-        <h1 className="text-lg font-medium text-ink">Connexion backoffice</h1>
-        <p className="text-sm text-ink-soft">Réservé à l&apos;équipe et aux vendeurs Technilium.</p>
+        <h1 className="text-lg font-medium text-ink">{t("login.title")}</h1>
+        <p className="text-sm text-ink-soft">{t("login.subtitle")}</p>
       </div>
 
       <label className="flex flex-col gap-1 text-sm text-ink-soft">
-        Adresse e-mail
+        {t("login.email")}
         <input
           type="email"
           required
@@ -41,7 +43,7 @@ export function LoginForm({ onSubmit, submitting, error }: LoginFormProps) {
       </label>
 
       <label className="flex flex-col gap-1 text-sm text-ink-soft">
-        Mot de passe
+        {t("login.password")}
         <input
           type="password"
           required
@@ -57,9 +59,9 @@ export function LoginForm({ onSubmit, submitting, error }: LoginFormProps) {
       <button
         type="submit"
         disabled={submitting}
-        className="rounded-sm bg-gold px-4 py-2 text-sm font-medium text-bg transition-colors hover:bg-gold-bright disabled:cursor-not-allowed disabled:opacity-60"
+        className="rounded-sm bg-gold px-4 py-2 text-sm font-medium text-on-primary transition-colors hover:bg-gold-bright disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {submitting ? "Connexion…" : "Se connecter"}
+        {submitting ? t("login.submitting") : t("login.submit")}
       </button>
     </form>
   );

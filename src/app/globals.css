@@ -1,33 +1,48 @@
 @import "tailwindcss";
 
 /*
- * Palette sampled directly from the Techlium Group mark (logo.jpeg):
- * near-black field, single amber/gold accent running from a bronze
- * shadow stop to a pale highlight stop. Same brand tokens as the
- * storefront app (duplicated on purpose, not imported — see README).
+ * Themes. Token names (bg, surface, ink, gold...) are the ones every page
+ * already uses; "gold" is the primary colour and is overridden at runtime by
+ * the appearance settings. Light is the base; Blue Dark applies under
+ * [data-theme="dark"] (set before paint by an inline script, see layout).
  */
 :root {
-  --bg: #070604;
-  --surface: #141009;
-  --surface-raised: #1d170d;
-  --ink: #f6f1e4;
-  --ink-soft: #a89a7d;
-  --line: #2b2416;
-  --gold-shadow: #5e3306;
-  --gold-deep: #d27513;
+  --bg: #f1f5f9;
+  --surface: #ffffff;
+  --surface-raised: #f8fafc;
+  --ink: #0f172a;
+  --ink-soft: #526077;
+  --line: #dbe2ec;
   --gold: #ee9e0b;
-  --gold-bright: #f6cf3c;
-  --gold-highlight: #fbf28c;
-  --danger: #f87171;
-  --gold-gradient: linear-gradient(
-    135deg,
-    var(--gold-shadow) 0%,
-    var(--gold-deep) 35%,
-    var(--gold) 60%,
-    var(--gold-bright) 82%,
-    var(--gold-highlight) 100%
-  );
+  --gold-bright: #b86f00;
+  --gold-deep: #c47f08;
+  --on-primary: #0b0f19;
+  --danger: #c62828;
+
+  --shell-sidebar-top-bg: var(--surface);
+  --shell-sidebar-top-fg: var(--ink);
+  --shell-topbar-bg: var(--surface);
+  --shell-topbar-fg: var(--ink);
+  --shell-sidebar-bg: var(--surface);
+  --shell-sidebar-fg: var(--ink);
+
+  color-scheme: light;
 }
+
+[data-theme="dark"] {
+  --bg: #070d1b;
+  --surface: #0d1630;
+  --surface-raised: #131e3b;
+  --ink: #f1f5f9;
+  --ink-soft: #94a3c0;
+  --line: #1d2a4a;
+  --gold-bright: #f6cf3c;
+  --danger: #f87171;
+
+  color-scheme: dark;
+}
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme inline {
   --color-bg: var(--bg);
@@ -39,6 +54,7 @@
   --color-gold: var(--gold);
   --color-gold-bright: var(--gold-bright);
   --color-gold-deep: var(--gold-deep);
+  --color-on-primary: var(--on-primary);
   --color-danger: var(--danger);
   --font-display: var(--font-space-grotesk);
   --font-sans: var(--font-plex-sans);
@@ -51,8 +67,5 @@ body {
 }
 
 .gold-text {
-  background: var(--gold-gradient);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
+  color: var(--gold);
 }

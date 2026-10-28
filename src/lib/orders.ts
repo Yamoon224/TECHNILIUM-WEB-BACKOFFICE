@@ -37,6 +37,8 @@ export interface Order {
   sub_orders?: SubOrder[];
   /** True when the sub-orders are at different stages (partially shipped / delivered). */
   partial?: boolean;
+  /** When each status was reached, oldest first. */
+  status_history?: { status: string; at: string }[];
   created_at: string | null;
 }
 
@@ -117,4 +119,25 @@ export async function transitionSubOrder(
   }
 
   return response.json() as Promise<Order>;
+}
+
+const HISTORY_LABEL: Record<string, string> = {
+  pending: "Reçue",
+  confirmed: "Confirmée",
+  shipped: "Expédiée",
+  delivered: "Livrée",
+  cancelled: "Annulée",
+};
+
+const HISTORY_DATE = new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "2-digit", timeZone: "UTC" });
+
+/** "Reçue 27/10 · Confirmée 28/10" — empty when there is no history. */
+export function historyLine(history: Order["status_history"]): string {
+  return (history ?? [])
+    .map((event) => {
+      const date = new Date(event.at);
+      const when = Number.isNaN(date.getTime()) ? "" : ` ${HISTORY_DATE.format(date)}`;
+      return `${HISTORY_LABEL[event.status] ?? event.status}${when}`;
+    })
+    .join(" · ");
 }

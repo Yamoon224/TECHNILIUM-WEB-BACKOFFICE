@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hasSplit, sellerLabel } from "./orders";
+import { hasSplit, historyLine, sellerLabel } from "./orders";
 
 describe("sub-order helpers", () => {
   it("labels Technilium's own stock and vendors", () => {
@@ -12,5 +12,21 @@ describe("sub-order helpers", () => {
     expect(hasSplit({ sub_orders: [share] })).toBe(false);
     expect(hasSplit({ sub_orders: [share, { ...share, id: 2 }] })).toBe(true);
     expect(hasSplit({})).toBe(false);
+  });
+});
+
+describe("historyLine", () => {
+  it("lists each step with its date", () => {
+    expect(
+      historyLine([
+        { status: "pending", at: "2026-10-27T10:00:00Z" },
+        { status: "confirmed", at: "2026-10-28T08:00:00Z" },
+      ]),
+    ).toBe("Reçue 27/10 · Confirmée 28/10");
+  });
+
+  it("is empty without history", () => {
+    expect(historyLine(undefined)).toBe("");
+    expect(historyLine([])).toBe("");
   });
 });

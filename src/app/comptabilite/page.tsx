@@ -61,7 +61,7 @@ export default function AccountingPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-1 flex-col">
+    <div className="flex flex-1 flex-col">
       <BackofficeNav onLogout={handleLogout} />
 
       <main className="flex w-full flex-1 flex-col gap-8 px-4 py-8">
@@ -118,7 +118,7 @@ export default function AccountingPage() {
                 type="button"
                 onClick={() => setJournal(code)}
                 className={`rounded-full border px-3 py-1 text-sm transition-colors ${
-                  journal === code ? "border-gold bg-gold text-bg font-medium" : "border-line text-ink hover:border-gold"
+                  journal === code ? "border-gold bg-gold text-on-primary font-medium" : "border-line text-ink hover:border-gold"
                 }`}
               >
                 {code === null ? "Tous les journaux" : JOURNAL_LABEL[code]}

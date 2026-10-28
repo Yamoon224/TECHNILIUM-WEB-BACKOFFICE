@@ -8,9 +8,9 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary: "bg-gold text-bg font-medium hover:bg-gold-bright",
+  primary: "bg-gold text-on-primary font-medium hover:bg-gold-bright",
   secondary: "border border-line text-ink hover:border-gold",
-  danger: "bg-red-700 text-ink hover:bg-red-600",
+  danger: "bg-red-700 text-white hover:bg-red-600",
   ghost: "bg-transparent text-ink-soft hover:text-ink",
 };
 

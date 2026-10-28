@@ -83,7 +83,7 @@ export default function VendorsPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-1 flex-col">
+    <div className="flex flex-1 flex-col">
       <BackofficeNav onLogout={handleLogout} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
@@ -182,7 +182,7 @@ function FilterPill({
       type="button"
       onClick={onClick}
       className={`rounded-full border px-3 py-1 text-sm transition-colors ${
-        active ? "border-gold bg-gold text-bg font-medium" : "border-line text-ink hover:border-gold"
+        active ? "border-gold bg-gold text-on-primary font-medium" : "border-line text-ink hover:border-gold"
       }`}
     >
       {children}
