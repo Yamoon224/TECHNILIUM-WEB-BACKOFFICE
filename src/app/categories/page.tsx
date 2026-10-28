@@ -1,5 +1,6 @@
 "use client";
 
+import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,6 +17,7 @@ import {
 } from "@/lib/catalog";
 
 export default function CategoriesPage() {
+  const { tr } = useAppearance();
   const router = useRouter();
   const { status: sessionStatus, token, logout } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -31,7 +33,7 @@ export default function CategoriesPage() {
 
     listCategories(token)
       .then(setCategories)
-      .catch((caught) => setError(caught instanceof CatalogError ? caught.message : "Catégories indisponibles."))
+      .catch((caught) => setError(caught instanceof CatalogError ? caught.message : tr("Catégories indisponibles.")))
       .finally(() => setLoading(false));
   }, [token]);
 
@@ -52,7 +54,7 @@ export default function CategoriesPage() {
       const created = await createCategory(token, { name, parent_id: parentId });
       setCategories((current) => [...current, created]);
     } catch (caught) {
-      setError(caught instanceof CatalogError ? caught.message : "Création impossible.");
+      setError(caught instanceof CatalogError ? caught.message : tr("Création impossible."));
       throw caught;
     }
   }
@@ -65,7 +67,7 @@ export default function CategoriesPage() {
       setCategories((current) => current.map((category) => (category.id === id ? updated : category)));
       setEditingId(null);
     } catch (caught) {
-      setError(caught instanceof CatalogError ? caught.message : "Mise à jour impossible.");
+      setError(caught instanceof CatalogError ? caught.message : tr("Mise à jour impossible."));
     }
   }
 
@@ -76,20 +78,20 @@ export default function CategoriesPage() {
       await deleteCategory(token, id);
       setCategories((current) => current.filter((category) => category.id !== id));
     } catch (caught) {
-      setError(caught instanceof CatalogError ? caught.message : "Suppression impossible.");
+      setError(caught instanceof CatalogError ? caught.message : tr("Suppression impossible."));
     }
   }
 
   if (sessionStatus === "checking") {
-    return <p className="px-4 py-16 text-center text-sm text-ink-soft">Vérification de la session…</p>;
+    return <p className="px-4 py-16 text-center text-sm text-ink-soft">{tr("Vérification de la session…")}</p>;
   }
 
   if (!token) {
     return (
       <main className="flex min-h-screen flex-1 flex-col items-center justify-center gap-3 px-4">
-        <p className="text-ink-soft">Connectez-vous pour accéder aux catégories.</p>
+        <p className="text-ink-soft">{tr("Connectez-vous pour accéder aux catégories.")}</p>
         <Link href="/" className="text-sm text-gold underline-offset-4 hover:underline">
-          Se connecter
+          {tr("Se connecter")}
         </Link>
       </main>
     );
@@ -100,27 +102,27 @@ export default function CategoriesPage() {
       <BackofficeNav onLogout={handleLogout} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
-        <h1 className="font-display text-2xl font-semibold text-ink">Catégories</h1>
+        <h1 className="font-display text-2xl font-semibold text-ink">{tr("Catégories")}</h1>
 
         {error ? <p className="text-sm text-danger">{error}</p> : null}
 
         <NewCategoryForm categories={categories} onCreate={handleCreate} />
 
         {loading ? (
-          <p className="text-sm text-ink-soft">Chargement…</p>
+          <p className="text-sm text-ink-soft">{tr("Chargement…")}</p>
         ) : categories.length === 0 ? (
-          <p className="text-sm text-ink-soft">Aucune catégorie.</p>
+          <p className="text-sm text-ink-soft">{tr("Aucune catégorie.")}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
-                  <th className="py-2 pr-4 font-medium">Nom</th>
-                  <th className="py-2 pr-4 font-medium">Slug</th>
-                  <th className="py-2 pr-4 font-medium">Parente</th>
-                  <th className="py-2 pr-4 font-medium">Produits</th>
-                  <th className="py-2 pr-4 font-medium">Active</th>
-                  <th className="py-2 font-medium">Action</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Nom")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Slug")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Parente")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Produits")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Active")}</th>
+                  <th className="py-2 font-medium">{tr("Action")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -140,7 +142,7 @@ export default function CategoriesPage() {
                         {categories.find((c) => c.id === category.parent_id)?.name ?? "—"}
                       </td>
                       <td className="py-3 pr-4 text-ink">{category.product_count ?? 0}</td>
-                      <td className="py-3 pr-4 text-ink-soft">{category.is_active ? "Oui" : "Non"}</td>
+                      <td className="py-3 pr-4 text-ink-soft">{category.is_active ? tr("Oui") : tr("Non")}</td>
                       <td className="py-3">
                         <div className="flex flex-wrap gap-2">
                           <button
@@ -148,14 +150,14 @@ export default function CategoriesPage() {
                             onClick={() => setEditingId(category.id)}
                             className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold"
                           >
-                            Modifier
+                            {tr("Modifier")}
                           </button>
                           <button
                             type="button"
                             onClick={() => handleDelete(category.id)}
                             className="rounded-sm border border-line px-2 py-1 text-xs text-danger transition-colors hover:border-danger"
                           >
-                            Supprimer
+                            {tr("Supprimer")}
                           </button>
                         </div>
                       </td>
@@ -178,6 +180,7 @@ function NewCategoryForm({
   categories: Category[];
   onCreate: (name: string, parentId: number | null) => Promise<void>;
 }) {
+  const { tr } = useAppearance();
   const [name, setName] = useState("");
   const [parentId, setParentId] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
@@ -201,23 +204,23 @@ function NewCategoryForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        Nom
+        {tr("Nom")}
         <input
           value={name}
           onChange={(event) => setName(event.target.value)}
-          placeholder="Ex. Accessoires audio"
+          placeholder={tr("Ex. Accessoires audio")}
           className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
       </label>
 
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        Catégorie parente
+        {tr("Catégorie parente")}
         <select
           value={parentId}
           onChange={(event) => setParentId(event.target.value)}
           className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         >
-          <option value="">Aucune</option>
+          <option value="">{tr("Aucune")}</option>
           {categories.map((category) => (
             <option key={category.id} value={category.id}>
               {category.name}
@@ -227,7 +230,7 @@ function NewCategoryForm({
       </label>
 
       <Button type="submit" disabled={submitting || !name.trim()}>
-        Ajouter
+        {tr("Ajouter")}
       </Button>
     </form>
   );
@@ -242,6 +245,7 @@ function EditCategoryRow({
   onSave: (patch: { name: string; is_active: boolean; position: number }) => Promise<void>;
   onCancel: () => void;
 }) {
+  const { tr } = useAppearance();
   const [name, setName] = useState(category.name);
   const [isActive, setIsActive] = useState(category.is_active);
   const [position, setPosition] = useState(category.position);
@@ -286,14 +290,14 @@ function EditCategoryRow({
             onClick={handleSave}
             className="rounded-sm border border-gold px-2 py-1 text-xs text-gold transition-colors disabled:opacity-50"
           >
-            Enregistrer
+            {tr("Enregistrer")}
           </button>
           <button
             type="button"
             onClick={onCancel}
             className="rounded-sm border border-line px-2 py-1 text-xs text-ink-soft transition-colors hover:border-gold"
           >
-            Annuler
+            {tr("Annuler")}
           </button>
         </div>
       </td>

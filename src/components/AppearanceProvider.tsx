@@ -11,6 +11,7 @@ import {
   type Appearance,
 } from "@/lib/appearance";
 import { translate, type MessageKey } from "@/lib/i18n";
+import { PHRASES_EN } from "@/lib/phrases";
 
 interface AppearanceContextValue {
   appearance: Appearance;
@@ -18,6 +19,8 @@ interface AppearanceContextValue {
   update: (patch: Partial<Appearance>) => void;
   reset: () => void;
   t: (key: MessageKey) => string;
+  /** Translates a page's French text (falls back to the French when no English exists). */
+  tr: (french: string) => string;
 }
 
 const AppearanceContext = createContext<AppearanceContextValue | null>(null);
@@ -73,7 +76,9 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<AppearanceContextValue>(
-    () => ({ appearance, theme, update, reset, t: (key) => translate(appearance.language, key) }),
+    () => ({ appearance, theme, update, reset, t: (key) => translate(appearance.language, key),
+      tr: (french) => (appearance.language === "en" ? (PHRASES_EN[french] ?? french) : french),
+    }),
     [appearance, theme, update, reset],
   );
 
