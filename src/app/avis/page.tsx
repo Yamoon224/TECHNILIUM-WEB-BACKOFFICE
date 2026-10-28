@@ -125,7 +125,7 @@ export default function ReviewsPage() {
         ) : (
           <ul className="flex flex-col gap-3">
             {reviews.map((review) => (
-              <li key={review.id} className="flex flex-col gap-2 rounded-sm border border-line p-4 text-sm">
+              <li key={review.id} className="flex flex-col gap-2 rounded-sm border border-line p-4 text-sm bg-surface shadow-card">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="flex items-center gap-2">
                     <span className="text-gold-bright">{stars(review.rating)}</span>

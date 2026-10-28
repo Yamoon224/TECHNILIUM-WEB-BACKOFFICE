@@ -90,7 +90,7 @@ export default function StockPage() {
           ) : lowStock.length === 0 ? (
             <p className="text-sm text-ink-soft">{tr("Aucune offre en stock faible.")}</p>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
               <table className="w-full min-w-[600px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-ink-soft">
@@ -122,7 +122,7 @@ export default function StockPage() {
           ) : movements.length === 0 ? (
             <p className="text-sm text-ink-soft">{tr("Aucun mouvement enregistré.")}</p>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
               <table className="w-full min-w-[640px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-ink-soft">
@@ -189,37 +189,41 @@ function NewMovementForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+    >
       <label className="field">
-<input placeholder=" "
+        <input
+          placeholder=" "
           type="number"
           value={offerId}
           onChange={(event) => setOfferId(event.target.value)}
           className="w-24 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-<span className="field-label">{tr("ID offre")}</span>
-</label>
+        <span className="field-label">{tr("ID offre")}</span>
+      </label>
 
       <label className="field">
-<input
+        <input
           type="number"
           value={delta}
           onChange={(event) => setDelta(event.target.value)}
           placeholder={tr("+20 ou -5")}
           className="w-28 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-<span className="field-label">{tr("Variation (+/-)")}</span>
-</label>
+        <span className="field-label">{tr("Variation (+/-)")}</span>
+      </label>
 
       <label className="field">
-<input
+        <input
           value={reason}
           onChange={(event) => setReason(event.target.value)}
           placeholder={tr("Réception fournisseur, casse…")}
           className="w-56 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-<span className="field-label">{tr("Motif")}</span>
-</label>
+        <span className="field-label">{tr("Motif")}</span>
+      </label>
 
       <Button type="submit" disabled={submitting}>
         {tr("Enregistrer")}

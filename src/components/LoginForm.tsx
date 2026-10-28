@@ -2,6 +2,8 @@
 
 import { useState, type FormEvent } from "react";
 import { useAppearance } from "./AppearanceProvider";
+import { LogoMark } from "./LogoMark";
+import { PasswordInput } from "./PasswordInput";
 
 export interface LoginFormProps {
   onSubmit: (email: string, password: string) => void;
@@ -22,37 +24,37 @@ export function LoginForm({ onSubmit, submitting, error }: LoginFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex w-full max-w-sm flex-col gap-4 rounded-sm border border-line bg-surface p-6"
+      className="flex w-full max-w-sm flex-col gap-4 rounded-sm border border-line bg-surface p-6 shadow-card"
     >
-      <div className="flex flex-col gap-1">
+      <div className="flex justify-center">
+        <LogoMark />
+      </div>
+
+      <div className="flex flex-col gap-1 text-center">
         <h1 className="text-lg font-medium text-ink">{t("login.title")}</h1>
         <p className="text-sm text-ink-soft">{t("login.subtitle")}</p>
       </div>
 
       <label className="field">
-<input
+        <input
           type="email"
           required
           autoComplete="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          className="rounded-sm border border-line bg-bg px-3 py-2 text-ink placeholder:text-ink-soft focus:border-gold focus:outline-none"
+          className="rounded-sm border border-line bg-bg px-3 py-2 text-ink focus:border-gold focus:outline-none"
           placeholder="prenom.nom@technilium.app"
         />
-<span className="field-label">{t("login.email")}</span>
-</label>
+        <span className="field-label">{t("login.email")}</span>
+      </label>
 
-      <label className="field">
-<input placeholder=" "
-          type="password"
-          required
-          autoComplete="current-password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          className="rounded-sm border border-line bg-bg px-3 py-2 text-ink focus:border-gold focus:outline-none"
-        />
-<span className="field-label">{t("login.password")}</span>
-</label>
+      <PasswordInput
+        required
+        autoComplete="current-password"
+        value={password}
+        onChange={(event) => setPassword(event.target.value)}
+        label={t("login.password")}
+      />
 
       {error ? <p className="text-sm text-danger">{error}</p> : null}
 

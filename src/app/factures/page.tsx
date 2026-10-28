@@ -114,7 +114,7 @@ export default function InvoicesPage() {
         ) : invoices.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucun document.")}</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
             <table className="w-full min-w-[860px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
@@ -211,16 +211,19 @@ function NewInvoiceForm({ onSubmit }: { onSubmit: (orderNumber: string) => Promi
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+    >
       <label className="field">
-<input
+        <input
           value={orderNumber}
           onChange={(event) => setOrderNumber(event.target.value)}
           placeholder={tr("TCH-20261025-XXXXXX")}
           className="w-56 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-<span className="field-label">{tr("N° commande à facturer")}</span>
-</label>
+        <span className="field-label">{tr("N° commande à facturer")}</span>
+      </label>
 
       <Button type="submit" disabled={submitting}>
         {tr("Émettre la facture")}

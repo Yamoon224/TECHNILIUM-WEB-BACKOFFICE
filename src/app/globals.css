@@ -60,6 +60,20 @@
   --font-sans: var(--font-plex-sans);
 }
 
+/* Cards: a visible, soft shadow (stronger in the dark theme, where it needs more depth). */
+:root {
+  --card-shadow: 0 1px 2px rgb(16 24 40 / 0.08), 0 8px 20px -6px rgb(16 24 40 / 0.18);
+  --card-shadow-hover: 0 2px 4px rgb(16 24 40 / 0.1), 0 14px 28px -8px rgb(16 24 40 / 0.28);
+}
+[data-theme="dark"] {
+  --card-shadow: 0 1px 2px rgb(0 0 0 / 0.5), 0 8px 24px -6px rgb(0 0 0 / 0.7);
+  --card-shadow-hover: 0 2px 4px rgb(0 0 0 / 0.55), 0 14px 30px -8px rgb(0 0 0 / 0.8);
+}
+@theme inline {
+  --shadow-card: var(--card-shadow);
+  --shadow-card-hover: var(--card-shadow-hover);
+}
+
 body {
   background: var(--bg);
   color: var(--ink);

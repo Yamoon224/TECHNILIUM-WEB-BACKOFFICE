@@ -123,7 +123,7 @@ export default function ShipmentsPage() {
         ) : shipments.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucune livraison.")}</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
             <table className="w-full min-w-[900px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
@@ -150,7 +150,9 @@ export default function ShipmentsPage() {
                       {shipment.delivery_city ? `, ${shipment.delivery_city}` : ""}
                     </td>
                     <td className="py-3 pr-4 text-ink-soft">
-                      {shipment.assigned_to ? `#${shipment.assigned_to}` : (
+                      {shipment.assigned_to ? (
+                        `#${shipment.assigned_to}`
+                      ) : (
                         <AssignForm
                           onAssign={(assignedTo) =>
                             handleAction(shipment.id, () => {
@@ -307,13 +309,16 @@ function AssignForm({ onAssign }: { onAssign: (assignedTo: number) => void }) {
       }}
       className="flex items-center gap-1"
     >
-      <input
-        type="number"
-        value={value}
-        onChange={(event) => setValue(event.target.value)}
-        placeholder={tr("ID livreur")}
-        className="w-20 rounded-sm border border-line bg-surface px-2 py-1 text-xs text-ink"
-      />
+      <label className="field w-28">
+        <input
+          type="number"
+          value={value}
+          onChange={(event) => setValue(event.target.value)}
+          placeholder=" "
+          className="rounded-sm border border-line bg-surface px-2 text-xs text-ink"
+        />
+        <span className="field-label">{tr("ID livreur")}</span>
+      </label>
       <button type="submit" className="rounded-sm border border-line px-2 py-1 text-xs text-ink hover:border-gold">
         {tr("Assigner")}
       </button>
@@ -347,12 +352,15 @@ function FailForm({ onFail }: { onFail: (notes?: string) => void }) {
       }}
       className="flex items-center gap-1"
     >
-      <input
-        value={notes}
-        onChange={(event) => setNotes(event.target.value)}
-        placeholder={tr("Motif (optionnel)")}
-        className="w-32 rounded-sm border border-line bg-surface px-2 py-1 text-xs text-ink"
-      />
+      <label className="field w-40">
+        <input
+          value={notes}
+          onChange={(event) => setNotes(event.target.value)}
+          placeholder=" "
+          className="rounded-sm border border-line bg-surface px-2 text-xs text-ink"
+        />
+        <span className="field-label">{tr("Motif (optionnel)")}</span>
+      </label>
       <button type="submit" className="rounded-sm border border-danger px-2 py-1 text-xs text-danger">
         {tr("Confirmer")}
       </button>
@@ -360,11 +368,7 @@ function FailForm({ onFail }: { onFail: (notes?: string) => void }) {
   );
 }
 
-function NewShipmentForm({
-  onCreate,
-}: {
-  onCreate: (orderNumber: string, assignedTo?: number) => Promise<void>;
-}) {
+function NewShipmentForm({ onCreate }: { onCreate: (orderNumber: string, assignedTo?: number) => Promise<void> }) {
   const { tr } = useAppearance();
   const [orderNumber, setOrderNumber] = useState("");
   const [assignedTo, setAssignedTo] = useState("");
@@ -393,26 +397,30 @@ function NewShipmentForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+    >
       <label className="field">
-<input
+        <input
           value={orderNumber}
           onChange={(event) => setOrderNumber(event.target.value)}
           placeholder={tr("TCH-20261025-XXXXXX")}
           className="w-48 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-<span className="field-label">{tr("N° commande")}</span>
-</label>
+        <span className="field-label">{tr("N° commande")}</span>
+      </label>
 
       <label className="field">
-<input placeholder=" "
+        <input
+          placeholder=" "
           type="number"
           value={assignedTo}
           onChange={(event) => setAssignedTo(event.target.value)}
           className="w-32 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-<span className="field-label">{tr("Livreur (ID, optionnel)")}</span>
-</label>
+        <span className="field-label">{tr("Livreur (ID, optionnel)")}</span>
+      </label>
 
       <Button type="submit" disabled={submitting}>
         {tr("Créer la livraison")}

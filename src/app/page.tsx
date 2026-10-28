@@ -5,7 +5,6 @@ import { AccountPanel } from "@/components/AccountPanel";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { BackofficeNav } from "@/components/BackofficeNav";
 import { LoginForm } from "@/components/LoginForm";
-import { LogoMark } from "@/components/LogoMark";
 import { AuthError, useAuth } from "@/lib/useAuth";
 
 export default function Home() {
@@ -40,8 +39,6 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-1 flex-col items-center justify-center gap-8 px-4 py-16">
-      <LogoMark />
-
       {status === "checking" ? (
         <p className="text-sm text-ink-soft">{t("login.checking")}</p>
       ) : (

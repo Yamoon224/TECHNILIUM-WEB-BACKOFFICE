@@ -94,7 +94,9 @@ export default function NotificationsPage() {
           <h1 className="font-display text-2xl font-semibold text-ink">{tr("Notifications clients")}</h1>
           <p className="text-sm text-ink-soft">
             {counts.sent} {tr("envoyé(s) ·")} {counts.pending} {tr("en attente ·")}{" "}
-            <span className={counts.failed > 0 ? "text-danger" : undefined}>{counts.failed} {tr("en échec")}</span>
+            <span className={counts.failed > 0 ? "text-danger" : undefined}>
+              {counts.failed} {tr("en échec")}
+            </span>
           </p>
         </div>
 
@@ -106,20 +108,24 @@ export default function NotificationsPage() {
                 type="button"
                 onClick={() => setFilter(value)}
                 className={`rounded-full border px-3 py-1 text-sm transition-colors ${
-                  filter === value ? "border-gold bg-gold text-on-primary font-medium" : "border-line text-ink hover:border-gold"
+                  filter === value
+                    ? "border-gold bg-gold text-on-primary font-medium"
+                    : "border-line text-ink hover:border-gold"
                 }`}
               >
                 {value === null ? tr("Tous") : NOTIFICATION_STATUS_LABEL[value]}
               </button>
             ))}
           </nav>
-          <input
-            value={reference}
-            onChange={(event) => setReference(event.target.value)}
-            placeholder={tr("N° de commande")}
-            aria-label={tr("Filtrer par numéro de commande")}
-            className="w-52 rounded-sm border border-line bg-surface px-3 py-1.5 text-sm text-ink"
-          />
+          <label className="field w-52">
+            <input
+              value={reference}
+              onChange={(event) => setReference(event.target.value)}
+              placeholder=" "
+              className="rounded-sm border border-line bg-surface px-3 text-sm text-ink"
+            />
+            <span className="field-label">{tr("N° de commande")}</span>
+          </label>
         </div>
 
         {error ? <p className="text-sm text-danger">{error}</p> : null}
@@ -129,7 +135,7 @@ export default function NotificationsPage() {
         ) : items.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucun message.")}</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
             <table className="w-full min-w-[900px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
@@ -157,7 +163,11 @@ export default function NotificationsPage() {
                       <span className={item.status === "failed" ? "text-danger" : "text-ink-soft"}>
                         {tr(NOTIFICATION_STATUS_LABEL[item.status])}
                       </span>
-                      {item.attempts > 1 ? <span className="block text-xs text-ink-soft">{item.attempts} {tr("essais")}</span> : null}
+                      {item.attempts > 1 ? (
+                        <span className="block text-xs text-ink-soft">
+                          {item.attempts} {tr("essais")}
+                        </span>
+                      ) : null}
                       {item.error ? <span className="block text-xs text-danger">{item.error}</span> : null}
                     </td>
                     <td className="py-3">

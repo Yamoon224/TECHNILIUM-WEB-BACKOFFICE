@@ -142,7 +142,7 @@ export default function PaymentsPage() {
         ) : payments.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucun paiement.")}</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
             <table className="w-full min-w-[820px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
@@ -288,19 +288,22 @@ function NewPaymentForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+    >
       <label className="field">
-<input
+        <input
           value={orderNumber}
           onChange={(event) => setOrderNumber(event.target.value)}
           placeholder={tr("TCH-20261025-XXXXXX")}
           className="w-48 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-<span className="field-label">{tr("N° commande")}</span>
-</label>
+        <span className="field-label">{tr("N° commande")}</span>
+      </label>
 
       <label className="field">
-<select
+        <select
           value={method}
           onChange={(event) => setMethod(event.target.value as PaymentMethod)}
           className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
@@ -308,13 +311,13 @@ function NewPaymentForm({
           <option value="cod">{tr("Paiement à la livraison")}</option>
           <option value="mobile_money">{tr("Mobile money")}</option>
         </select>
-<span className="field-label">{tr("Méthode")}</span>
-</label>
+        <span className="field-label">{tr("Méthode")}</span>
+      </label>
 
       {method === "mobile_money" ? (
         <>
           <label className="field">
-<select
+            <select
               value={provider}
               onChange={(event) => setProvider(event.target.value as MobileMoneyProvider)}
               className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
@@ -323,31 +326,32 @@ function NewPaymentForm({
               <option value="mtn_money">{tr("MTN Money")}</option>
               <option value="wave">{tr("Wave")}</option>
             </select>
-<span className="field-label">{tr("Opérateur")}</span>
-</label>
+            <span className="field-label">{tr("Opérateur")}</span>
+          </label>
 
           <label className="field">
-<input
+            <input
               value={reference}
               onChange={(event) => setReference(event.target.value)}
               placeholder={tr("MM-12345678")}
               className="w-40 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
             />
-<span className="field-label">{tr("Référence transaction")}</span>
-</label>
+            <span className="field-label">{tr("Référence transaction")}</span>
+          </label>
         </>
       ) : null}
 
       <label className="field">
-<input placeholder=" "
+        <input
+          placeholder=" "
           type="number"
           min={0}
           value={amount}
           onChange={(event) => setAmount(event.target.value)}
           className="w-32 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-<span className="field-label">{tr("Montant (F CFA)")}</span>
-</label>
+        <span className="field-label">{tr("Montant (F CFA)")}</span>
+      </label>
 
       <Button type="submit" disabled={submitting}>
         {tr("Enregistrer")}

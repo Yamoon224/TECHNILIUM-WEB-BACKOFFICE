@@ -122,23 +122,25 @@ export default function ReportsPage() {
             }}
           >
             <label className="field">
-<input placeholder=" "
+              <input
+                placeholder=" "
                 type="date"
                 value={draft.from}
                 onChange={(event) => setDraft({ ...draft, from: event.target.value })}
                 className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
               />
-<span className="field-label">{tr("Du")}</span>
-</label>
+              <span className="field-label">{tr("Du")}</span>
+            </label>
             <label className="field">
-<input placeholder=" "
+              <input
+                placeholder=" "
                 type="date"
                 value={draft.to}
                 onChange={(event) => setDraft({ ...draft, to: event.target.value })}
                 className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
               />
-<span className="field-label">{tr("Au")}</span>
-</label>
+              <span className="field-label">{tr("Au")}</span>
+            </label>
             <Button type="submit" disabled={!isValidPeriod(draft)}>
               {tr("Appliquer")}
             </Button>
@@ -154,7 +156,11 @@ export default function ReportsPage() {
         </div>
 
         {error ? <p className="text-sm text-danger">{error}</p> : null}
-        {!dashboard ? <p className="text-sm text-ink-soft">{tr("Chargement…")}</p> : <Report dashboard={dashboard} sellers={sellers} />}
+        {!dashboard ? (
+          <p className="text-sm text-ink-soft">{tr("Chargement…")}</p>
+        ) : (
+          <Report dashboard={dashboard} sellers={sellers} />
+        )}
         {period ? <MarginSection token={token} period={period} /> : null}
       </main>
     </div>
@@ -177,7 +183,10 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
       </section>
 
       {alerts.stalled_orders > 0 || alerts.low_stock_count > 0 ? (
-        <section aria-label={tr("Alertes")} className="flex flex-col gap-2 rounded-sm border border-gold-deep p-4 text-sm">
+        <section
+          aria-label={tr("Alertes")}
+          className="flex flex-col gap-2 rounded-sm border border-gold-deep p-4 text-sm"
+        >
           <h2 className="font-display text-lg text-ink">{tr("Alertes")}</h2>
           {alerts.stalled_orders > 0 ? (
             <p className="text-ink">
@@ -186,11 +195,14 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
           ) : null}
           {alerts.low_stock_count > 0 ? (
             <>
-              <p className="text-ink">{alerts.low_stock_count} {tr("offre(s) en stock bas ou en rupture :")}</p>
+              <p className="text-ink">
+                {alerts.low_stock_count} {tr("offre(s) en stock bas ou en rupture :")}
+              </p>
               <ul className="text-xs text-ink-soft">
                 {alerts.low_stock.map((offer) => (
                   <li key={offer.offer_id}>
-                    {offer.product} ({offer.sku}{tr(") — stock :")} {offer.stock}
+                    {offer.product} ({offer.sku}
+                    {tr(") — stock :")} {offer.stock}
                   </li>
                 ))}
               </ul>
@@ -240,7 +252,12 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
           <dl className="flex flex-col gap-1 text-sm">
             <Row label="Encaissé" value={xof(finance.collected)} />
             {Object.entries(finance.collected_by_method).map(([method, amount]) => (
-              <Row key={method} label={`${tr("dont")} ${tr(METHOD_LABEL[method] ?? method)}`} value={xof(amount)} muted />
+              <Row
+                key={method}
+                label={`${tr("dont")} ${tr(METHOD_LABEL[method] ?? method)}`}
+                value={xof(amount)}
+                muted
+              />
             ))}
             <Row label="Remboursé aux clients" value={xof(finance.refunded)} />
             <Row label="Commissions" value={xof(finance.commissions)} />
@@ -255,7 +272,12 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
             <Row label="Dossiers ouverts sur la période" value={String(returns.count)} />
             <Row label="Montant remboursé" value={xof(returns.refunded_amount)} />
             {Object.entries(returns.by_status).map(([status, count]) => (
-              <Row key={status} label={tr(RETURN_STATUS_LABEL[status as ReturnStatus] ?? status)} value={String(count)} muted />
+              <Row
+                key={status}
+                label={tr(RETURN_STATUS_LABEL[status as ReturnStatus] ?? status)}
+                value={String(count)}
+                muted
+              />
             ))}
           </dl>
         </section>
@@ -271,7 +293,9 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
               {sellers.map((seller) => (
                 <tr key={seller.vendor_id ?? "own"} className="border-b border-line">
                   <td className="py-2 pr-4 text-ink">{seller.seller}</td>
-                  <td className="py-2 pr-4 text-right text-ink-soft">{seller.orders} {tr("cmd")}</td>
+                  <td className="py-2 pr-4 text-right text-ink-soft">
+                    {seller.orders} {tr("cmd")}
+                  </td>
                   <td className="py-2 text-right text-ink">{xof(seller.revenue)}</td>
                 </tr>
               ))}
@@ -289,7 +313,7 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
 
 function Tile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-sm border border-line p-4">
+    <div className="rounded-sm border border-line p-4 bg-surface shadow-card">
       <dt className="text-xs text-ink-soft">{label}</dt>
       <dd className="mt-1 font-display text-xl text-ink">{value}</dd>
     </div>
@@ -352,7 +376,11 @@ function SalesChart({ days }: { days: { date: string; orders: number; revenue: n
           </tbody>
         </table>
       ) : (
-        <div role="img" aria-label={tr("Chiffre d'affaires par jour")} className="flex h-40 items-end gap-1 border-b border-line">
+        <div
+          role="img"
+          aria-label={tr("Chiffre d'affaires par jour")}
+          className="flex h-40 items-end gap-1 border-b border-line"
+        >
           {days.map((day) => (
             <div
               key={day.date}
@@ -406,7 +434,11 @@ function MarginSection({ token, period }: { token: string; period: Period }) {
         <h2 className="font-display text-xl font-semibold text-ink">{tr("Marge de Technilium")}</h2>
         <button
           type="button"
-          onClick={() => downloadMarginCsv(token, period).catch((caught) => setError(caught instanceof ReportsError ? caught.message : tr("Export impossible.")))}
+          onClick={() =>
+            downloadMarginCsv(token, period).catch((caught) =>
+              setError(caught instanceof ReportsError ? caught.message : tr("Export impossible.")),
+            )
+          }
           className="rounded-sm border border-line px-3 py-2 text-sm text-ink transition-colors hover:border-gold"
         >
           {tr("Exporter la marge (CSV)")}
@@ -422,14 +454,17 @@ function MarginSection({ token, period }: { token: string; period: Period }) {
 
       {hasCostGap(margin.quality) ? (
         <p role="alert" className="rounded-sm border border-gold-deep p-3 text-sm text-ink">
-          {margin.quality.uncosted_lines} {tr("ligne(s) vendue(s), soit")} {xof(margin.quality.uncosted_revenue)} {tr("de chiffre d'affaires HT, n'ont aucun coût enregistré (produit jamais acheté par le module Achats) : la marge affichée est surestimée d'autant.")}
+          {margin.quality.uncosted_lines} {tr("ligne(s) vendue(s), soit")} {xof(margin.quality.uncosted_revenue)}{" "}
+          {tr(
+            "de chiffre d'affaires HT, n'ont aucun coût enregistré (produit jamais acheté par le module Achats) : la marge affichée est surestimée d'autant.",
+          )}
         </p>
       ) : null}
 
       {margin.by_product.length === 0 ? (
         <p className="text-sm text-ink-soft">{tr("Aucune vente en propre livrée sur la période.")}</p>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
           <table className="w-full min-w-[720px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-line text-left text-ink-soft">
@@ -448,7 +483,9 @@ function MarginSection({ token, period }: { token: string; period: Period }) {
                   <td className="py-2 pr-4 text-right text-ink-soft">{row.units}</td>
                   <td className="py-2 pr-4 text-right text-ink-soft">{xof(row.revenue)}</td>
                   <td className="py-2 pr-4 text-right text-ink-soft">{xof(row.cost)}</td>
-                  <td className={`py-2 pr-4 text-right ${row.margin < 0 ? "text-danger" : "text-ink"}`}>{xof(row.margin)}</td>
+                  <td className={`py-2 pr-4 text-right ${row.margin < 0 ? "text-danger" : "text-ink"}`}>
+                    {xof(row.margin)}
+                  </td>
                   <td className="py-2 text-right text-ink-soft">{marginPercentLabel(row.margin_percent)}</td>
                 </tr>
               ))}
@@ -458,7 +495,9 @@ function MarginSection({ token, period }: { token: string; period: Period }) {
       )}
 
       <p className="text-xs text-ink-soft">
-        {tr("Retours sur la période (non déduits ci-dessus) :")} {xof(margin.returns.refunded_ttc)} {tr("remboursés TTC,")} {xof(margin.returns.cost_given_back)} {tr("de coût repris. Montants hors TVA à")} {margin.vat_percent} {tr("%, remises comprises, ventes de vendeurs tiers et commissions exclues.")}
+        {tr("Retours sur la période (non déduits ci-dessus) :")} {xof(margin.returns.refunded_ttc)}{" "}
+        {tr("remboursés TTC,")} {xof(margin.returns.cost_given_back)} {tr("de coût repris. Montants hors TVA à")}{" "}
+        {margin.vat_percent} {tr("%, remises comprises, ventes de vendeurs tiers et commissions exclues.")}
       </p>
     </section>
   );

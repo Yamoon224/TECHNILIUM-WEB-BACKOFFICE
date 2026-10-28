@@ -113,7 +113,7 @@ export default function CategoriesPage() {
         ) : categories.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucune catégorie.")}</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
             <table className="w-full min-w-[720px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
@@ -202,19 +202,22 @@ function NewCategoryForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+    >
       <label className="field">
-<input
+        <input
           value={name}
           onChange={(event) => setName(event.target.value)}
           placeholder={tr("Ex. Accessoires audio")}
           className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-<span className="field-label">{tr("Nom")}</span>
-</label>
+        <span className="field-label">{tr("Nom")}</span>
+      </label>
 
       <label className="field">
-<select
+        <select
           value={parentId}
           onChange={(event) => setParentId(event.target.value)}
           className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
@@ -226,8 +229,8 @@ function NewCategoryForm({
             </option>
           ))}
         </select>
-<span className="field-label">{tr("Catégorie parente")}</span>
-</label>
+        <span className="field-label">{tr("Catégorie parente")}</span>
+      </label>
 
       <Button type="submit" disabled={submitting || !name.trim()}>
         {tr("Ajouter")}

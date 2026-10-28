@@ -492,4 +492,6 @@ export const PHRASES_EN: Record<string, string> = {
   "Archivée": "Archived",
   "dont": "of which",
   "Changement impossible.": "Could not change it.",
+  "Masquer le mot de passe": "Hide the password",
+  "Afficher le mot de passe": "Show the password",
 };

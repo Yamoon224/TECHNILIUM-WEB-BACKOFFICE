@@ -125,13 +125,17 @@ export default function PayoutsPage() {
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h1 className="font-display text-2xl font-semibold text-ink">{tr("Reversements vendeurs")}</h1>
           <p className="text-sm text-ink-soft">
-            {tr("Restant dû aux vendeurs :")} <span className="text-ink">{formatMoney({ amount: owed, currency: "XOF" })}</span>
+            {tr("Restant dû aux vendeurs :")}{" "}
+            <span className="text-ink">{formatMoney({ amount: owed, currency: "XOF" })}</span>
           </p>
         </div>
 
-        <form onSubmit={handleCalculate} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
+        <form
+          onSubmit={handleCalculate}
+          className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+        >
           <label className="field">
-<select
+            <select
               value={vendorId}
               onChange={(event) => setVendorId(event.target.value)}
               className="min-w-56 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
@@ -143,13 +147,15 @@ export default function PayoutsPage() {
                 </option>
               ))}
             </select>
-<span className="field-label">{tr("Vendeur")}</span>
-</label>
+            <span className="field-label">{tr("Vendeur")}</span>
+          </label>
           <Button type="submit" disabled={busy || !vendorId}>
             {tr("Calculer le reversement")}
           </Button>
           <p className="w-full text-xs text-ink-soft">
-            {tr("Inclut les commandes livrées dont le délai de retour est écoulé et qui n'ont pas encore été reversées.")}
+            {tr(
+              "Inclut les commandes livrées dont le délai de retour est écoulé et qui n'ont pas encore été reversées.",
+            )}
           </p>
         </form>
 
@@ -160,7 +166,7 @@ export default function PayoutsPage() {
         ) : payouts.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucun reversement.")}</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
             <table className="w-full min-w-[860px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">

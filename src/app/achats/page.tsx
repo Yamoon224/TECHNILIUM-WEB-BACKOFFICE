@@ -93,7 +93,9 @@ export default function ProcurementPage() {
               type="button"
               onClick={() => setTab(id)}
               className={`rounded-full border px-3 py-1 text-sm transition-colors ${
-                tab === id ? "border-gold bg-gold text-on-primary font-medium" : "border-line text-ink hover:border-gold"
+                tab === id
+                  ? "border-gold bg-gold text-on-primary font-medium"
+                  : "border-line text-ink hover:border-gold"
               }`}
             >
               {label}
@@ -191,7 +193,7 @@ function OrdersTab({ token }: { token: string }) {
       ) : orders.data.length === 0 ? (
         <p className="text-sm text-ink-soft">{tr("Aucun bon de commande.")}</p>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
           <table className="w-full min-w-[760px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-line text-left text-ink-soft">
@@ -221,7 +223,9 @@ function OrdersTab({ token }: { token: string }) {
                           order={open}
                           busy={busy}
                           onPlace={() => run(() => placePurchaseOrder(token, open.id))}
-                          onCancel={() => window.confirm(`Annuler ${open.number} ?`) && run(() => cancelPurchaseOrder(token, open.id))}
+                          onCancel={() =>
+                            window.confirm(`Annuler ${open.number} ?`) && run(() => cancelPurchaseOrder(token, open.id))
+                          }
                           onLanded={() => addCost(open)}
                           onReceive={(lines) => run(() => receiveGoods(token, open.id, lines))}
                         />
@@ -294,7 +298,12 @@ function OrderDetail({
           </button>
         ) : null}
         {actions.includes("cancel") ? (
-          <button type="button" disabled={busy} onClick={onCancel} className="rounded-sm border border-danger px-2 py-1 text-xs text-danger disabled:opacity-50">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={onCancel}
+            className="rounded-sm border border-danger px-2 py-1 text-xs text-danger disabled:opacity-50"
+          >
             {tr("Annuler")}
           </button>
         ) : null}
@@ -327,39 +336,61 @@ function OrderDetail({
 
       {(order.landed_costs ?? []).length > 0 ? (
         <p className="text-xs text-ink-soft">
-          {tr("Frais d'approche :")} {(order.landed_costs ?? []).map((cost) => `${cost.label} ${xof(cost.amount)}`).join(" · ")}
+          {tr("Frais d'approche :")}{" "}
+          {(order.landed_costs ?? []).map((cost) => `${cost.label} ${xof(cost.amount)}`).join(" · ")}
         </p>
       ) : null}
 
       {actions.includes("receive") && toReceive.length > 0 ? (
-        <div className="flex flex-col gap-2 rounded-sm border border-line p-3">
-          <p className="text-sm text-ink">{tr("Réception : contrôlez chaque ligne (acceptée = entre en stock, refusée = retour fournisseur).")}</p>
+        <div className="flex flex-col gap-2 rounded-sm border border-line p-3 bg-surface shadow-card">
+          <p className="text-sm text-ink">
+            {tr("Réception : contrôlez chaque ligne (acceptée = entre en stock, refusée = retour fournisseur).")}
+          </p>
           {toReceive.map((line) => (
             <div key={line.id} className="flex flex-wrap items-center gap-3 text-xs text-ink-soft">
               <span className="w-64 text-ink">{line.description}</span>
               <label className="field items-center">
-<input placeholder=" "
+                <input
+                  placeholder=" "
                   inputMode="numeric"
                   value={receipt[line.id]?.accepted ?? ""}
-                  onChange={(e) => setReceipt({ ...receipt, [line.id]: { rejected: receipt[line.id]?.rejected ?? "", accepted: e.target.value } })}
+                  onChange={(e) =>
+                    setReceipt({
+                      ...receipt,
+                      [line.id]: { rejected: receipt[line.id]?.rejected ?? "", accepted: e.target.value },
+                    })
+                  }
                   className={`${field} w-20`}
                 />
-<span className="field-label">{tr("Acceptées")}</span>
-</label>
+                <span className="field-label">{tr("Acceptées")}</span>
+              </label>
               <label className="field items-center">
-<input placeholder=" "
+                <input
+                  placeholder=" "
                   inputMode="numeric"
                   value={receipt[line.id]?.rejected ?? ""}
-                  onChange={(e) => setReceipt({ ...receipt, [line.id]: { accepted: receipt[line.id]?.accepted ?? "", rejected: e.target.value } })}
+                  onChange={(e) =>
+                    setReceipt({
+                      ...receipt,
+                      [line.id]: { accepted: receipt[line.id]?.accepted ?? "", rejected: e.target.value },
+                    })
+                  }
                   className={`${field} w-20`}
                 />
-<span className="field-label">{tr("Refusées")}</span>
-</label>
-              <span>{tr("reste")} {line.outstanding}</span>
+                <span className="field-label">{tr("Refusées")}</span>
+              </label>
+              <span>
+                {tr("reste")} {line.outstanding}
+              </span>
             </div>
           ))}
           <Notice error={error} />
-          <button type="button" disabled={busy} onClick={submitReceipt} className="self-start rounded-sm border border-gold px-3 py-1.5 text-sm text-gold disabled:opacity-50">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={submitReceipt}
+            className="self-start rounded-sm border border-gold px-3 py-1.5 text-sm text-gold disabled:opacity-50"
+          >
             {tr("Enregistrer la réception")}
           </button>
         </div>
@@ -367,7 +398,8 @@ function OrderDetail({
 
       {(order.receipts ?? []).length > 0 ? (
         <p className="text-xs text-ink-soft">
-          {(order.receipts ?? []).length} {tr("réception(s) :")} {xof((order.receipts ?? []).reduce((sum, r) => sum + r.goods_amount, 0))} {tr("de marchandises,")}{" "}
+          {(order.receipts ?? []).length} {tr("réception(s) :")}{" "}
+          {xof((order.receipts ?? []).reduce((sum, r) => sum + r.goods_amount, 0))} {tr("de marchandises,")}{" "}
           {xof((order.receipts ?? []).reduce((sum, r) => sum + r.landed_amount, 0))} {tr("de frais imputés au stock.")}
         </p>
       ) : null}
@@ -380,7 +412,11 @@ function NewOrderForm({
   onSubmit,
 }: {
   suppliers: Supplier[];
-  onSubmit: (input: { supplier_id: number; lines: { offer_id: number; quantity: number; unit_cost_amount: number }[]; expected_at?: string }) => Promise<void>;
+  onSubmit: (input: {
+    supplier_id: number;
+    lines: { offer_id: number; quantity: number; unit_cost_amount: number }[];
+    expected_at?: string;
+  }) => Promise<void>;
 }) {
   const { tr } = useAppearance();
   const [supplierId, setSupplierId] = useState("");
@@ -398,7 +434,9 @@ function NewOrderForm({
 
     if (!supplierId) return setError("Choisissez un fournisseur.");
     if (!parsed || parsed.length === 0) {
-      return setError("Lignes invalides : saisissez offre:quantité:coût unitaire, séparés par des virgules (ex. 12:10:5000, 15:4:20000). Une offre une seule fois.");
+      return setError(
+        "Lignes invalides : saisissez offre:quantité:coût unitaire, séparés par des virgules (ex. 12:10:5000, 15:4:20000). Une offre une seule fois.",
+      );
     }
 
     setSubmitting(true);
@@ -414,9 +452,12 @@ function NewOrderForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+    >
       <label className="field">
-<select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} className={`${field} min-w-52`}>
+        <select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} className={`${field} min-w-52`}>
           <option value="">{tr("Choisir…")}</option>
           {suppliers.map((supplier) => (
             <option key={supplier.id} value={supplier.id}>
@@ -424,20 +465,34 @@ function NewOrderForm({
             </option>
           ))}
         </select>
-<span className="field-label">{tr("Fournisseur")}</span>
-</label>
+        <span className="field-label">{tr("Fournisseur")}</span>
+      </label>
       <label className="field">
-<input value={lines} onChange={(e) => setLines(e.target.value)} placeholder="12:10:5000, 15:4:20000" className={`${field} w-72`} />
-<span className="field-label">{tr("Lignes (offre:quantité:coût unitaire)")}</span>
-</label>
+        <input
+          value={lines}
+          onChange={(e) => setLines(e.target.value)}
+          placeholder="12:10:5000, 15:4:20000"
+          className={`${field} w-72`}
+        />
+        <span className="field-label">{tr("Lignes (offre:quantité:coût unitaire)")}</span>
+      </label>
       <label className="field">
-<input placeholder=" " type="date" value={expected} onChange={(e) => setExpected(e.target.value)} className={field} />
-<span className="field-label">{tr("Livraison attendue")}</span>
-</label>
+        <input
+          placeholder=" "
+          type="date"
+          value={expected}
+          onChange={(e) => setExpected(e.target.value)}
+          className={field}
+        />
+        <span className="field-label">{tr("Livraison attendue")}</span>
+      </label>
       <Button type="submit" disabled={submitting}>
-        {tr("Créer le bon")}{total > 0 ? ` (${xof(total)})` : ""}
+        {tr("Créer le bon")}
+        {total > 0 ? ` (${xof(total)})` : ""}
       </Button>
-      <p className="w-full text-xs text-ink-soft">{tr("Seul le stock propre de Technilium peut être acheté. Le bon est créé en brouillon.")}</p>
+      <p className="w-full text-xs text-ink-soft">
+        {tr("Seul le stock propre de Technilium peut être acheté. Le bon est créé en brouillon.")}
+      </p>
       {error ? <p className="w-full text-sm text-danger">{error}</p> : null}
     </form>
   );
@@ -459,10 +514,16 @@ function SuppliersTab({ token }: { token: string }) {
     setFormError(null);
 
     const days = parseOptionalAmount(terms === "0" ? "" : terms);
-    if (!name.trim() || days === null) return setFormError("Un nom et des conditions de paiement valides (jours) sont requis.");
+    if (!name.trim() || days === null)
+      return setFormError("Un nom et des conditions de paiement valides (jours) sont requis.");
 
     try {
-      await createSupplier(token, { name: name.trim(), contact_name: contact || null, phone: phone || null, payment_terms_days: days ?? 0 });
+      await createSupplier(token, {
+        name: name.trim(),
+        contact_name: contact || null,
+        phone: phone || null,
+        payment_terms_days: days ?? 0,
+      });
       setName("");
       setContact("");
       setPhone("");
@@ -474,23 +535,37 @@ function SuppliersTab({ token }: { token: string }) {
 
   return (
     <section className="flex flex-col gap-4">
-      <form onSubmit={handleCreate} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
+      <form
+        onSubmit={handleCreate}
+        className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+      >
         <label className="field">
-<input placeholder=" " value={name} onChange={(e) => setName(e.target.value)} className={`${field} w-56`} />
-<span className="field-label">{tr("Nom")}</span>
-</label>
+          <input placeholder=" " value={name} onChange={(e) => setName(e.target.value)} className={`${field} w-56`} />
+          <span className="field-label">{tr("Nom")}</span>
+        </label>
         <label className="field">
-<input placeholder=" " value={contact} onChange={(e) => setContact(e.target.value)} className={`${field} w-44`} />
-<span className="field-label">{tr("Contact")}</span>
-</label>
+          <input
+            placeholder=" "
+            value={contact}
+            onChange={(e) => setContact(e.target.value)}
+            className={`${field} w-44`}
+          />
+          <span className="field-label">{tr("Contact")}</span>
+        </label>
         <label className="field">
-<input placeholder=" " value={phone} onChange={(e) => setPhone(e.target.value)} className={`${field} w-36`} />
-<span className="field-label">{tr("Téléphone")}</span>
-</label>
+          <input placeholder=" " value={phone} onChange={(e) => setPhone(e.target.value)} className={`${field} w-36`} />
+          <span className="field-label">{tr("Téléphone")}</span>
+        </label>
         <label className="field">
-<input placeholder=" " value={terms} onChange={(e) => setTerms(e.target.value)} inputMode="numeric" className={`${field} w-24`} />
-<span className="field-label">{tr("Paiement à (jours)")}</span>
-</label>
+          <input
+            placeholder=" "
+            value={terms}
+            onChange={(e) => setTerms(e.target.value)}
+            inputMode="numeric"
+            className={`${field} w-24`}
+          />
+          <span className="field-label">{tr("Paiement à (jours)")}</span>
+        </label>
         <Button type="submit">{tr("Ajouter")}</Button>
         {formError ? <p className="w-full text-sm text-danger">{formError}</p> : null}
       </form>
@@ -508,7 +583,8 @@ function SuppliersTab({ token }: { token: string }) {
               <span className="flex flex-col">
                 <span className={supplier.active ? "text-ink" : "text-ink-soft line-through"}>{supplier.name}</span>
                 <span className="text-xs text-ink-soft">
-                  {supplier.contact_name ?? "—"} · {supplier.phone ?? "—"} {tr("· paiement à")} {supplier.payment_terms_days} j
+                  {supplier.contact_name ?? "—"} · {supplier.phone ?? "—"} {tr("· paiement à")}{" "}
+                  {supplier.payment_terms_days} j
                 </span>
               </span>
               <button
@@ -517,7 +593,9 @@ function SuppliersTab({ token }: { token: string }) {
                 onClick={() =>
                   setSupplierActive(token, supplier.id, !supplier.active)
                     .then(reload)
-                    .catch((caught) => setError(caught instanceof ProcurementError ? caught.message : tr("Action impossible.")))
+                    .catch((caught) =>
+                      setError(caught instanceof ProcurementError ? caught.message : tr("Action impossible.")),
+                    )
                 }
               >
                 {supplier.active ? tr("Désactiver") : tr("Réactiver")}
@@ -535,7 +613,9 @@ function SuppliersTab({ token }: { token: string }) {
 function InvoicesTab({ token }: { token: string }) {
   const { tr } = useAppearance();
   const [filter, setFilter] = useState<"open" | "overdue" | "settled" | undefined>("open");
-  const invoices = useLoader<SupplierInvoice[]>(useCallback(() => listSupplierInvoices(token, filter), [token, filter]));
+  const invoices = useLoader<SupplierInvoice[]>(
+    useCallback(() => listSupplierInvoices(token, filter), [token, filter]),
+  );
   const payables = useLoader<Payables>(useCallback(() => getPayables(token), [token]));
   const suppliers = useLoader<Supplier[]>(useCallback(() => listSuppliers(token), [token]));
 
@@ -545,7 +625,9 @@ function InvoicesTab({ token }: { token: string }) {
   }
 
   function pay(invoice: SupplierInvoice) {
-    const raw = window.prompt(`Montant à régler sur ${invoice.number} (reste ${invoice.outstanding}). Laisser vide pour tout régler :`);
+    const raw = window.prompt(
+      `Montant à régler sur ${invoice.number} (reste ${invoice.outstanding}). Laisser vide pour tout régler :`,
+    );
     if (raw === null) return;
     const amount = parseOptionalAmount(raw);
     if (amount === null) return invoices.setError("Montant invalide : saisissez un entier positif.");
@@ -555,18 +637,20 @@ function InvoicesTab({ token }: { token: string }) {
 
     paySupplierInvoice(token, invoice.id, method.trim(), amount)
       .then(refreshAll)
-      .catch((caught) => invoices.setError(caught instanceof ProcurementError ? caught.message : "Règlement impossible."));
+      .catch((caught) =>
+        invoices.setError(caught instanceof ProcurementError ? caught.message : "Règlement impossible."),
+      );
   }
 
   return (
     <section className="flex flex-col gap-4">
       {payables.data ? (
         <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          <div className="rounded-sm border border-line p-4">
+          <div className="rounded-sm border border-line p-4 bg-surface shadow-card">
             <dt className="text-xs text-ink-soft">{tr("Dû aux fournisseurs")}</dt>
             <dd className="mt-1 font-display text-xl text-ink">{xof(payables.data.total_outstanding)}</dd>
           </div>
-          <div className="rounded-sm border border-line p-4">
+          <div className="rounded-sm border border-line p-4 bg-surface shadow-card">
             <dt className="text-xs text-ink-soft">{tr("Dont échu")}</dt>
             <dd className={`mt-1 font-display text-xl ${payables.data.total_overdue > 0 ? "text-danger" : "text-ink"}`}>
               {xof(payables.data.total_overdue)}
@@ -575,16 +659,31 @@ function InvoicesTab({ token }: { token: string }) {
         </dl>
       ) : null}
 
-      <NewInvoiceForm suppliers={suppliers.data ?? []} onSubmit={async (input) => { await createSupplierInvoice(token, input); refreshAll(); }} />
+      <NewInvoiceForm
+        suppliers={suppliers.data ?? []}
+        onSubmit={async (input) => {
+          await createSupplierInvoice(token, input);
+          refreshAll();
+        }}
+      />
 
       <nav className="flex flex-wrap gap-2">
-        {([["open", "Ouvertes"], ["overdue", "En retard"], ["settled", "Soldées"], [undefined, "Toutes"]] as const).map(([value, label]) => (
+        {(
+          [
+            ["open", "Ouvertes"],
+            ["overdue", "En retard"],
+            ["settled", "Soldées"],
+            [undefined, "Toutes"],
+          ] as const
+        ).map(([value, label]) => (
           <button
             key={label}
             type="button"
             onClick={() => setFilter(value)}
             className={`rounded-full border px-3 py-1 text-sm transition-colors ${
-              filter === value ? "border-gold bg-gold text-on-primary font-medium" : "border-line text-ink hover:border-gold"
+              filter === value
+                ? "border-gold bg-gold text-on-primary font-medium"
+                : "border-line text-ink hover:border-gold"
             }`}
           >
             {label}
@@ -599,7 +698,7 @@ function InvoicesTab({ token }: { token: string }) {
       ) : invoices.data.length === 0 ? (
         <p className="text-sm text-ink-soft">{tr("Aucune facture.")}</p>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
           <table className="w-full min-w-[760px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-line text-left text-ink-soft">
@@ -616,7 +715,9 @@ function InvoicesTab({ token }: { token: string }) {
                 <tr key={invoice.id} className="border-b border-line">
                   <td className="py-3 pr-4 text-ink">
                     {invoice.number}
-                    {invoice.kind === "landed_cost" ? <span className="block text-xs text-ink-soft">{tr("frais d'approche")}</span> : null}
+                    {invoice.kind === "landed_cost" ? (
+                      <span className="block text-xs text-ink-soft">{tr("frais d'approche")}</span>
+                    ) : null}
                   </td>
                   <td className="py-3 pr-4 text-ink-soft">{invoice.supplier_name}</td>
                   <td className="py-3 pr-4 text-ink-soft">{xof(invoice.amount)}</td>
@@ -647,7 +748,13 @@ function NewInvoiceForm({
   onSubmit,
 }: {
   suppliers: Supplier[];
-  onSubmit: (input: { supplier_id: number; number: string; kind: "goods" | "landed_cost"; amount: number; invoice_date: string }) => Promise<void>;
+  onSubmit: (input: {
+    supplier_id: number;
+    number: string;
+    kind: "goods" | "landed_cost";
+    amount: number;
+    invoice_date: string;
+  }) => Promise<void>;
 }) {
   const { tr } = useAppearance();
   const [supplierId, setSupplierId] = useState("");
@@ -662,10 +769,17 @@ function NewInvoiceForm({
     setError(null);
 
     const value = parseOptionalAmount(amount);
-    if (!supplierId || !number.trim() || !date || !value) return setError("Fournisseur, numéro, date et montant (entier positif) sont requis.");
+    if (!supplierId || !number.trim() || !date || !value)
+      return setError("Fournisseur, numéro, date et montant (entier positif) sont requis.");
 
     try {
-      await onSubmit({ supplier_id: Number(supplierId), number: number.trim(), kind, amount: value, invoice_date: date });
+      await onSubmit({
+        supplier_id: Number(supplierId),
+        number: number.trim(),
+        kind,
+        amount: value,
+        invoice_date: date,
+      });
       setNumber("");
       setAmount("");
     } catch (caught) {
@@ -674,9 +788,12 @@ function NewInvoiceForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+    >
       <label className="field">
-<select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} className={`${field} min-w-48`}>
+        <select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} className={`${field} min-w-48`}>
           <option value="">{tr("Choisir…")}</option>
           {suppliers.map((supplier) => (
             <option key={supplier.id} value={supplier.id}>
@@ -684,29 +801,37 @@ function NewInvoiceForm({
             </option>
           ))}
         </select>
-<span className="field-label">{tr("Fournisseur")}</span>
-</label>
+        <span className="field-label">{tr("Fournisseur")}</span>
+      </label>
       <label className="field">
-<input placeholder=" " value={number} onChange={(e) => setNumber(e.target.value)} className={`${field} w-36`} />
-<span className="field-label">{tr("N° de facture")}</span>
-</label>
+        <input placeholder=" " value={number} onChange={(e) => setNumber(e.target.value)} className={`${field} w-36`} />
+        <span className="field-label">{tr("N° de facture")}</span>
+      </label>
       <label className="field">
-<select value={kind} onChange={(e) => setKind(e.target.value as "goods" | "landed_cost")} className={field}>
+        <select value={kind} onChange={(e) => setKind(e.target.value as "goods" | "landed_cost")} className={field}>
           <option value="goods">{tr("Marchandises")}</option>
           <option value="landed_cost">{tr("Frais d'approche")}</option>
         </select>
-<span className="field-label">{tr("Nature")}</span>
-</label>
+        <span className="field-label">{tr("Nature")}</span>
+      </label>
       <label className="field">
-<input placeholder=" " value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="numeric" className={`${field} w-32`} />
-<span className="field-label">{tr("Montant")}</span>
-</label>
+        <input
+          placeholder=" "
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          inputMode="numeric"
+          className={`${field} w-32`}
+        />
+        <span className="field-label">{tr("Montant")}</span>
+      </label>
       <label className="field">
-<input placeholder=" " type="date" value={date} onChange={(e) => setDate(e.target.value)} className={field} />
-<span className="field-label">{tr("Date")}</span>
-</label>
+        <input placeholder=" " type="date" value={date} onChange={(e) => setDate(e.target.value)} className={field} />
+        <span className="field-label">{tr("Date")}</span>
+      </label>
       <Button type="submit">{tr("Enregistrer")}</Button>
-      <p className="w-full text-xs text-ink-soft">{tr("L'échéance se calcule avec les conditions de paiement du fournisseur.")}</p>
+      <p className="w-full text-xs text-ink-soft">
+        {tr("L'échéance se calcule avec les conditions de paiement du fournisseur.")}
+      </p>
       {error ? <p className="w-full text-sm text-danger">{error}</p> : null}
     </form>
   );
@@ -730,7 +855,7 @@ function StockTab({ token }: { token: string }) {
       {data.offers.length === 0 ? (
         <p className="text-sm text-ink-soft">{tr("Aucun achat réceptionné pour l'instant.")}</p>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
           <table className="w-full min-w-[640px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-line text-left text-ink-soft">

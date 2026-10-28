@@ -83,7 +83,7 @@ export default function OfferModerationPage() {
         ) : offers.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucune offre en attente.")}</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
             <table className="w-full min-w-[760px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">

@@ -109,7 +109,7 @@ export default function VendorsPage() {
         ) : vendors.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucun vendeur.")}</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
             <table className="w-full min-w-[720px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">

@@ -82,7 +82,11 @@ export default function ProductsPage() {
     try {
       replaceProduct(await addProductImage(token, product.id, file));
     } catch (caught) {
-      setError(caught instanceof CatalogError ? (caught.fieldErrors?.image?.[0] ?? caught.message) : tr("Envoi de la photo impossible."));
+      setError(
+        caught instanceof CatalogError
+          ? (caught.fieldErrors?.image?.[0] ?? caught.message)
+          : tr("Envoi de la photo impossible."),
+      );
     }
   }
 
@@ -163,7 +167,7 @@ export default function ProductsPage() {
         ) : products.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucun produit.")}</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
             <table className="w-full min-w-[820px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
@@ -199,7 +203,11 @@ export default function ProductsPage() {
                         <div className="flex items-center gap-3">
                           {product.image_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={product.image_url} alt="" className="h-10 w-10 rounded-sm border border-line object-cover" />
+                            <img
+                              src={product.image_url}
+                              alt=""
+                              className="h-10 w-10 rounded-sm border border-line object-cover"
+                            />
                           ) : (
                             <span className="flex h-10 w-10 items-center justify-center rounded-sm border border-dashed border-line text-[10px] text-ink-soft">
                               {tr("Aucune")}
@@ -228,7 +236,8 @@ export default function ProductsPage() {
                             onClick={() => setGalleryId(galleryId === product.id ? null : product.id)}
                             className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold"
                           >
-                            {tr("Photos (")}{product.images?.length ?? 0})
+                            {tr("Photos (")}
+                            {product.images?.length ?? 0})
                           </button>
                           {product.status !== "archived" ? (
                             <button
@@ -317,9 +326,12 @@ function NewProductForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+    >
       <label className="field">
-<select
+        <select
           value={categoryId}
           onChange={(event) => setCategoryId(event.target.value)}
           className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
@@ -330,50 +342,52 @@ function NewProductForm({
             </option>
           ))}
         </select>
-<span className="field-label">{tr("Catégorie")}</span>
-</label>
+        <span className="field-label">{tr("Catégorie")}</span>
+      </label>
 
       <label className="field">
-<input
+        <input
           value={brand}
           onChange={(event) => setBrand(event.target.value)}
           placeholder={tr("Samsung")}
           className="w-32 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-<span className="field-label">{tr("Marque")}</span>
-</label>
+        <span className="field-label">{tr("Marque")}</span>
+      </label>
 
       <label className="field">
-<input
+        <input
           value={name}
           onChange={(event) => setName(event.target.value)}
           placeholder={tr("Galaxy A15")}
           className="w-48 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-<span className="field-label">{tr("Nom")}</span>
-</label>
+        <span className="field-label">{tr("Nom")}</span>
+      </label>
 
       <label className="field">
-<input placeholder=" "
+        <input
+          placeholder=" "
           type="number"
           min={0}
           value={price}
           onChange={(event) => setPrice(event.target.value)}
           className="w-28 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-<span className="field-label">{tr("Prix (F CFA)")}</span>
-</label>
+        <span className="field-label">{tr("Prix (F CFA)")}</span>
+      </label>
 
       <label className="field">
-<input placeholder=" "
+        <input
+          placeholder=" "
           type="number"
           min={0}
           value={stock}
           onChange={(event) => setStock(event.target.value)}
           className="w-20 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-<span className="field-label">{tr("Stock")}</span>
-</label>
+        <span className="field-label">{tr("Stock")}</span>
+      </label>
 
       <Button type="submit" disabled={submitting}>
         {tr("Créer")}
@@ -478,11 +492,19 @@ function Gallery({
           {index === 0 ? (
             <figcaption className="text-xs font-medium text-gold">{tr("Couverture")}</figcaption>
           ) : (
-            <button type="button" onClick={() => onCover(image.id)} className="text-left text-xs text-ink underline-offset-4 hover:text-gold hover:underline">
+            <button
+              type="button"
+              onClick={() => onCover(image.id)}
+              className="text-left text-xs text-ink underline-offset-4 hover:text-gold hover:underline"
+            >
               {tr("Définir comme couverture")}
             </button>
           )}
-          <button type="button" onClick={() => onRemove(image.id)} className="text-left text-xs text-danger underline-offset-4 hover:underline">
+          <button
+            type="button"
+            onClick={() => onRemove(image.id)}
+            className="text-left text-xs text-danger underline-offset-4 hover:underline"
+          >
             {tr("Supprimer")}
           </button>
         </figure>
@@ -503,7 +525,10 @@ function Gallery({
           />
         </label>
       ) : (
-        <p className="text-xs text-ink-soft">{tr("Galerie pleine (")}{MAX_GALLERY_IMAGES} {tr("photos).")}</p>
+        <p className="text-xs text-ink-soft">
+          {tr("Galerie pleine (")}
+          {MAX_GALLERY_IMAGES} {tr("photos).")}
+        </p>
       )}
     </div>
   );

@@ -75,7 +75,9 @@ export default function SupportPage() {
   /** Applies the API's fresh copy of the ticket to the open panel and the list. */
   function applyUpdated(updated: Ticket) {
     setOpen(updated);
-    setTickets((current) => current.map((ticket) => (ticket.id === updated.id ? { ...ticket, ...updated, messages: undefined } : ticket)));
+    setTickets((current) =>
+      current.map((ticket) => (ticket.id === updated.id ? { ...ticket, ...updated, messages: undefined } : ticket)),
+    );
   }
 
   if (sessionStatus === "checking") {
@@ -105,7 +107,9 @@ export default function SupportPage() {
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <h1 className="font-display text-2xl font-semibold text-ink">{tr("Support client")}</h1>
-          <p className="text-sm text-ink-soft">{countOpen(tickets)} {tr("à traiter dans cette vue")}</p>
+          <p className="text-sm text-ink-soft">
+            {countOpen(tickets)} {tr("à traiter dans cette vue")}
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -113,26 +117,45 @@ export default function SupportPage() {
             {tr("Tous")}
           </button>
           {STATUSES.map((status) => (
-            <button key={status} type="button" onClick={() => setFilters({ status })} className={pill(filters.status === status)}>
+            <button
+              key={status}
+              type="button"
+              onClick={() => setFilters({ status })}
+              className={pill(filters.status === status)}
+            >
               {tr(STATUS_LABEL[status])}
             </button>
           ))}
-          <button type="button" onClick={() => setFilters({ overdue: true })} className={pill(filters.overdue === true)}>
+          <button
+            type="button"
+            onClick={() => setFilters({ overdue: true })}
+            className={pill(filters.overdue === true)}
+          >
             {tr("En retard")}
           </button>
-          <button type="button" onClick={() => setFilters({ assigned: "me" })} className={pill(filters.assigned === "me")}>
+          <button
+            type="button"
+            onClick={() => setFilters({ assigned: "me" })}
+            className={pill(filters.assigned === "me")}
+          >
             {tr("Mes tickets")}
           </button>
-          <button type="button" onClick={() => setFilters({ assigned: "none" })} className={pill(filters.assigned === "none")}>
+          <button
+            type="button"
+            onClick={() => setFilters({ assigned: "none" })}
+            className={pill(filters.assigned === "none")}
+          >
             {tr("Non assignés")}
           </button>
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={tr("Rechercher un sujet")}
-            aria-label={tr("Rechercher un sujet")}
-            className="w-56 rounded-sm border border-line bg-surface px-3 py-1.5 text-sm text-ink"
-          />
+          <label className="field w-56">
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder=" "
+              className="rounded-sm border border-line bg-surface px-3 text-sm text-ink"
+            />
+            <span className="field-label">{tr("Rechercher un sujet")}</span>
+          </label>
         </div>
 
         {error ? <p className="text-sm text-danger">{error}</p> : null}
@@ -142,7 +165,7 @@ export default function SupportPage() {
         ) : tickets.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucun ticket.")}</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
             <table className="w-full min-w-[820px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
@@ -163,12 +186,20 @@ export default function SupportPage() {
                         {ticket.subject}
                         {ticket.overdue ? <span className="ml-2 text-xs text-danger">{tr("en retard")}</span> : null}
                       </td>
-                      <td className="py-3 pr-4 text-ink-soft">{tr(CATEGORY_LABEL[ticket.category] ?? ticket.category)}</td>
+                      <td className="py-3 pr-4 text-ink-soft">
+                        {tr(CATEGORY_LABEL[ticket.category] ?? ticket.category)}
+                      </td>
                       <td className={`py-3 pr-4 ${ticket.priority === "high" ? "text-gold-bright" : "text-ink-soft"}`}>
                         {tr(PRIORITY_LABEL[ticket.priority])}
                       </td>
                       <td className="py-3 pr-4 text-ink-soft">{tr(STATUS_LABEL[ticket.status])}</td>
-                      <td className="py-3 text-ink-soft">{ticket.assigned_to === null ? "—" : ticket.assigned_to === user?.id ? "Moi" : `#${ticket.assigned_to}`}</td>
+                      <td className="py-3 text-ink-soft">
+                        {ticket.assigned_to === null
+                          ? "—"
+                          : ticket.assigned_to === user?.id
+                            ? "Moi"
+                            : `#${ticket.assigned_to}`}
+                      </td>
                     </tr>
                     {open?.id === ticket.id ? (
                       <tr className="border-b border-line bg-surface">
@@ -188,7 +219,15 @@ export default function SupportPage() {
   );
 }
 
-function TicketPanel({ token, ticket, onUpdated }: { token: string; ticket: Ticket; onUpdated: (ticket: Ticket) => void }) {
+function TicketPanel({
+  token,
+  ticket,
+  onUpdated,
+}: {
+  token: string;
+  ticket: Ticket;
+  onUpdated: (ticket: Ticket) => void;
+}) {
   const { tr } = useAppearance();
   const [body, setBody] = useState("");
   const [internal, setInternal] = useState(false);
@@ -214,20 +253,36 @@ function TicketPanel({ token, ticket, onUpdated }: { token: string; ticket: Tick
     setBody("");
   }
 
-  const small = "rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold disabled:opacity-50";
+  const small =
+    "rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold disabled:opacity-50";
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
-        <button type="button" disabled={busy} className={small} onClick={() => run(() => updateTicket(token, ticket.id, { assigned_to_me: ticket.assigned_to === null }), "Assignation impossible.")}>
+        <button
+          type="button"
+          disabled={busy}
+          className={small}
+          onClick={() =>
+            run(
+              () => updateTicket(token, ticket.id, { assigned_to_me: ticket.assigned_to === null }),
+              "Assignation impossible.",
+            )
+          }
+        >
           {ticket.assigned_to === null ? tr("Prendre") : tr("Libérer")}
         </button>
 
         <label className="field items-center">
-<select
+          <select
             value={ticket.priority}
             disabled={busy}
-            onChange={(event) => run(() => updateTicket(token, ticket.id, { priority: event.target.value as TicketPriority }), "Changement impossible.")}
+            onChange={(event) =>
+              run(
+                () => updateTicket(token, ticket.id, { priority: event.target.value as TicketPriority }),
+                "Changement impossible.",
+              )
+            }
             className="rounded-sm border border-line bg-surface px-2 py-1 text-xs text-ink"
           >
             {Object.entries(PRIORITY_LABEL).map(([value, label]) => (
@@ -236,17 +291,26 @@ function TicketPanel({ token, ticket, onUpdated }: { token: string; ticket: Tick
               </option>
             ))}
           </select>
-<span className="field-label">{tr("Priorité")}</span>
-</label>
+          <span className="field-label">{tr("Priorité")}</span>
+        </label>
 
         {statusActions(ticket.status).map((action) => (
-          <button key={action.target} type="button" disabled={busy} className={small} onClick={() => run(() => updateTicket(token, ticket.id, { status: action.target }), "Changement impossible.")}>
+          <button
+            key={action.target}
+            type="button"
+            disabled={busy}
+            className={small}
+            onClick={() =>
+              run(() => updateTicket(token, ticket.id, { status: action.target }), "Changement impossible.")
+            }
+          >
             {tr(action.label)}
           </button>
         ))}
 
         <span className="text-xs text-ink-soft">
-          {tr("Client #")}{ticket.customer_id}
+          {tr("Client #")}
+          {ticket.customer_id}
           {ticket.order_number ? ` · commande ${ticket.order_number}` : ""}
         </span>
       </div>
@@ -256,11 +320,19 @@ function TicketPanel({ token, ticket, onUpdated }: { token: string; ticket: Tick
           <li
             key={message.id}
             className={`max-w-[80%] rounded-sm border p-3 text-sm ${
-              message.internal ? "self-end border-gold-deep" : message.from === "customer" ? "self-start border-line" : "self-end border-line bg-bg"
+              message.internal
+                ? "self-end border-gold-deep"
+                : message.from === "customer"
+                  ? "self-start border-line"
+                  : "self-end border-line bg-bg"
             }`}
           >
             <p className="mb-1 text-xs text-ink-soft">
-              {message.internal ? tr("Note interne") : message.from === "customer" ? "Client" : `Équipe #${message.author_id}`}
+              {message.internal
+                ? tr("Note interne")
+                : message.from === "customer"
+                  ? "Client"
+                  : `Équipe #${message.author_id}`}
             </p>
             <p className="whitespace-pre-wrap text-ink">{message.body}</p>
           </li>
@@ -271,16 +343,25 @@ function TicketPanel({ token, ticket, onUpdated }: { token: string; ticket: Tick
 
       {canReply(ticket.status) ? (
         <form onSubmit={handleSend} className="flex flex-col gap-2">
-          <textarea
-            value={body}
-            onChange={(event) => setBody(event.target.value)}
-            rows={3}
-            maxLength={5000}
-            placeholder={internal ? tr("Note visible de l'équipe uniquement…") : tr("Réponse envoyée au client…")}
-            className="rounded-sm border border-line bg-bg px-3 py-2 text-sm text-ink"
-          />
+          <label className="field">
+            <textarea
+              value={body}
+              onChange={(event) => setBody(event.target.value)}
+              rows={3}
+              maxLength={5000}
+              placeholder=" "
+              className="rounded-sm border border-line bg-bg px-3 text-sm text-ink"
+            />
+            <span className="field-label">
+              {internal ? tr("Note visible de l'équipe uniquement…") : tr("Réponse envoyée au client…")}
+            </span>
+          </label>
           <div className="flex items-center gap-4">
-            <button type="submit" disabled={busy || !body.trim()} className="rounded-sm border border-gold px-3 py-1.5 text-sm text-gold transition-colors disabled:opacity-50">
+            <button
+              type="submit"
+              disabled={busy || !body.trim()}
+              className="rounded-sm border border-gold px-3 py-1.5 text-sm text-gold transition-colors disabled:opacity-50"
+            >
               {internal ? tr("Ajouter la note") : tr("Répondre")}
             </button>
             <label className="flex items-center gap-2 text-xs text-ink-soft">

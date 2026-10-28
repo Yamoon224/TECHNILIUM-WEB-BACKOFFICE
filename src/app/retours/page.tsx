@@ -136,7 +136,9 @@ export default function ReturnsPage() {
               type="button"
               onClick={() => setFilter(value)}
               className={`rounded-full border px-3 py-1 text-sm transition-colors ${
-                filter === value ? "border-gold bg-gold text-on-primary font-medium" : "border-line text-ink hover:border-gold"
+                filter === value
+                  ? "border-gold bg-gold text-on-primary font-medium"
+                  : "border-line text-ink hover:border-gold"
               }`}
             >
               {value === null ? tr("Tous") : RETURN_STATUS_LABEL[value]}
@@ -151,7 +153,7 @@ export default function ReturnsPage() {
         ) : returns.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucun retour.")}</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
             <table className="w-full min-w-[860px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
@@ -248,7 +250,9 @@ function NewReturnForm({
 
     const items = parseReturnItems(articles);
     if (items === null) {
-      setFormError("Articles invalides : saisissez des paires offre:quantité séparées par des virgules (ex. 12:2, 15).");
+      setFormError(
+        "Articles invalides : saisissez des paires offre:quantité séparées par des virgules (ex. 12:2, 15).",
+      );
       return;
     }
 
@@ -272,39 +276,42 @@ function NewReturnForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+    >
       <label className="field">
-<input
+        <input
           value={orderNumber}
           onChange={(event) => setOrderNumber(event.target.value)}
           placeholder={tr("TCH-20261025-XXXXXX")}
           className="w-52 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-<span className="field-label">{tr("N° commande livrée")}</span>
-</label>
+        <span className="field-label">{tr("N° commande livrée")}</span>
+      </label>
 
       <label className="field">
-<input
+        <input
           value={reason}
           onChange={(event) => setReason(event.target.value)}
           placeholder={tr("Produit défectueux")}
           className="w-64 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-<span className="field-label">{tr("Motif")}</span>
-</label>
+        <span className="field-label">{tr("Motif")}</span>
+      </label>
 
       <label className="field">
-<input
+        <input
           value={articles}
           onChange={(event) => setArticles(event.target.value)}
           placeholder="12:2, 15"
           className="w-40 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-<span className="field-label">{tr("Articles (offre:qté, optionnel)")}</span>
-</label>
+        <span className="field-label">{tr("Articles (offre:qté, optionnel)")}</span>
+      </label>
 
       <label className="field">
-<input
+        <input
           type="number"
           min={1}
           value={amount}
@@ -312,8 +319,8 @@ function NewReturnForm({
           placeholder={tr("Total de la commande")}
           className="w-40 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-<span className="field-label">{tr("Montant (optionnel)")}</span>
-</label>
+        <span className="field-label">{tr("Montant (optionnel)")}</span>
+      </label>
 
       <Button type="submit" disabled={submitting}>
         {tr("Ouvrir le retour")}

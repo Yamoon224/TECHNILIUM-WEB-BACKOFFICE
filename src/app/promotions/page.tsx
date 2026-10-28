@@ -109,7 +109,7 @@ export default function PromotionsPage() {
         ) : coupons.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucun code promotionnel.")}</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
             <table className="w-full min-w-[820px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
@@ -229,42 +229,86 @@ function NewCouponForm({ onSubmit }: { onSubmit: (input: NewCouponInput) => Prom
   const field = "w-32 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink";
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+    >
       <label className="field">
-<input value={code} onChange={(e) => setCode(e.target.value)} placeholder={tr("BIENVENUE10")} className={`${field} uppercase`} />
-<span className="field-label">{tr("Code")}</span>
-</label>
+        <input
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          placeholder={tr("BIENVENUE10")}
+          className={`${field} uppercase`}
+        />
+        <span className="field-label">{tr("Code")}</span>
+      </label>
       <label className="field">
-<select value={type} onChange={(e) => setType(e.target.value as CouponType)} className={field}>
+        <select value={type} onChange={(e) => setType(e.target.value as CouponType)} className={field}>
           <option value="percent">{tr("Pourcentage")}</option>
           <option value="fixed">{tr("Montant fixe")}</option>
         </select>
-<span className="field-label">{tr("Type")}</span>
-</label>
+        <span className="field-label">{tr("Type")}</span>
+      </label>
       <label className="field">
-<input placeholder=" " value={value} onChange={(e) => setValue(e.target.value)} inputMode="numeric" className={field} />
-<span className="field-label">{type === "percent" ? tr("Valeur (%)") : tr("Valeur (F CFA)")}</span>
-</label>
+        <input
+          placeholder=" "
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          inputMode="numeric"
+          className={field}
+        />
+        <span className="field-label">{type === "percent" ? tr("Valeur (%)") : tr("Valeur (F CFA)")}</span>
+      </label>
       <label className="field">
-<input placeholder=" " value={minOrder} onChange={(e) => setMinOrder(e.target.value)} inputMode="numeric" className={field} />
-<span className="field-label">{tr("Achat minimum")}</span>
-</label>
+        <input
+          placeholder=" "
+          value={minOrder}
+          onChange={(e) => setMinOrder(e.target.value)}
+          inputMode="numeric"
+          className={field}
+        />
+        <span className="field-label">{tr("Achat minimum")}</span>
+      </label>
       <label className="field">
-<input placeholder=" " value={maxUses} onChange={(e) => setMaxUses(e.target.value)} inputMode="numeric" className={field} />
-<span className="field-label">{tr("Utilisations max")}</span>
-</label>
+        <input
+          placeholder=" "
+          value={maxUses}
+          onChange={(e) => setMaxUses(e.target.value)}
+          inputMode="numeric"
+          className={field}
+        />
+        <span className="field-label">{tr("Utilisations max")}</span>
+      </label>
       <label className="field">
-<input placeholder=" " value={perCustomer} onChange={(e) => setPerCustomer(e.target.value)} inputMode="numeric" className={field} />
-<span className="field-label">{tr("Par client")}</span>
-</label>
+        <input
+          placeholder=" "
+          value={perCustomer}
+          onChange={(e) => setPerCustomer(e.target.value)}
+          inputMode="numeric"
+          className={field}
+        />
+        <span className="field-label">{tr("Par client")}</span>
+      </label>
       <label className="field">
-<input placeholder=" " type="date" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} className={field} />
-<span className="field-label">{tr("Début")}</span>
-</label>
+        <input
+          placeholder=" "
+          type="date"
+          value={startsAt}
+          onChange={(e) => setStartsAt(e.target.value)}
+          className={field}
+        />
+        <span className="field-label">{tr("Début")}</span>
+      </label>
       <label className="field">
-<input placeholder=" " type="date" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} className={field} />
-<span className="field-label">{tr("Fin")}</span>
-</label>
+        <input
+          placeholder=" "
+          type="date"
+          value={endsAt}
+          onChange={(e) => setEndsAt(e.target.value)}
+          className={field}
+        />
+        <span className="field-label">{tr("Fin")}</span>
+      </label>
       <Button type="submit" disabled={submitting}>
         {tr("Créer le code")}
       </Button>

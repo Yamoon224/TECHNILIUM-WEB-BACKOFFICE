@@ -7,7 +7,7 @@ export function AccountPanel({ user, onLogout }: { user: User; onLogout: () => v
   const { t, tr } = useAppearance();
 
   return (
-    <div className="flex w-full max-w-sm flex-col gap-4 rounded-sm border border-line bg-surface p-6">
+    <div className="flex w-full max-w-sm flex-col gap-4 rounded-sm border border-line bg-surface p-6 shadow-card">
       <div className="flex flex-col gap-1">
         <p className="text-sm text-ink-soft">{t("account.connected")}</p>
         <h1 className="text-lg font-medium text-ink">{user.name}</h1>

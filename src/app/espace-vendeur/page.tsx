@@ -81,7 +81,9 @@ export default function VendorSpacePage() {
               type="button"
               onClick={() => setTab(id)}
               className={`rounded-full border px-3 py-1 text-sm transition-colors ${
-                tab === id ? "border-gold bg-gold text-on-primary font-medium" : "border-line text-ink hover:border-gold"
+                tab === id
+                  ? "border-gold bg-gold text-on-primary font-medium"
+                  : "border-line text-ink hover:border-gold"
               }`}
             >
               {label}
@@ -145,7 +147,7 @@ function SummaryTab({ token }: { token: string }) {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-sm border border-line p-4">
+    <div className="rounded-sm border border-line p-4 bg-surface shadow-card">
       <dt className="text-xs text-ink-soft">{label}</dt>
       <dd className="mt-1 font-display text-xl text-ink">{value}</dd>
     </div>
@@ -177,10 +179,12 @@ function OrdersTab({ token }: { token: string }) {
     <ul className="flex flex-col gap-3">
       {error ? <p className="text-sm text-danger">{error}</p> : null}
       {data.map((order) => (
-        <li key={order.order_number} className="rounded-sm border border-line p-4 text-sm">
+        <li key={order.order_number} className="rounded-sm border border-line p-4 text-sm bg-surface shadow-card">
           <div className="flex flex-wrap justify-between gap-2 text-ink">
             <span>{order.order_number}</span>
-            <span className="text-ink-soft">{tr(ORDER_STATUS_META[order.status as OrderStatus]?.label ?? order.status)}</span>
+            <span className="text-ink-soft">
+              {tr(ORDER_STATUS_META[order.status as OrderStatus]?.label ?? order.status)}
+            </span>
           </div>
           <p className="mt-1 text-ink-soft">
             {order.customer_name} · {order.customer_phone} · {order.delivery_address}
@@ -240,7 +244,7 @@ function PayoutsTab({ token }: { token: string }) {
   if (data.length === 0) return <p className="text-sm text-ink-soft">{tr("Aucun reversement pour le moment.")}</p>;
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
       {error ? <p className="mb-2 text-sm text-danger">{error}</p> : null}
       <table className="w-full min-w-[720px] border-collapse text-sm">
         <thead>
@@ -266,7 +270,9 @@ function PayoutsTab({ token }: { token: string }) {
                   </td>
                   <td className="py-3 pr-4 text-ink">{money(payout.net_amount)}</td>
                   <td className="py-3 pr-4 text-ink-soft">
-                    {payout.status === "paid" ? `Payé${payout.payment_reference ? ` · ${payout.payment_reference}` : ""}` : tr("En cours")}
+                    {payout.status === "paid"
+                      ? `Payé${payout.payment_reference ? ` · ${payout.payment_reference}` : ""}`
+                      : tr("En cours")}
                   </td>
                   <td className="py-3">
                     <button
@@ -286,7 +292,9 @@ function PayoutsTab({ token }: { token: string }) {
                           <li key={item.order_number} className="flex justify-between gap-4">
                             <span>{item.order_number}</span>
                             <span>
-                              {item.refund_deduction_amount > 0 ? `retours −${money(item.refund_deduction_amount)} · ` : ""}
+                              {item.refund_deduction_amount > 0
+                                ? `retours −${money(item.refund_deduction_amount)} · `
+                                : ""}
                               {money(item.gross_amount)} − {money(item.commission_amount)}
                             </span>
                           </li>
@@ -323,7 +331,10 @@ function OffersTab({ token }: { token: string }) {
   }
 
   function editPrice(offer: VendorOffer) {
-    const input = window.prompt(`Nouveau prix pour ${offer.product_name} (une modification renvoie l'offre en modération)`, String(offer.price_amount));
+    const input = window.prompt(
+      `Nouveau prix pour ${offer.product_name} (une modification renvoie l'offre en modération)`,
+      String(offer.price_amount),
+    );
     if (input === null || input.trim() === "") return;
     void run(offer.id, () => updateOffer(token, offer.id, { price_amount: Number(input) }), "Mise à jour impossible.");
   }
@@ -331,7 +342,11 @@ function OffersTab({ token }: { token: string }) {
   function editStock(offer: VendorOffer) {
     const input = window.prompt(`Nouveau stock pour ${offer.product_name}`, String(offer.stock_quantity));
     if (input === null || input.trim() === "") return;
-    void run(offer.id, () => updateOffer(token, offer.id, { stock_quantity: Number(input) }), "Mise à jour impossible.");
+    void run(
+      offer.id,
+      () => updateOffer(token, offer.id, { stock_quantity: Number(input) }),
+      "Mise à jour impossible.",
+    );
   }
 
   function archive(offer: VendorOffer) {
@@ -355,7 +370,7 @@ function OffersTab({ token }: { token: string }) {
       ) : data.length === 0 ? (
         <p className="text-sm text-ink-soft">{tr("Aucune offre.")}</p>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
           <table className="w-full min-w-[780px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-line text-left text-ink-soft">
@@ -374,7 +389,9 @@ function OffersTab({ token }: { token: string }) {
                     {offer.brand} {offer.product_name}
                   </td>
                   <td className="py-3 pr-4 text-ink-soft">{offer.sku}</td>
-                  <td className="py-3 pr-4 text-ink">{formatMoney({ amount: offer.price_amount, currency: offer.currency })}</td>
+                  <td className="py-3 pr-4 text-ink">
+                    {formatMoney({ amount: offer.price_amount, currency: offer.currency })}
+                  </td>
                   <td className={`py-3 pr-4 ${isOutOfStock(offer) ? "text-danger" : "text-ink"}`}>
                     {offer.stock_quantity}
                   </td>
@@ -413,7 +430,12 @@ function OffersTab({ token }: { token: string }) {
 function NewOfferForm({
   onSubmit,
 }: {
-  onSubmit: (input: { variant_id: number; price_amount: number; stock_quantity: number; warranty_months?: number }) => Promise<void>;
+  onSubmit: (input: {
+    variant_id: number;
+    price_amount: number;
+    stock_quantity: number;
+    warranty_months?: number;
+  }) => Promise<void>;
 }) {
   const { tr } = useAppearance();
   const [variantId, setVariantId] = useState("");
@@ -454,28 +476,61 @@ function NewOfferForm({
   const field = "w-32 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink";
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
+    >
       <label className="field">
-<input placeholder=" " type="number" min={1} value={variantId} onChange={(e) => setVariantId(e.target.value)} className={field} />
-<span className="field-label">{tr("ID variante produit")}</span>
-</label>
+        <input
+          placeholder=" "
+          type="number"
+          min={1}
+          value={variantId}
+          onChange={(e) => setVariantId(e.target.value)}
+          className={field}
+        />
+        <span className="field-label">{tr("ID variante produit")}</span>
+      </label>
       <label className="field">
-<input placeholder=" " type="number" min={0} value={price} onChange={(e) => setPrice(e.target.value)} className={field} />
-<span className="field-label">{tr("Prix (F CFA)")}</span>
-</label>
+        <input
+          placeholder=" "
+          type="number"
+          min={0}
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          className={field}
+        />
+        <span className="field-label">{tr("Prix (F CFA)")}</span>
+      </label>
       <label className="field">
-<input placeholder=" " type="number" min={0} value={stock} onChange={(e) => setStock(e.target.value)} className={field} />
-<span className="field-label">{tr("Stock")}</span>
-</label>
+        <input
+          placeholder=" "
+          type="number"
+          min={0}
+          value={stock}
+          onChange={(e) => setStock(e.target.value)}
+          className={field}
+        />
+        <span className="field-label">{tr("Stock")}</span>
+      </label>
       <label className="field">
-<input placeholder=" " type="number" min={0} value={warranty} onChange={(e) => setWarranty(e.target.value)} className={field} />
-<span className="field-label">{tr("Garantie (mois)")}</span>
-</label>
+        <input
+          placeholder=" "
+          type="number"
+          min={0}
+          value={warranty}
+          onChange={(e) => setWarranty(e.target.value)}
+          className={field}
+        />
+        <span className="field-label">{tr("Garantie (mois)")}</span>
+      </label>
       <Button type="submit" disabled={submitting}>
         {tr("Soumettre l'offre")}
       </Button>
       <p className="w-full text-xs text-ink-soft">
-        {tr("L'offre part en modération avant publication. Seuls les produits déjà publiés par Technilium sont proposables.")}
+        {tr(
+          "L'offre part en modération avant publication. Seuls les produits déjà publiés par Technilium sont proposables.",
+        )}
       </p>
       {formError ? <p className="w-full text-sm text-danger">{formError}</p> : null}
     </form>

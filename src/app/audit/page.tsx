@@ -113,23 +113,28 @@ export default function AuditPage() {
         ) : null}
 
         <form
-          className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4"
+          className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card"
           onSubmit={(event) => {
             event.preventDefault();
             setFilters(draft);
           }}
         >
           <label className="field">
-<input placeholder=" "
+            <input
+              placeholder=" "
               value={draft.user_id ?? ""}
               onChange={(e) => setDraft({ ...draft, user_id: e.target.value })}
               inputMode="numeric"
               className={`${field} w-28`}
             />
-<span className="field-label">{tr("Utilisateur (id)")}</span>
-</label>
+            <span className="field-label">{tr("Utilisateur (id)")}</span>
+          </label>
           <label className="field">
-<select value={draft.method ?? ""} onChange={(e) => setDraft({ ...draft, method: e.target.value })} className={field}>
+            <select
+              value={draft.method ?? ""}
+              onChange={(e) => setDraft({ ...draft, method: e.target.value })}
+              className={field}
+            >
               <option value="">{tr("Toutes")}</option>
               {AUDIT_METHODS.map((method) => (
                 <option key={method} value={method}>
@@ -137,25 +142,37 @@ export default function AuditPage() {
                 </option>
               ))}
             </select>
-<span className="field-label">{tr("Méthode")}</span>
-</label>
+            <span className="field-label">{tr("Méthode")}</span>
+          </label>
           <label className="field">
-<input
+            <input
               value={draft.path ?? ""}
               onChange={(e) => setDraft({ ...draft, path: e.target.value })}
               placeholder={tr("refund")}
               className={`${field} w-44`}
             />
-<span className="field-label">{tr("Chemin contient")}</span>
-</label>
+            <span className="field-label">{tr("Chemin contient")}</span>
+          </label>
           <label className="field">
-<input placeholder=" " type="date" value={draft.from ?? ""} onChange={(e) => setDraft({ ...draft, from: e.target.value })} className={field} />
-<span className="field-label">{tr("Du")}</span>
-</label>
+            <input
+              placeholder=" "
+              type="date"
+              value={draft.from ?? ""}
+              onChange={(e) => setDraft({ ...draft, from: e.target.value })}
+              className={field}
+            />
+            <span className="field-label">{tr("Du")}</span>
+          </label>
           <label className="field">
-<input placeholder=" " type="date" value={draft.to ?? ""} onChange={(e) => setDraft({ ...draft, to: e.target.value })} className={field} />
-<span className="field-label">{tr("Au")}</span>
-</label>
+            <input
+              placeholder=" "
+              type="date"
+              value={draft.to ?? ""}
+              onChange={(e) => setDraft({ ...draft, to: e.target.value })}
+              className={field}
+            />
+            <span className="field-label">{tr("Au")}</span>
+          </label>
           <label className="flex items-center gap-2 pb-2 text-sm text-ink">
             <input
               type="checkbox"
@@ -174,7 +191,7 @@ export default function AuditPage() {
         ) : entries.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucune entrée.")}</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card">
             <table className="w-full min-w-[900px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
@@ -219,7 +236,9 @@ export default function AuditPage() {
                     {open === entry.id ? (
                       <tr className="border-b border-line bg-surface">
                         <td colSpan={6} className="px-3 py-3">
-                          <pre className="overflow-x-auto text-xs text-ink-soft">{JSON.stringify(entry.payload, null, 2)}</pre>
+                          <pre className="overflow-x-auto text-xs text-ink-soft">
+                            {JSON.stringify(entry.payload, null, 2)}
+                          </pre>
                         </td>
                       </tr>
                     ) : null}
@@ -231,7 +250,9 @@ export default function AuditPage() {
         )}
 
         <p className="text-xs text-ink-soft">
-          {tr("Les mots de passe, codes de confirmation et autres secrets sont masqués avant enregistrement. Le journal est en écriture seule et chaque entrée est signée avec la précédente : toute modification ou suppression est détectée par la vérification d'intégrité.")}
+          {tr(
+            "Les mots de passe, codes de confirmation et autres secrets sont masqués avant enregistrement. Le journal est en écriture seule et chaque entrée est signée avec la précédente : toute modification ou suppression est détectée par la vérification d'intégrité.",
+          )}
         </p>
       </main>
     </div>
