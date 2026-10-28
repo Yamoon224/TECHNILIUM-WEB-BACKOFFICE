@@ -75,11 +75,12 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
     setAppearance(DEFAULT_APPEARANCE);
   }, []);
 
+  const language = appearance.language;
+  const tr = useCallback((french: string) => (language === "en" ? (PHRASES_EN[french] ?? french) : french), [language]);
+
   const value = useMemo<AppearanceContextValue>(
-    () => ({ appearance, theme, update, reset, t: (key) => translate(appearance.language, key),
-      tr: (french) => (appearance.language === "en" ? (PHRASES_EN[french] ?? french) : french),
-    }),
-    [appearance, theme, update, reset],
+    () => ({ appearance, theme, update, reset, t: (key) => translate(language, key), tr }),
+    [appearance, theme, update, reset, language, tr],
   );
 
   return <AppearanceContext.Provider value={value}>{children}</AppearanceContext.Provider>;

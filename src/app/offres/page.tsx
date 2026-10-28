@@ -1,5 +1,6 @@
 "use client";
 
+import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,6 +9,7 @@ import { useAuth } from "@/lib/useAuth";
 import { CatalogError, approveOffer, listOffersForModeration, rejectOffer, type ModeratedOffer } from "@/lib/catalog";
 
 export default function OfferModerationPage() {
+  const { tr } = useAppearance();
   const router = useRouter();
   const { status: sessionStatus, token, logout } = useAuth();
   const [offers, setOffers] = useState<ModeratedOffer[]>([]);
@@ -23,9 +25,9 @@ export default function OfferModerationPage() {
 
     listOffersForModeration(token)
       .then(setOffers)
-      .catch((caught) => setError(caught instanceof CatalogError ? caught.message : "Offres indisponibles."))
+      .catch((caught) => setError(caught instanceof CatalogError ? caught.message : tr("Offres indisponibles.")))
       .finally(() => setLoading(false));
-  }, [token]);
+  }, [token, tr]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -45,22 +47,22 @@ export default function OfferModerationPage() {
       await (decision === "approve" ? approveOffer(token, id) : rejectOffer(token, id));
       setOffers((current) => current.filter((offer) => offer.id !== id));
     } catch (caught) {
-      setError(caught instanceof CatalogError ? caught.message : "La décision a échoué.");
+      setError(caught instanceof CatalogError ? caught.message : tr("La décision a échoué."));
     } finally {
       setPendingId(null);
     }
   }
 
   if (sessionStatus === "checking") {
-    return <p className="px-4 py-16 text-center text-sm text-ink-soft">Vérification de la session…</p>;
+    return <p className="px-4 py-16 text-center text-sm text-ink-soft">{tr("Vérification de la session…")}</p>;
   }
 
   if (!token) {
     return (
       <main className="flex min-h-screen flex-1 flex-col items-center justify-center gap-3 px-4">
-        <p className="text-ink-soft">Connectez-vous pour accéder à la modération.</p>
+        <p className="text-ink-soft">{tr("Connectez-vous pour accéder à la modération.")}</p>
         <Link href="/" className="text-sm text-gold underline-offset-4 hover:underline">
-          Se connecter
+          {tr("Se connecter")}
         </Link>
       </main>
     );
@@ -71,25 +73,25 @@ export default function OfferModerationPage() {
       <BackofficeNav onLogout={handleLogout} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
-        <h1 className="font-display text-2xl font-semibold text-ink">Modération des offres vendeurs</h1>
-        <p className="text-sm text-ink-soft">Offres soumises par des vendeurs tiers, en attente de publication.</p>
+        <h1 className="font-display text-2xl font-semibold text-ink">{tr("Modération des offres vendeurs")}</h1>
+        <p className="text-sm text-ink-soft">{tr("Offres soumises par des vendeurs tiers, en attente de publication.")}</p>
 
         {error ? <p className="text-sm text-danger">{error}</p> : null}
 
         {loading ? (
-          <p className="text-sm text-ink-soft">Chargement…</p>
+          <p className="text-sm text-ink-soft">{tr("Chargement…")}</p>
         ) : offers.length === 0 ? (
-          <p className="text-sm text-ink-soft">Aucune offre en attente.</p>
+          <p className="text-sm text-ink-soft">{tr("Aucune offre en attente.")}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
-                  <th className="py-2 pr-4 font-medium">Produit</th>
-                  <th className="py-2 pr-4 font-medium">Vendeur</th>
-                  <th className="py-2 pr-4 font-medium">Prix</th>
-                  <th className="py-2 pr-4 font-medium">Stock</th>
-                  <th className="py-2 font-medium">Décision</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Produit")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Vendeur")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Prix")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Stock")}</th>
+                  <th className="py-2 font-medium">{tr("Décision")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -98,7 +100,7 @@ export default function OfferModerationPage() {
                     <td className="py-3 pr-4 text-ink">
                       {offer.brand} {offer.product_name}
                     </td>
-                    <td className="py-3 pr-4 text-ink-soft">Vendeur #{offer.vendor_id}</td>
+                    <td className="py-3 pr-4 text-ink-soft">{tr("Vendeur #")}{offer.vendor_id}</td>
                     <td className="py-3 pr-4 text-ink">
                       {offer.price_amount.toLocaleString("fr-FR")} {offer.currency}
                     </td>
@@ -111,7 +113,7 @@ export default function OfferModerationPage() {
                           onClick={() => handleDecision(offer.id, "approve")}
                           className="rounded-sm border border-gold px-2 py-1 text-xs text-gold transition-colors disabled:opacity-50"
                         >
-                          Approuver
+                          {tr("Approuver")}
                         </button>
                         <button
                           type="button"
@@ -119,7 +121,7 @@ export default function OfferModerationPage() {
                           onClick={() => handleDecision(offer.id, "reject")}
                           className="rounded-sm border border-danger px-2 py-1 text-xs text-danger transition-colors disabled:opacity-50"
                         >
-                          Rejeter
+                          {tr("Rejeter")}
                         </button>
                       </div>
                     </td>

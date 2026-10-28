@@ -167,7 +167,7 @@ function Sidebar({
   onLogout: () => void;
 }) {
   const pathname = usePathname();
-  const { t } = useAppearance();
+  const { t, tr } = useAppearance();
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -230,7 +230,7 @@ function Sidebar({
               <>
                 <span className="flex min-w-0 flex-1 flex-col leading-tight">
                   <span className="truncate text-sm font-medium">{user.name}</span>
-                  <span className="truncate text-xs opacity-70">{roleLabel(user)}</span>
+                  <span className="truncate text-xs opacity-70">{roleLabel(user, tr)}</span>
                 </span>
                 <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-60" aria-hidden />
               </>
@@ -242,8 +242,8 @@ function Sidebar({
   );
 }
 
-function roleLabel(user: User): string {
-  return user.roles.map((role) => ROLE_LABEL[role] ?? role)[0] ?? "";
+function roleLabel(user: User, tr: (french: string) => string): string {
+  return user.roles.map((role) => tr(ROLE_LABEL[role] ?? role))[0] ?? "";
 }
 
 function NavLink({ item, active, collapsed }: { item: NavItem; active: boolean; collapsed: boolean }) {
@@ -282,7 +282,7 @@ function Topbar({
   onLogout: () => void;
 }) {
   const pathname = usePathname();
-  const { theme, update, t } = useAppearance();
+  const { theme, update, t, tr } = useAppearance();
   const [accountOpen, setAccountOpen] = useState(false);
   const shortcuts = shortcutsFor(user.roles);
   const items = horizontal ? groups.flatMap((group) => group.items) : shortcuts;
@@ -362,7 +362,7 @@ function Topbar({
             {accountOpen ? (
               <div className="absolute right-0 top-full z-30 mt-2 w-56 rounded-sm border border-line bg-surface p-2 text-ink shadow-lg">
                 <p className="truncate px-2 pt-1 text-sm font-medium">{user.name}</p>
-                <p className="truncate px-2 pb-2 text-xs text-ink-soft">{user.email ?? roleLabel(user)}</p>
+                <p className="truncate px-2 pb-2 text-xs text-ink-soft">{user.email ?? roleLabel(user, tr)}</p>
                 <button
                   type="button"
                   onClick={onLogout}

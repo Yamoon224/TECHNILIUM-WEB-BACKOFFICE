@@ -1,5 +1,6 @@
 "use client";
 
+import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -22,6 +23,7 @@ import {
 const STATUSES: ReviewStatus[] = ["pending", "published", "rejected"];
 
 export default function ReviewsPage() {
+  const { tr } = useAppearance();
   const router = useRouter();
   const { status: sessionStatus, token, user, logout } = useAuth();
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -38,9 +40,9 @@ export default function ReviewsPage() {
 
     listReviews(token, filter ?? undefined)
       .then(setReviews)
-      .catch((caught) => setError(caught instanceof ReviewsError ? caught.message : "Avis indisponibles."))
+      .catch((caught) => setError(caught instanceof ReviewsError ? caught.message : tr("Avis indisponibles.")))
       .finally(() => setLoading(false));
-  }, [token, filter]);
+  }, [token, filter, tr]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -68,22 +70,22 @@ export default function ReviewsPage() {
       await (action === "publish" ? publishReview(token, review.id) : rejectReview(token, review.id, reason));
       refresh();
     } catch (caught) {
-      setError(caught instanceof ReviewsError ? caught.message : "La décision a échoué.");
+      setError(caught instanceof ReviewsError ? caught.message : tr("La décision a échoué."));
     } finally {
       setBusyId(null);
     }
   }
 
   if (sessionStatus === "checking") {
-    return <p className="px-4 py-16 text-center text-sm text-ink-soft">Vérification de la session…</p>;
+    return <p className="px-4 py-16 text-center text-sm text-ink-soft">{tr("Vérification de la session…")}</p>;
   }
 
   if (!token) {
     return (
       <main className="flex min-h-screen flex-1 flex-col items-center justify-center gap-3 px-4">
-        <p className="text-ink-soft">Connectez-vous pour modérer les avis.</p>
+        <p className="text-ink-soft">{tr("Connectez-vous pour modérer les avis.")}</p>
         <Link href="/" className="text-sm text-gold underline-offset-4 hover:underline">
-          Se connecter
+          {tr("Se connecter")}
         </Link>
       </main>
     );
@@ -95,8 +97,8 @@ export default function ReviewsPage() {
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h1 className="font-display text-2xl font-semibold text-ink">Avis clients</h1>
-          <p className="text-sm text-ink-soft">{pendingCount(reviews)} à modérer dans cette vue</p>
+          <h1 className="font-display text-2xl font-semibold text-ink">{tr("Avis clients")}</h1>
+          <p className="text-sm text-ink-soft">{pendingCount(reviews)} {tr("à modérer dans cette vue")}</p>
         </div>
 
         <nav className="flex flex-wrap gap-2">
@@ -109,7 +111,7 @@ export default function ReviewsPage() {
                 filter === value ? "border-gold bg-gold text-on-primary font-medium" : "border-line text-ink hover:border-gold"
               }`}
             >
-              {value === null ? "Tous" : REVIEW_STATUS_LABEL[value]}
+              {value === null ? tr("Tous") : REVIEW_STATUS_LABEL[value]}
             </button>
           ))}
         </nav>
@@ -117,9 +119,9 @@ export default function ReviewsPage() {
         {error ? <p className="text-sm text-danger">{error}</p> : null}
 
         {loading ? (
-          <p className="text-sm text-ink-soft">Chargement…</p>
+          <p className="text-sm text-ink-soft">{tr("Chargement…")}</p>
         ) : reviews.length === 0 ? (
-          <p className="text-sm text-ink-soft">Aucun avis.</p>
+          <p className="text-sm text-ink-soft">{tr("Aucun avis.")}</p>
         ) : (
           <ul className="flex flex-col gap-3">
             {reviews.map((review) => (
@@ -130,14 +132,14 @@ export default function ReviewsPage() {
                     {review.title ? <span className="font-medium text-ink">{review.title}</span> : null}
                   </p>
                   <span className={review.status === "pending" ? "text-gold-bright" : "text-ink-soft"}>
-                    {REVIEW_STATUS_LABEL[review.status]}
+                    {tr(REVIEW_STATUS_LABEL[review.status])}
                   </span>
                 </div>
 
                 {review.body ? <p className="whitespace-pre-wrap text-ink-soft">{review.body}</p> : null}
 
                 <p className="text-xs text-ink-soft">
-                  {review.author_name} · client #{review.customer_id} · produit #{review.product_id} · commande{" "}
+                  {review.author_name} {tr("· client #")}{review.customer_id} {tr("· produit #")}{review.product_id} {tr("· commande")}{" "}
                   {review.order_number}
                   {review.rejection_reason ? ` · motif du rejet : ${review.rejection_reason}` : ""}
                 </p>
@@ -150,7 +152,7 @@ export default function ReviewsPage() {
                       onClick={() => decide(review, "publish")}
                       className="rounded-sm border border-gold px-2 py-1 text-xs text-gold transition-colors disabled:opacity-50"
                     >
-                      {review.status === "rejected" ? "Rétablir" : "Publier"}
+                      {review.status === "rejected" ? tr("Rétablir") : tr("Publier")}
                     </button>
                   ) : null}
                   {canReject(review) ? (
@@ -160,7 +162,7 @@ export default function ReviewsPage() {
                       onClick={() => decide(review, "reject")}
                       className="rounded-sm border border-danger px-2 py-1 text-xs text-danger transition-colors disabled:opacity-50"
                     >
-                      {review.status === "published" ? "Retirer" : "Rejeter"}
+                      {review.status === "published" ? tr("Retirer") : tr("Rejeter")}
                     </button>
                   ) : null}
                 </div>
@@ -170,8 +172,7 @@ export default function ReviewsPage() {
         )}
 
         <p className="text-xs text-ink-soft">
-          Un avis ne peut venir que d&apos;un acheteur ayant reçu le produit. Les avis propres sont publiés
-          automatiquement ; ceux qui contiennent un lien, un e-mail, un numéro de téléphone ou un mot interdit attendent ici.
+          {tr("Un avis ne peut venir que d'un acheteur ayant reçu le produit. Les avis propres sont publiés automatiquement ; ceux qui contiennent un lien, un e-mail, un numéro de téléphone ou un mot interdit attendent ici.")}
         </p>
       </main>
     </div>

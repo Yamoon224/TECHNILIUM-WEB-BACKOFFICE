@@ -1,5 +1,6 @@
 "use client";
 
+import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -22,6 +23,7 @@ import {
 } from "@/lib/promotions";
 
 export default function PromotionsPage() {
+  const { tr } = useAppearance();
   const router = useRouter();
   const { status: sessionStatus, token, user, logout } = useAuth();
   const [coupons, setCoupons] = useState<Coupon[]>([]);
@@ -42,9 +44,9 @@ export default function PromotionsPage() {
         setCoupons(list);
         setNow(new Date());
       })
-      .catch((caught) => setError(caught instanceof PromotionsError ? caught.message : "Coupons indisponibles."))
+      .catch((caught) => setError(caught instanceof PromotionsError ? caught.message : tr("Coupons indisponibles.")))
       .finally(() => setLoading(false));
-  }, [token]);
+  }, [token, tr]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -64,22 +66,22 @@ export default function PromotionsPage() {
       const updated = await setCouponActive(token, coupon.id, !coupon.active);
       setCoupons((current) => current.map((item) => (item.id === coupon.id ? updated : item)));
     } catch (caught) {
-      setError(caught instanceof PromotionsError ? caught.message : "L'action a échoué.");
+      setError(caught instanceof PromotionsError ? caught.message : tr("L'action a échoué."));
     } finally {
       setBusyId(null);
     }
   }
 
   if (sessionStatus === "checking") {
-    return <p className="px-4 py-16 text-center text-sm text-ink-soft">Vérification de la session…</p>;
+    return <p className="px-4 py-16 text-center text-sm text-ink-soft">{tr("Vérification de la session…")}</p>;
   }
 
   if (!token) {
     return (
       <main className="flex min-h-screen flex-1 flex-col items-center justify-center gap-3 px-4">
-        <p className="text-ink-soft">Connectez-vous pour accéder aux promotions.</p>
+        <p className="text-ink-soft">{tr("Connectez-vous pour accéder aux promotions.")}</p>
         <Link href="/" className="text-sm text-gold underline-offset-4 hover:underline">
-          Se connecter
+          {tr("Se connecter")}
         </Link>
       </main>
     );
@@ -90,7 +92,7 @@ export default function PromotionsPage() {
       <BackofficeNav onLogout={handleLogout} roles={user?.roles} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
-        <h1 className="font-display text-2xl font-semibold text-ink">Promotions</h1>
+        <h1 className="font-display text-2xl font-semibold text-ink">{tr("Promotions")}</h1>
 
         <NewCouponForm
           onSubmit={async (input) => {
@@ -103,20 +105,20 @@ export default function PromotionsPage() {
         {error ? <p className="text-sm text-danger">{error}</p> : null}
 
         {loading ? (
-          <p className="text-sm text-ink-soft">Chargement…</p>
+          <p className="text-sm text-ink-soft">{tr("Chargement…")}</p>
         ) : coupons.length === 0 ? (
-          <p className="text-sm text-ink-soft">Aucun code promotionnel.</p>
+          <p className="text-sm text-ink-soft">{tr("Aucun code promotionnel.")}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[820px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
-                  <th className="py-2 pr-4 font-medium">Code</th>
-                  <th className="py-2 pr-4 font-medium">Remise</th>
-                  <th className="py-2 pr-4 font-medium">Minimum</th>
-                  <th className="py-2 pr-4 font-medium">Utilisations</th>
-                  <th className="py-2 pr-4 font-medium">Validité</th>
-                  <th className="py-2 pr-4 font-medium">État</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Code")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Remise")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Minimum")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Utilisations")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Validité")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("État")}</th>
                   <th className="py-2 font-medium" />
                 </tr>
               </thead>
@@ -136,7 +138,7 @@ export default function PromotionsPage() {
                       {coupon.starts_at?.slice(0, 10) ?? "…"} → {coupon.ends_at?.slice(0, 10) ?? "…"}
                     </td>
                     <td className="py-3 pr-4 text-ink-soft">
-                      {now ? COUPON_STATE_LABEL[couponState(coupon, now)] : ""}
+                      {now ? tr(COUPON_STATE_LABEL[couponState(coupon, now)]) : ""}
                     </td>
                     <td className="py-3">
                       <button
@@ -145,7 +147,7 @@ export default function PromotionsPage() {
                         onClick={() => handleToggle(coupon)}
                         className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold disabled:opacity-50"
                       >
-                        {coupon.active ? "Désactiver" : "Réactiver"}
+                        {coupon.active ? tr("Désactiver") : tr("Réactiver")}
                       </button>
                     </td>
                   </tr>
@@ -156,7 +158,7 @@ export default function PromotionsPage() {
         )}
 
         <p className="text-xs text-ink-soft">
-          Les remises sont à la charge de Technilium : le vendeur est payé et commissionné sur le prix affiché.
+          {tr("Les remises sont à la charge de Technilium : le vendeur est payé et commissionné sur le prix affiché.")}
         </p>
       </main>
     </div>
@@ -164,6 +166,7 @@ export default function PromotionsPage() {
 }
 
 function NewCouponForm({ onSubmit }: { onSubmit: (input: NewCouponInput) => Promise<void> }) {
+  const { tr } = useAppearance();
   const [code, setCode] = useState("");
   const [type, setType] = useState<CouponType>("percent");
   const [value, setValue] = useState("");
@@ -217,7 +220,7 @@ function NewCouponForm({ onSubmit }: { onSubmit: (input: NewCouponInput) => Prom
       setStartsAt("");
       setEndsAt("");
     } catch (caught) {
-      setFormError(caught instanceof PromotionsError ? caught.message : "Création impossible.");
+      setFormError(caught instanceof PromotionsError ? caught.message : tr("Création impossible."));
     } finally {
       setSubmitting(false);
     }
@@ -228,42 +231,42 @@ function NewCouponForm({ onSubmit }: { onSubmit: (input: NewCouponInput) => Prom
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        Code
-        <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="BIENVENUE10" className={`${field} uppercase`} />
+        {tr("Code")}
+        <input value={code} onChange={(e) => setCode(e.target.value)} placeholder={tr("BIENVENUE10")} className={`${field} uppercase`} />
       </label>
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        Type
+        {tr("Type")}
         <select value={type} onChange={(e) => setType(e.target.value as CouponType)} className={field}>
-          <option value="percent">Pourcentage</option>
-          <option value="fixed">Montant fixe</option>
+          <option value="percent">{tr("Pourcentage")}</option>
+          <option value="fixed">{tr("Montant fixe")}</option>
         </select>
       </label>
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {type === "percent" ? "Valeur (%)" : "Valeur (F CFA)"}
+        {type === "percent" ? tr("Valeur (%)") : tr("Valeur (F CFA)")}
         <input value={value} onChange={(e) => setValue(e.target.value)} inputMode="numeric" className={field} />
       </label>
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        Achat minimum
+        {tr("Achat minimum")}
         <input value={minOrder} onChange={(e) => setMinOrder(e.target.value)} inputMode="numeric" className={field} />
       </label>
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        Utilisations max
+        {tr("Utilisations max")}
         <input value={maxUses} onChange={(e) => setMaxUses(e.target.value)} inputMode="numeric" className={field} />
       </label>
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        Par client
+        {tr("Par client")}
         <input value={perCustomer} onChange={(e) => setPerCustomer(e.target.value)} inputMode="numeric" className={field} />
       </label>
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        Début
+        {tr("Début")}
         <input type="date" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} className={field} />
       </label>
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        Fin
+        {tr("Fin")}
         <input type="date" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} className={field} />
       </label>
       <Button type="submit" disabled={submitting}>
-        Créer le code
+        {tr("Créer le code")}
       </Button>
       {formError ? <p className="w-full text-sm text-danger">{formError}</p> : null}
     </form>

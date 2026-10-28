@@ -1,5 +1,6 @@
 "use client";
 
+import { useAppearance } from "@/components/AppearanceProvider";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -20,6 +21,7 @@ import {
 } from "@/lib/payouts";
 
 export default function PayoutsPage() {
+  const { tr } = useAppearance();
   const router = useRouter();
   const { status: sessionStatus, token, logout } = useAuth();
   const [payouts, setPayouts] = useState<Payout[]>([]);
@@ -38,9 +40,9 @@ export default function PayoutsPage() {
 
     listPayouts(token)
       .then(setPayouts)
-      .catch((caught) => setError(caught instanceof PayoutsError ? caught.message : "Reversements indisponibles."))
+      .catch((caught) => setError(caught instanceof PayoutsError ? caught.message : tr("Reversements indisponibles.")))
       .finally(() => setLoading(false));
-  }, [token]);
+  }, [token, tr]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -94,20 +96,20 @@ export default function PayoutsPage() {
     try {
       setDetail(await getPayout(token, payout.id));
     } catch (caught) {
-      setError(caught instanceof PayoutsError ? caught.message : "Relevé indisponible.");
+      setError(caught instanceof PayoutsError ? caught.message : tr("Relevé indisponible."));
     }
   }
 
   if (sessionStatus === "checking") {
-    return <p className="px-4 py-16 text-center text-sm text-ink-soft">Vérification de la session…</p>;
+    return <p className="px-4 py-16 text-center text-sm text-ink-soft">{tr("Vérification de la session…")}</p>;
   }
 
   if (!token) {
     return (
       <main className="flex min-h-screen flex-1 flex-col items-center justify-center gap-3 px-4">
-        <p className="text-ink-soft">Connectez-vous pour accéder aux reversements.</p>
+        <p className="text-ink-soft">{tr("Connectez-vous pour accéder aux reversements.")}</p>
         <Link href="/" className="text-sm text-gold underline-offset-4 hover:underline">
-          Se connecter
+          {tr("Se connecter")}
         </Link>
       </main>
     );
@@ -121,21 +123,21 @@ export default function PayoutsPage() {
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h1 className="font-display text-2xl font-semibold text-ink">Reversements vendeurs</h1>
+          <h1 className="font-display text-2xl font-semibold text-ink">{tr("Reversements vendeurs")}</h1>
           <p className="text-sm text-ink-soft">
-            Restant dû aux vendeurs : <span className="text-ink">{formatMoney({ amount: owed, currency: "XOF" })}</span>
+            {tr("Restant dû aux vendeurs :")} <span className="text-ink">{formatMoney({ amount: owed, currency: "XOF" })}</span>
           </p>
         </div>
 
         <form onSubmit={handleCalculate} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
           <label className="flex flex-col gap-1 text-xs text-ink-soft">
-            Vendeur
+            {tr("Vendeur")}
             <select
               value={vendorId}
               onChange={(event) => setVendorId(event.target.value)}
               className="min-w-56 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
             >
-              <option value="">Choisir un vendeur…</option>
+              <option value="">{tr("Choisir un vendeur…")}</option>
               {vendors.map((vendor) => (
                 <option key={vendor.id} value={vendor.id}>
                   {vendor.company_name}
@@ -144,30 +146,30 @@ export default function PayoutsPage() {
             </select>
           </label>
           <Button type="submit" disabled={busy || !vendorId}>
-            Calculer le reversement
+            {tr("Calculer le reversement")}
           </Button>
           <p className="w-full text-xs text-ink-soft">
-            Inclut les commandes livrées dont le délai de retour est écoulé et qui n&apos;ont pas encore été reversées.
+            {tr("Inclut les commandes livrées dont le délai de retour est écoulé et qui n'ont pas encore été reversées.")}
           </p>
         </form>
 
         {error ? <p className="text-sm text-danger">{error}</p> : null}
 
         {loading ? (
-          <p className="text-sm text-ink-soft">Chargement…</p>
+          <p className="text-sm text-ink-soft">{tr("Chargement…")}</p>
         ) : payouts.length === 0 ? (
-          <p className="text-sm text-ink-soft">Aucun reversement.</p>
+          <p className="text-sm text-ink-soft">{tr("Aucun reversement.")}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[860px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
-                  <th className="py-2 pr-4 font-medium">Vendeur</th>
-                  <th className="py-2 pr-4 font-medium">Ventes</th>
-                  <th className="py-2 pr-4 font-medium">Commission</th>
-                  <th className="py-2 pr-4 font-medium">Net à verser</th>
-                  <th className="py-2 pr-4 font-medium">Statut</th>
-                  <th className="py-2 font-medium">Actions</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Vendeur")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Ventes")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Commission")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Net à verser")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Statut")}</th>
+                  <th className="py-2 font-medium">{tr("Actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -183,7 +185,7 @@ export default function PayoutsPage() {
                         </td>
                         <td className="py-3 pr-4 text-ink">{money(payout.net_amount)}</td>
                         <td className="py-3 pr-4 text-ink-soft">
-                          {PAYOUT_STATUS_LABEL[payout.status]}
+                          {tr(PAYOUT_STATUS_LABEL[payout.status])}
                           {payout.payment_reference ? ` · ${payout.payment_reference}` : ""}
                         </td>
                         <td className="py-3">
@@ -193,7 +195,7 @@ export default function PayoutsPage() {
                               onClick={() => handleDetail(payout)}
                               className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold"
                             >
-                              Relevé
+                              {tr("Relevé")}
                             </button>
                             {payout.status === "pending" ? (
                               <button
@@ -202,7 +204,7 @@ export default function PayoutsPage() {
                                 onClick={() => handlePay(payout)}
                                 className="rounded-sm border border-gold px-2 py-1 text-xs text-gold transition-colors disabled:opacity-50"
                               >
-                                Marquer payé
+                                {tr("Marquer payé")}
                               </button>
                             ) : null}
                           </div>

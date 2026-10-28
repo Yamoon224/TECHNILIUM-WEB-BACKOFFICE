@@ -1,5 +1,6 @@
 "use client";
 
+import { useAppearance } from "@/components/AppearanceProvider";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -19,6 +20,7 @@ import {
 } from "@/lib/audit";
 
 export default function AuditPage() {
+  const { tr } = useAppearance();
   const router = useRouter();
   const { status: sessionStatus, token, user, logout } = useAuth();
   const [draft, setDraft] = useState<AuditFilters>({});
@@ -38,9 +40,9 @@ export default function AuditPage() {
 
     listAuditEntries(token, filters)
       .then(setEntries)
-      .catch((caught) => setError(caught instanceof AuditError ? caught.message : "Journal indisponible."))
+      .catch((caught) => setError(caught instanceof AuditError ? caught.message : tr("Journal indisponible.")))
       .finally(() => setLoading(false));
-  }, [token, filters]);
+  }, [token, filters, tr]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -59,22 +61,22 @@ export default function AuditPage() {
     try {
       setVerification(await verifyAuditChain(token));
     } catch (caught) {
-      setError(caught instanceof AuditError ? caught.message : "Vérification impossible.");
+      setError(caught instanceof AuditError ? caught.message : tr("Vérification impossible."));
     } finally {
       setVerifying(false);
     }
   }
 
   if (sessionStatus === "checking") {
-    return <p className="px-4 py-16 text-center text-sm text-ink-soft">Vérification de la session…</p>;
+    return <p className="px-4 py-16 text-center text-sm text-ink-soft">{tr("Vérification de la session…")}</p>;
   }
 
   if (!token) {
     return (
       <main className="flex min-h-screen flex-1 flex-col items-center justify-center gap-3 px-4">
-        <p className="text-ink-soft">Connectez-vous pour accéder au journal d&apos;audit.</p>
+        <p className="text-ink-soft">{tr("Connectez-vous pour accéder au journal d'audit.")}</p>
         <Link href="/" className="text-sm text-gold underline-offset-4 hover:underline">
-          Se connecter
+          {tr("Se connecter")}
         </Link>
       </main>
     );
@@ -88,14 +90,14 @@ export default function AuditPage() {
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="font-display text-2xl font-semibold text-ink">Journal d&apos;audit</h1>
+          <h1 className="font-display text-2xl font-semibold text-ink">{tr("Journal d'audit")}</h1>
           <button
             type="button"
             onClick={handleVerify}
             disabled={verifying}
             className="rounded-sm border border-gold px-3 py-2 text-sm text-gold transition-colors disabled:opacity-50"
           >
-            {verifying ? "Vérification…" : "Vérifier l'intégrité"}
+            {verifying ? tr("Vérification…") : tr("Vérifier l'intégrité")}
           </button>
         </div>
 
@@ -118,7 +120,7 @@ export default function AuditPage() {
           }}
         >
           <label className="flex flex-col gap-1 text-xs text-ink-soft">
-            Utilisateur (id)
+            {tr("Utilisateur (id)")}
             <input
               value={draft.user_id ?? ""}
               onChange={(e) => setDraft({ ...draft, user_id: e.target.value })}
@@ -127,9 +129,9 @@ export default function AuditPage() {
             />
           </label>
           <label className="flex flex-col gap-1 text-xs text-ink-soft">
-            Méthode
+            {tr("Méthode")}
             <select value={draft.method ?? ""} onChange={(e) => setDraft({ ...draft, method: e.target.value })} className={field}>
-              <option value="">Toutes</option>
+              <option value="">{tr("Toutes")}</option>
               {AUDIT_METHODS.map((method) => (
                 <option key={method} value={method}>
                   {method}
@@ -138,20 +140,20 @@ export default function AuditPage() {
             </select>
           </label>
           <label className="flex flex-col gap-1 text-xs text-ink-soft">
-            Chemin contient
+            {tr("Chemin contient")}
             <input
               value={draft.path ?? ""}
               onChange={(e) => setDraft({ ...draft, path: e.target.value })}
-              placeholder="refund"
+              placeholder={tr("refund")}
               className={`${field} w-44`}
             />
           </label>
           <label className="flex flex-col gap-1 text-xs text-ink-soft">
-            Du
+            {tr("Du")}
             <input type="date" value={draft.from ?? ""} onChange={(e) => setDraft({ ...draft, from: e.target.value })} className={field} />
           </label>
           <label className="flex flex-col gap-1 text-xs text-ink-soft">
-            Au
+            {tr("Au")}
             <input type="date" value={draft.to ?? ""} onChange={(e) => setDraft({ ...draft, to: e.target.value })} className={field} />
           </label>
           <label className="flex items-center gap-2 pb-2 text-sm text-ink">
@@ -160,27 +162,27 @@ export default function AuditPage() {
               checked={draft.failed ?? false}
               onChange={(e) => setDraft({ ...draft, failed: e.target.checked })}
             />
-            Échecs et refus seulement
+            {tr("Échecs et refus seulement")}
           </label>
-          <Button type="submit">Filtrer</Button>
+          <Button type="submit">{tr("Filtrer")}</Button>
         </form>
 
         {error ? <p className="text-sm text-danger">{error}</p> : null}
 
         {loading ? (
-          <p className="text-sm text-ink-soft">Chargement…</p>
+          <p className="text-sm text-ink-soft">{tr("Chargement…")}</p>
         ) : entries.length === 0 ? (
-          <p className="text-sm text-ink-soft">Aucune entrée.</p>
+          <p className="text-sm text-ink-soft">{tr("Aucune entrée.")}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
-                  <th className="py-2 pr-4 font-medium">Date</th>
-                  <th className="py-2 pr-4 font-medium">Utilisateur</th>
-                  <th className="py-2 pr-4 font-medium">Action</th>
-                  <th className="py-2 pr-4 font-medium">Résultat</th>
-                  <th className="py-2 pr-4 font-medium">IP</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Date")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Utilisateur")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Action")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Résultat")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("IP")}</th>
                   <th className="py-2 font-medium" />
                 </tr>
               </thead>
@@ -209,7 +211,7 @@ export default function AuditPage() {
                             onClick={() => setOpen(open === entry.id ? null : entry.id)}
                             className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold"
                           >
-                            Données
+                            {tr("Données")}
                           </button>
                         ) : null}
                       </td>
@@ -229,9 +231,7 @@ export default function AuditPage() {
         )}
 
         <p className="text-xs text-ink-soft">
-          Les mots de passe, codes de confirmation et autres secrets sont masqués avant enregistrement. Le journal est en
-          écriture seule et chaque entrée est signée avec la précédente : toute modification ou suppression est détectée par
-          la vérification d&apos;intégrité.
+          {tr("Les mots de passe, codes de confirmation et autres secrets sont masqués avant enregistrement. Le journal est en écriture seule et chaque entrée est signée avec la précédente : toute modification ou suppression est détectée par la vérification d'intégrité.")}
         </p>
       </main>
     </div>

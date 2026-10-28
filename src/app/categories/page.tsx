@@ -35,7 +35,7 @@ export default function CategoriesPage() {
       .then(setCategories)
       .catch((caught) => setError(caught instanceof CatalogError ? caught.message : tr("Catégories indisponibles.")))
       .finally(() => setLoading(false));
-  }, [token]);
+  }, [token, tr]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect

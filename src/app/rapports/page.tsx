@@ -1,5 +1,6 @@
 "use client";
 
+import { useAppearance } from "@/components/AppearanceProvider";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -33,6 +34,7 @@ const xof = (amount: number) => formatMoney({ amount, currency: "XOF" });
 const METHOD_LABEL: Record<string, string> = { cod: "Paiement à la livraison", mobile_money: "Mobile money" };
 
 export default function ReportsPage() {
+  const { tr } = useAppearance();
   const router = useRouter();
   const { status: sessionStatus, token, user, logout } = useAuth();
   // "Today" is only known in the browser: reading the clock during render
@@ -64,13 +66,13 @@ export default function ReportsPage() {
         setError(null);
       })
       .catch((caught) => {
-        if (!cancelled) setError(caught instanceof ReportsError ? caught.message : "Rapports indisponibles.");
+        if (!cancelled) setError(caught instanceof ReportsError ? caught.message : tr("Rapports indisponibles."));
       });
 
     return () => {
       cancelled = true;
     };
-  }, [token, period]);
+  }, [token, period, tr]);
 
   async function handleLogout() {
     await logout();
@@ -83,22 +85,22 @@ export default function ReportsPage() {
     try {
       await downloadSalesCsv(token, period);
     } catch (caught) {
-      setError(caught instanceof ReportsError ? caught.message : "Export impossible.");
+      setError(caught instanceof ReportsError ? caught.message : tr("Export impossible."));
     } finally {
       setExporting(false);
     }
   }
 
   if (sessionStatus === "checking") {
-    return <p className="px-4 py-16 text-center text-sm text-ink-soft">Vérification de la session…</p>;
+    return <p className="px-4 py-16 text-center text-sm text-ink-soft">{tr("Vérification de la session…")}</p>;
   }
 
   if (!token) {
     return (
       <main className="flex min-h-screen flex-1 flex-col items-center justify-center gap-3 px-4">
-        <p className="text-ink-soft">Connectez-vous pour accéder aux rapports.</p>
+        <p className="text-ink-soft">{tr("Connectez-vous pour accéder aux rapports.")}</p>
         <Link href="/" className="text-sm text-gold underline-offset-4 hover:underline">
-          Se connecter
+          {tr("Se connecter")}
         </Link>
       </main>
     );
@@ -110,7 +112,7 @@ export default function ReportsPage() {
 
       <main className="flex w-full flex-1 flex-col gap-8 px-4 py-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <h1 className="font-display text-2xl font-semibold text-ink">Rapports</h1>
+          <h1 className="font-display text-2xl font-semibold text-ink">{tr("Rapports")}</h1>
 
           <form
             className="flex flex-wrap items-end gap-3"
@@ -120,7 +122,7 @@ export default function ReportsPage() {
             }}
           >
             <label className="flex flex-col gap-1 text-xs text-ink-soft">
-              Du
+              {tr("Du")}
               <input
                 type="date"
                 value={draft.from}
@@ -129,7 +131,7 @@ export default function ReportsPage() {
               />
             </label>
             <label className="flex flex-col gap-1 text-xs text-ink-soft">
-              Au
+              {tr("Au")}
               <input
                 type="date"
                 value={draft.to}
@@ -138,7 +140,7 @@ export default function ReportsPage() {
               />
             </label>
             <Button type="submit" disabled={!isValidPeriod(draft)}>
-              Appliquer
+              {tr("Appliquer")}
             </Button>
             <button
               type="button"
@@ -146,13 +148,13 @@ export default function ReportsPage() {
               disabled={exporting}
               className="rounded-sm border border-line px-3 py-2 text-sm text-ink transition-colors hover:border-gold disabled:opacity-50"
             >
-              Exporter les ventes (CSV)
+              {tr("Exporter les ventes (CSV)")}
             </button>
           </form>
         </div>
 
         {error ? <p className="text-sm text-danger">{error}</p> : null}
-        {!dashboard ? <p className="text-sm text-ink-soft">Chargement…</p> : <Report dashboard={dashboard} sellers={sellers} />}
+        {!dashboard ? <p className="text-sm text-ink-soft">{tr("Chargement…")}</p> : <Report dashboard={dashboard} sellers={sellers} />}
         {period ? <MarginSection token={token} period={period} /> : null}
       </main>
     </div>
@@ -160,11 +162,12 @@ export default function ReportsPage() {
 }
 
 function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerSales[] }) {
+  const { tr } = useAppearance();
   const { sales, finance, returns, alerts } = dashboard;
 
   return (
     <>
-      <section aria-label="Indicateurs">
+      <section aria-label={tr("Indicateurs")}>
         <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <Tile label="Chiffre d'affaires" value={xof(sales.revenue)} />
           <Tile label="Commandes" value={String(sales.orders)} />
@@ -174,20 +177,20 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
       </section>
 
       {alerts.stalled_orders > 0 || alerts.low_stock_count > 0 ? (
-        <section aria-label="Alertes" className="flex flex-col gap-2 rounded-sm border border-gold-deep p-4 text-sm">
-          <h2 className="font-display text-lg text-ink">Alertes</h2>
+        <section aria-label={tr("Alertes")} className="flex flex-col gap-2 rounded-sm border border-gold-deep p-4 text-sm">
+          <h2 className="font-display text-lg text-ink">{tr("Alertes")}</h2>
           {alerts.stalled_orders > 0 ? (
             <p className="text-ink">
-              {alerts.stalled_orders} commande(s) en attente ou confirmée(s) depuis plus de quelques jours.
+              {alerts.stalled_orders} {tr("commande(s) en attente ou confirmée(s) depuis plus de quelques jours.")}
             </p>
           ) : null}
           {alerts.low_stock_count > 0 ? (
             <>
-              <p className="text-ink">{alerts.low_stock_count} offre(s) en stock bas ou en rupture :</p>
+              <p className="text-ink">{alerts.low_stock_count} {tr("offre(s) en stock bas ou en rupture :")}</p>
               <ul className="text-xs text-ink-soft">
                 {alerts.low_stock.map((offer) => (
                   <li key={offer.offer_id}>
-                    {offer.product} ({offer.sku}) — stock : {offer.stock}
+                    {offer.product} ({offer.sku}{tr(") — stock :")} {offer.stock}
                   </li>
                 ))}
               </ul>
@@ -200,9 +203,9 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
 
       <div className="grid gap-8 lg:grid-cols-2">
         <section className="flex flex-col gap-3">
-          <h2 className="font-display text-lg text-ink">Meilleurs produits</h2>
+          <h2 className="font-display text-lg text-ink">{tr("Meilleurs produits")}</h2>
           {dashboard.top_products.length === 0 ? (
-            <p className="text-sm text-ink-soft">Aucune vente sur la période.</p>
+            <p className="text-sm text-ink-soft">{tr("Aucune vente sur la période.")}</p>
           ) : (
             <table className="w-full border-collapse text-sm">
               <tbody>
@@ -219,11 +222,11 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
         </section>
 
         <section className="flex flex-col gap-3">
-          <h2 className="font-display text-lg text-ink">Commandes par statut</h2>
+          <h2 className="font-display text-lg text-ink">{tr("Commandes par statut")}</h2>
           <ul className="flex flex-col gap-1 text-sm">
             {Object.entries(dashboard.orders_by_status).map(([status, count]) => (
               <li key={status} className="flex justify-between border-b border-line py-1">
-                <span className="text-ink-soft">{ORDER_STATUS_META[status as OrderStatus]?.label ?? status}</span>
+                <span className="text-ink-soft">{tr(ORDER_STATUS_META[status as OrderStatus]?.label ?? status)}</span>
                 <span className="text-ink">{count}</span>
               </li>
             ))}
@@ -233,11 +236,11 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
 
       <div className="grid gap-8 lg:grid-cols-2">
         <section className="flex flex-col gap-3">
-          <h2 className="font-display text-lg text-ink">Finance</h2>
+          <h2 className="font-display text-lg text-ink">{tr("Finance")}</h2>
           <dl className="flex flex-col gap-1 text-sm">
             <Row label="Encaissé" value={xof(finance.collected)} />
             {Object.entries(finance.collected_by_method).map(([method, amount]) => (
-              <Row key={method} label={`dont ${METHOD_LABEL[method] ?? method}`} value={xof(amount)} muted />
+              <Row key={method} label={`${tr("dont")} ${tr(METHOD_LABEL[method] ?? method)}`} value={xof(amount)} muted />
             ))}
             <Row label="Remboursé aux clients" value={xof(finance.refunded)} />
             <Row label="Commissions" value={xof(finance.commissions)} />
@@ -247,28 +250,28 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
         </section>
 
         <section className="flex flex-col gap-3">
-          <h2 className="font-display text-lg text-ink">Retours</h2>
+          <h2 className="font-display text-lg text-ink">{tr("Retours")}</h2>
           <dl className="flex flex-col gap-1 text-sm">
             <Row label="Dossiers ouverts sur la période" value={String(returns.count)} />
             <Row label="Montant remboursé" value={xof(returns.refunded_amount)} />
             {Object.entries(returns.by_status).map(([status, count]) => (
-              <Row key={status} label={RETURN_STATUS_LABEL[status as ReturnStatus] ?? status} value={String(count)} muted />
+              <Row key={status} label={tr(RETURN_STATUS_LABEL[status as ReturnStatus] ?? status)} value={String(count)} muted />
             ))}
           </dl>
         </section>
       </div>
 
       <section className="flex flex-col gap-3">
-        <h2 className="font-display text-lg text-ink">Ventes par vendeur</h2>
+        <h2 className="font-display text-lg text-ink">{tr("Ventes par vendeur")}</h2>
         {sellers.length === 0 ? (
-          <p className="text-sm text-ink-soft">Aucune vente sur la période.</p>
+          <p className="text-sm text-ink-soft">{tr("Aucune vente sur la période.")}</p>
         ) : (
           <table className="w-full max-w-xl border-collapse text-sm">
             <tbody>
               {sellers.map((seller) => (
                 <tr key={seller.vendor_id ?? "own"} className="border-b border-line">
                   <td className="py-2 pr-4 text-ink">{seller.seller}</td>
-                  <td className="py-2 pr-4 text-right text-ink-soft">{seller.orders} cmd</td>
+                  <td className="py-2 pr-4 text-right text-ink-soft">{seller.orders} {tr("cmd")}</td>
                   <td className="py-2 text-right text-ink">{xof(seller.revenue)}</td>
                 </tr>
               ))}
@@ -278,7 +281,7 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
       </section>
 
       <p className="text-xs text-ink-soft">
-        Montants en F CFA. Le chiffre d&apos;affaires compte les commandes non annulées, TVA comprise.
+        {tr("Montants en F CFA. Le chiffre d'affaires compte les commandes non annulées, TVA comprise.")}
       </p>
     </>
   );
@@ -308,33 +311,34 @@ function Row({ label, value, muted = false }: { label: string; value: string; mu
  * equivalent table is one toggle away so the chart is never the only way in.
  */
 function SalesChart({ days }: { days: { date: string; orders: number; revenue: number }[] }) {
+  const { tr } = useAppearance();
   const [showTable, setShowTable] = useState(false);
   const max = maxRevenue(days);
 
   return (
     <section className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-lg text-ink">Chiffre d&apos;affaires par jour</h2>
+        <h2 className="font-display text-lg text-ink">{tr("Chiffre d'affaires par jour")}</h2>
         {days.length > 0 ? (
           <button
             type="button"
             onClick={() => setShowTable((current) => !current)}
             className="text-xs text-gold underline-offset-4 hover:underline"
           >
-            {showTable ? "Voir le graphique" : "Voir le tableau"}
+            {showTable ? tr("Voir le graphique") : tr("Voir le tableau")}
           </button>
         ) : null}
       </div>
 
       {days.length === 0 ? (
-        <p className="text-sm text-ink-soft">Aucune vente sur la période.</p>
+        <p className="text-sm text-ink-soft">{tr("Aucune vente sur la période.")}</p>
       ) : showTable ? (
         <table className="w-full max-w-xl border-collapse text-sm">
           <thead>
             <tr className="border-b border-line text-left text-ink-soft">
-              <th className="py-1 pr-4 font-medium">Jour</th>
-              <th className="py-1 pr-4 text-right font-medium">Commandes</th>
-              <th className="py-1 text-right font-medium">Chiffre d&apos;affaires</th>
+              <th className="py-1 pr-4 font-medium">{tr("Jour")}</th>
+              <th className="py-1 pr-4 text-right font-medium">{tr("Commandes")}</th>
+              <th className="py-1 text-right font-medium">{tr("Chiffre d'affaires")}</th>
             </tr>
           </thead>
           <tbody>
@@ -348,7 +352,7 @@ function SalesChart({ days }: { days: { date: string; orders: number; revenue: n
           </tbody>
         </table>
       ) : (
-        <div role="img" aria-label="Chiffre d'affaires par jour" className="flex h-40 items-end gap-1 border-b border-line">
+        <div role="img" aria-label={tr("Chiffre d'affaires par jour")} className="flex h-40 items-end gap-1 border-b border-line">
           {days.map((day) => (
             <div
               key={day.date}
@@ -369,6 +373,7 @@ function SalesChart({ days }: { days: { date: string; orders: number; revenue: n
  * are not in it. Returns are shown beside it, not netted.
  */
 function MarginSection({ token, period }: { token: string; period: Period }) {
+  const { tr } = useAppearance();
   const [margin, setMargin] = useState<MarginReport | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -382,29 +387,29 @@ function MarginSection({ token, period }: { token: string; period: Period }) {
         setError(null);
       })
       .catch((caught) => {
-        if (!cancelled) setError(caught instanceof ReportsError ? caught.message : "Marge indisponible.");
+        if (!cancelled) setError(caught instanceof ReportsError ? caught.message : tr("Marge indisponible."));
       });
 
     return () => {
       cancelled = true;
     };
-  }, [token, period]);
+  }, [token, period, tr]);
 
   if (error) return <p className="text-sm text-danger">{error}</p>;
-  if (!margin) return <p className="text-sm text-ink-soft">Chargement de la marge…</p>;
+  if (!margin) return <p className="text-sm text-ink-soft">{tr("Chargement de la marge…")}</p>;
 
   const { totals } = margin;
 
   return (
-    <section className="flex flex-col gap-4 border-t border-line pt-8" aria-label="Marge de Technilium">
+    <section className="flex flex-col gap-4 border-t border-line pt-8" aria-label={tr("Marge de Technilium")}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-display text-xl font-semibold text-ink">Marge de Technilium</h2>
+        <h2 className="font-display text-xl font-semibold text-ink">{tr("Marge de Technilium")}</h2>
         <button
           type="button"
-          onClick={() => downloadMarginCsv(token, period).catch((caught) => setError(caught instanceof ReportsError ? caught.message : "Export impossible."))}
+          onClick={() => downloadMarginCsv(token, period).catch((caught) => setError(caught instanceof ReportsError ? caught.message : tr("Export impossible.")))}
           className="rounded-sm border border-line px-3 py-2 text-sm text-ink transition-colors hover:border-gold"
         >
-          Exporter la marge (CSV)
+          {tr("Exporter la marge (CSV)")}
         </button>
       </div>
 
@@ -417,24 +422,23 @@ function MarginSection({ token, period }: { token: string; period: Period }) {
 
       {hasCostGap(margin.quality) ? (
         <p role="alert" className="rounded-sm border border-gold-deep p-3 text-sm text-ink">
-          {margin.quality.uncosted_lines} ligne(s) vendue(s), soit {xof(margin.quality.uncosted_revenue)} de chiffre d&apos;affaires HT, n&apos;ont aucun
-          coût enregistré (produit jamais acheté par le module Achats) : la marge affichée est surestimée d&apos;autant.
+          {margin.quality.uncosted_lines} {tr("ligne(s) vendue(s), soit")} {xof(margin.quality.uncosted_revenue)} {tr("de chiffre d'affaires HT, n'ont aucun coût enregistré (produit jamais acheté par le module Achats) : la marge affichée est surestimée d'autant.")}
         </p>
       ) : null}
 
       {margin.by_product.length === 0 ? (
-        <p className="text-sm text-ink-soft">Aucune vente en propre livrée sur la période.</p>
+        <p className="text-sm text-ink-soft">{tr("Aucune vente en propre livrée sur la période.")}</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-line text-left text-ink-soft">
-                <th className="py-2 pr-4 font-medium">Produit</th>
-                <th className="py-2 pr-4 text-right font-medium">Unités</th>
-                <th className="py-2 pr-4 text-right font-medium">CA HT</th>
-                <th className="py-2 pr-4 text-right font-medium">Coût</th>
-                <th className="py-2 pr-4 text-right font-medium">Marge</th>
-                <th className="py-2 text-right font-medium">Taux</th>
+                <th className="py-2 pr-4 font-medium">{tr("Produit")}</th>
+                <th className="py-2 pr-4 text-right font-medium">{tr("Unités")}</th>
+                <th className="py-2 pr-4 text-right font-medium">{tr("CA HT")}</th>
+                <th className="py-2 pr-4 text-right font-medium">{tr("Coût")}</th>
+                <th className="py-2 pr-4 text-right font-medium">{tr("Marge")}</th>
+                <th className="py-2 text-right font-medium">{tr("Taux")}</th>
               </tr>
             </thead>
             <tbody>
@@ -454,8 +458,7 @@ function MarginSection({ token, period }: { token: string; period: Period }) {
       )}
 
       <p className="text-xs text-ink-soft">
-        Retours sur la période (non déduits ci-dessus) : {xof(margin.returns.refunded_ttc)} remboursés TTC, {xof(margin.returns.cost_given_back)} de coût
-        repris. Montants hors TVA à {margin.vat_percent} %, remises comprises, ventes de vendeurs tiers et commissions exclues.
+        {tr("Retours sur la période (non déduits ci-dessus) :")} {xof(margin.returns.refunded_ttc)} {tr("remboursés TTC,")} {xof(margin.returns.cost_given_back)} {tr("de coût repris. Montants hors TVA à")} {margin.vat_percent} {tr("%, remises comprises, ventes de vendeurs tiers et commissions exclues.")}
       </p>
     </section>
   );

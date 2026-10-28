@@ -1,5 +1,6 @@
 "use client";
 
+import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -30,6 +31,7 @@ const STATUS_LABEL: Record<ShipmentStatus, string> = {
 };
 
 export default function ShipmentsPage() {
+  const { tr } = useAppearance();
   const router = useRouter();
   const { status: sessionStatus, token, logout } = useAuth();
   const [shipments, setShipments] = useState<Shipment[]>([]);
@@ -46,9 +48,9 @@ export default function ShipmentsPage() {
 
     listShipments(token, filter ?? undefined)
       .then(setShipments)
-      .catch((caught) => setError(caught instanceof ShippingError ? caught.message : "Livraisons indisponibles."))
+      .catch((caught) => setError(caught instanceof ShippingError ? caught.message : tr("Livraisons indisponibles.")))
       .finally(() => setLoading(false));
-  }, [token, filter]);
+  }, [token, filter, tr]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -67,22 +69,22 @@ export default function ShipmentsPage() {
       const updated = await run();
       setShipments((current) => current.map((shipment) => (shipment.id === id ? updated : shipment)));
     } catch (caught) {
-      setError(caught instanceof ShippingError ? caught.message : "L'action a échoué.");
+      setError(caught instanceof ShippingError ? caught.message : tr("L'action a échoué."));
     } finally {
       setPendingId(null);
     }
   }
 
   if (sessionStatus === "checking") {
-    return <p className="px-4 py-16 text-center text-sm text-ink-soft">Vérification de la session…</p>;
+    return <p className="px-4 py-16 text-center text-sm text-ink-soft">{tr("Vérification de la session…")}</p>;
   }
 
   if (!token) {
     return (
       <main className="flex min-h-screen flex-1 flex-col items-center justify-center gap-3 px-4">
-        <p className="text-ink-soft">Connectez-vous pour accéder aux livraisons.</p>
+        <p className="text-ink-soft">{tr("Connectez-vous pour accéder aux livraisons.")}</p>
         <Link href="/" className="text-sm text-gold underline-offset-4 hover:underline">
-          Se connecter
+          {tr("Se connecter")}
         </Link>
       </main>
     );
@@ -93,7 +95,7 @@ export default function ShipmentsPage() {
       <BackofficeNav onLogout={handleLogout} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
-        <h1 className="font-display text-2xl font-semibold text-ink">Livraisons</h1>
+        <h1 className="font-display text-2xl font-semibold text-ink">{tr("Livraisons")}</h1>
 
         <NewShipmentForm
           onCreate={async (orderNumber, assignedTo) => {
@@ -105,11 +107,11 @@ export default function ShipmentsPage() {
 
         <nav className="flex flex-wrap gap-2">
           <FilterPill active={filter === null} onClick={() => setFilter(null)}>
-            Toutes
+            {tr("Toutes")}
           </FilterPill>
           {(["pending", "in_transit", "delivered", "failed_attempt", "returned"] as const).map((value) => (
             <FilterPill key={value} active={filter === value} onClick={() => setFilter(value)}>
-              {STATUS_LABEL[value]}
+              {tr(STATUS_LABEL[value])}
             </FilterPill>
           ))}
         </nav>
@@ -117,21 +119,21 @@ export default function ShipmentsPage() {
         {error ? <p className="text-sm text-danger">{error}</p> : null}
 
         {loading ? (
-          <p className="text-sm text-ink-soft">Chargement…</p>
+          <p className="text-sm text-ink-soft">{tr("Chargement…")}</p>
         ) : shipments.length === 0 ? (
-          <p className="text-sm text-ink-soft">Aucune livraison.</p>
+          <p className="text-sm text-ink-soft">{tr("Aucune livraison.")}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
-                  <th className="py-2 pr-4 font-medium">Commande</th>
-                  <th className="py-2 pr-4 font-medium">Client</th>
-                  <th className="py-2 pr-4 font-medium">Adresse</th>
-                  <th className="py-2 pr-4 font-medium">Livreur</th>
-                  <th className="py-2 pr-4 font-medium">Tentatives</th>
-                  <th className="py-2 pr-4 font-medium">Statut</th>
-                  <th className="py-2 font-medium">Action</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Commande")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Client")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Adresse")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Livreur")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Tentatives")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Statut")}</th>
+                  <th className="py-2 font-medium">{tr("Action")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -161,7 +163,7 @@ export default function ShipmentsPage() {
                     </td>
                     <td className="py-3 pr-4 text-ink">{shipment.attempts}</td>
                     <td className="py-3 pr-4 text-ink-soft">
-                      {STATUS_LABEL[shipment.status]}
+                      {tr(STATUS_LABEL[shipment.status])}
                       {shipment.notes ? <div className="text-xs text-ink-soft">{shipment.notes}</div> : null}
                     </td>
                     <td className="py-3">
@@ -176,7 +178,7 @@ export default function ShipmentsPage() {
                               })
                             }
                           >
-                            Dispatcher
+                            {tr("Dispatcher")}
                           </ActionButton>
                         ) : null}
                         {shipment.status === "in_transit" ? (
@@ -194,7 +196,7 @@ export default function ShipmentsPage() {
                                 });
                               }}
                             >
-                              {shipment.code_locked ? "Verrouillée" : "Confirmer la livraison"}
+                              {shipment.code_locked ? tr("Verrouillée") : tr("Confirmer la livraison")}
                             </ActionButton>
                             <FailForm
                               onFail={(notes) =>
@@ -217,7 +219,7 @@ export default function ShipmentsPage() {
                                 })
                               }
                             >
-                              Réessayer
+                              {tr("Réessayer")}
                             </ActionButton>
                             <ActionButton
                               danger
@@ -229,7 +231,7 @@ export default function ShipmentsPage() {
                                 })
                               }
                             >
-                              Retourner
+                              {tr("Retourner")}
                             </ActionButton>
                           </>
                         ) : null}
@@ -294,6 +296,7 @@ function ActionButton({
 }
 
 function AssignForm({ onAssign }: { onAssign: (assignedTo: number) => void }) {
+  const { tr } = useAppearance();
   const [value, setValue] = useState("");
 
   return (
@@ -308,17 +311,18 @@ function AssignForm({ onAssign }: { onAssign: (assignedTo: number) => void }) {
         type="number"
         value={value}
         onChange={(event) => setValue(event.target.value)}
-        placeholder="ID livreur"
+        placeholder={tr("ID livreur")}
         className="w-20 rounded-sm border border-line bg-surface px-2 py-1 text-xs text-ink"
       />
       <button type="submit" className="rounded-sm border border-line px-2 py-1 text-xs text-ink hover:border-gold">
-        Assigner
+        {tr("Assigner")}
       </button>
     </form>
   );
 }
 
 function FailForm({ onFail }: { onFail: (notes?: string) => void }) {
+  const { tr } = useAppearance();
   const [notes, setNotes] = useState("");
   const [open, setOpen] = useState(false);
 
@@ -329,7 +333,7 @@ function FailForm({ onFail }: { onFail: (notes?: string) => void }) {
         onClick={() => setOpen(true)}
         className="rounded-sm border border-danger px-2 py-1 text-xs text-danger"
       >
-        Échec de livraison
+        {tr("Échec de livraison")}
       </button>
     );
   }
@@ -346,11 +350,11 @@ function FailForm({ onFail }: { onFail: (notes?: string) => void }) {
       <input
         value={notes}
         onChange={(event) => setNotes(event.target.value)}
-        placeholder="Motif (optionnel)"
+        placeholder={tr("Motif (optionnel)")}
         className="w-32 rounded-sm border border-line bg-surface px-2 py-1 text-xs text-ink"
       />
       <button type="submit" className="rounded-sm border border-danger px-2 py-1 text-xs text-danger">
-        Confirmer
+        {tr("Confirmer")}
       </button>
     </form>
   );
@@ -361,6 +365,7 @@ function NewShipmentForm({
 }: {
   onCreate: (orderNumber: string, assignedTo?: number) => Promise<void>;
 }) {
+  const { tr } = useAppearance();
   const [orderNumber, setOrderNumber] = useState("");
   const [assignedTo, setAssignedTo] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -381,7 +386,7 @@ function NewShipmentForm({
       setOrderNumber("");
       setAssignedTo("");
     } catch (caught) {
-      setFormError(caught instanceof ShippingError ? caught.message : "Création impossible.");
+      setFormError(caught instanceof ShippingError ? caught.message : tr("Création impossible."));
     } finally {
       setSubmitting(false);
     }
@@ -390,17 +395,17 @@ function NewShipmentForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        N° commande
+        {tr("N° commande")}
         <input
           value={orderNumber}
           onChange={(event) => setOrderNumber(event.target.value)}
-          placeholder="TCH-20261025-XXXXXX"
+          placeholder={tr("TCH-20261025-XXXXXX")}
           className="w-48 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
       </label>
 
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        Livreur (ID, optionnel)
+        {tr("Livreur (ID, optionnel)")}
         <input
           type="number"
           value={assignedTo}
@@ -410,7 +415,7 @@ function NewShipmentForm({
       </label>
 
       <Button type="submit" disabled={submitting}>
-        Créer la livraison
+        {tr("Créer la livraison")}
       </Button>
 
       {formError ? <p className="w-full text-sm text-danger">{formError}</p> : null}

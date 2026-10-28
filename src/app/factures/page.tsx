@@ -1,5 +1,6 @@
 "use client";
 
+import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -19,6 +20,7 @@ import {
 import { formatMoney } from "@/lib/money";
 
 export default function InvoicesPage() {
+  const { tr } = useAppearance();
   const router = useRouter();
   const { status: sessionStatus, token, logout } = useAuth();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -34,9 +36,9 @@ export default function InvoicesPage() {
 
     listInvoices(token)
       .then(setInvoices)
-      .catch((caught) => setError(caught instanceof InvoicingError ? caught.message : "Factures indisponibles."))
+      .catch((caught) => setError(caught instanceof InvoicingError ? caught.message : tr("Factures indisponibles.")))
       .finally(() => setLoading(false));
-  }, [token]);
+  }, [token, tr]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -54,7 +56,7 @@ export default function InvoicesPage() {
     try {
       await downloadInvoicePdf(token, invoice);
     } catch (caught) {
-      setError(caught instanceof InvoicingError ? caught.message : "Le PDF n'a pas pu être téléchargé.");
+      setError(caught instanceof InvoicingError ? caught.message : tr("Le PDF n'a pas pu être téléchargé."));
     }
   }
 
@@ -69,22 +71,22 @@ export default function InvoicesPage() {
       await issueCreditNote(token, invoice.id, reason);
       refresh();
     } catch (caught) {
-      setError(caught instanceof InvoicingError ? caught.message : "L'avoir n'a pas pu être émis.");
+      setError(caught instanceof InvoicingError ? caught.message : tr("L'avoir n'a pas pu être émis."));
     } finally {
       setPendingId(null);
     }
   }
 
   if (sessionStatus === "checking") {
-    return <p className="px-4 py-16 text-center text-sm text-ink-soft">Vérification de la session…</p>;
+    return <p className="px-4 py-16 text-center text-sm text-ink-soft">{tr("Vérification de la session…")}</p>;
   }
 
   if (!token) {
     return (
       <main className="flex min-h-screen flex-1 flex-col items-center justify-center gap-3 px-4">
-        <p className="text-ink-soft">Connectez-vous pour accéder aux factures.</p>
+        <p className="text-ink-soft">{tr("Connectez-vous pour accéder aux factures.")}</p>
         <Link href="/" className="text-sm text-gold underline-offset-4 hover:underline">
-          Se connecter
+          {tr("Se connecter")}
         </Link>
       </main>
     );
@@ -95,7 +97,7 @@ export default function InvoicesPage() {
       <BackofficeNav onLogout={handleLogout} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
-        <h1 className="font-display text-2xl font-semibold text-ink">Factures et avoirs</h1>
+        <h1 className="font-display text-2xl font-semibold text-ink">{tr("Factures et avoirs")}</h1>
 
         <NewInvoiceForm
           onSubmit={async (orderNumber) => {
@@ -108,22 +110,22 @@ export default function InvoicesPage() {
         {error ? <p className="text-sm text-danger">{error}</p> : null}
 
         {loading ? (
-          <p className="text-sm text-ink-soft">Chargement…</p>
+          <p className="text-sm text-ink-soft">{tr("Chargement…")}</p>
         ) : invoices.length === 0 ? (
-          <p className="text-sm text-ink-soft">Aucun document.</p>
+          <p className="text-sm text-ink-soft">{tr("Aucun document.")}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[860px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
-                  <th className="py-2 pr-4 font-medium">Numéro</th>
-                  <th className="py-2 pr-4 font-medium">Type</th>
-                  <th className="py-2 pr-4 font-medium">Commande</th>
-                  <th className="py-2 pr-4 font-medium">Client</th>
-                  <th className="py-2 pr-4 font-medium">HT</th>
-                  <th className="py-2 pr-4 font-medium">TVA</th>
-                  <th className="py-2 pr-4 font-medium">TTC</th>
-                  <th className="py-2 font-medium">Action</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Numéro")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Type")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Commande")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Client")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("HT")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("TVA")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("TTC")}</th>
+                  <th className="py-2 font-medium">{tr("Action")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -133,7 +135,7 @@ export default function InvoicesPage() {
                     <tr key={invoice.id} className="border-b border-line">
                       <td className="py-3 pr-4 text-ink">{invoice.number}</td>
                       <td className="py-3 pr-4 text-ink-soft">
-                        {INVOICE_TYPE_LABEL[invoice.type]}
+                        {tr(INVOICE_TYPE_LABEL[invoice.type])}
                         {invoice.reason ? ` — ${invoice.reason}` : ""}
                       </td>
                       <td className="py-3 pr-4 text-ink-soft">{invoice.order_number}</td>
@@ -146,7 +148,7 @@ export default function InvoicesPage() {
                         {money(invoice.total_amount)}
                         {invoice.discount_amount > 0 ? (
                           <span className="block text-xs text-ink-soft">
-                            remise {money(invoice.discount_amount)}
+                            {tr("remise")} {money(invoice.discount_amount)}
                             {invoice.coupon_code ? ` (${invoice.coupon_code})` : ""}
                           </span>
                         ) : null}
@@ -157,7 +159,7 @@ export default function InvoicesPage() {
                           onClick={() => handleDownload(invoice)}
                           className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold"
                         >
-                          PDF
+                          {tr("PDF")}
                         </button>
                         {isCreditable(invoice, invoices) ? (
                           <button
@@ -166,7 +168,7 @@ export default function InvoicesPage() {
                             onClick={() => handleCredit(invoice)}
                             className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold disabled:opacity-50"
                           >
-                            Émettre un avoir
+                            {tr("Émettre un avoir")}
                           </button>
                         ) : null}
                       </td>
@@ -183,6 +185,7 @@ export default function InvoicesPage() {
 }
 
 function NewInvoiceForm({ onSubmit }: { onSubmit: (orderNumber: string) => Promise<void> }) {
+  const { tr } = useAppearance();
   const [orderNumber, setOrderNumber] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -201,7 +204,7 @@ function NewInvoiceForm({ onSubmit }: { onSubmit: (orderNumber: string) => Promi
       await onSubmit(orderNumber);
       setOrderNumber("");
     } catch (caught) {
-      setFormError(caught instanceof InvoicingError ? caught.message : "Émission impossible.");
+      setFormError(caught instanceof InvoicingError ? caught.message : tr("Émission impossible."));
     } finally {
       setSubmitting(false);
     }
@@ -210,17 +213,17 @@ function NewInvoiceForm({ onSubmit }: { onSubmit: (orderNumber: string) => Promi
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        N° commande à facturer
+        {tr("N° commande à facturer")}
         <input
           value={orderNumber}
           onChange={(event) => setOrderNumber(event.target.value)}
-          placeholder="TCH-20261025-XXXXXX"
+          placeholder={tr("TCH-20261025-XXXXXX")}
           className="w-56 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
       </label>
 
       <Button type="submit" disabled={submitting}>
-        Émettre la facture
+        {tr("Émettre la facture")}
       </Button>
 
       {formError ? <p className="w-full text-sm text-danger">{formError}</p> : null}

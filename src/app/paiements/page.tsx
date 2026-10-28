@@ -1,5 +1,6 @@
 "use client";
 
+import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -33,6 +34,7 @@ const METHOD_LABEL: Record<PaymentMethod, string> = {
 };
 
 export default function PaymentsPage() {
+  const { tr } = useAppearance();
   const router = useRouter();
   const { status: sessionStatus, token, logout } = useAuth();
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -49,9 +51,9 @@ export default function PaymentsPage() {
 
     listPayments(token, { status: filter ?? undefined })
       .then(setPayments)
-      .catch((caught) => setError(caught instanceof PaymentsError ? caught.message : "Paiements indisponibles."))
+      .catch((caught) => setError(caught instanceof PaymentsError ? caught.message : tr("Paiements indisponibles.")))
       .finally(() => setLoading(false));
-  }, [token, filter]);
+  }, [token, filter, tr]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -86,22 +88,22 @@ export default function PaymentsPage() {
       }
       setPayments((current) => current.map((payment) => (payment.id === id ? updated : payment)));
     } catch (caught) {
-      setError(caught instanceof PaymentsError ? caught.message : "L'action a échoué.");
+      setError(caught instanceof PaymentsError ? caught.message : tr("L'action a échoué."));
     } finally {
       setPendingId(null);
     }
   }
 
   if (sessionStatus === "checking") {
-    return <p className="px-4 py-16 text-center text-sm text-ink-soft">Vérification de la session…</p>;
+    return <p className="px-4 py-16 text-center text-sm text-ink-soft">{tr("Vérification de la session…")}</p>;
   }
 
   if (!token) {
     return (
       <main className="flex min-h-screen flex-1 flex-col items-center justify-center gap-3 px-4">
-        <p className="text-ink-soft">Connectez-vous pour accéder aux paiements.</p>
+        <p className="text-ink-soft">{tr("Connectez-vous pour accéder aux paiements.")}</p>
         <Link href="/" className="text-sm text-gold underline-offset-4 hover:underline">
-          Se connecter
+          {tr("Se connecter")}
         </Link>
       </main>
     );
@@ -112,7 +114,7 @@ export default function PaymentsPage() {
       <BackofficeNav onLogout={handleLogout} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
-        <h1 className="font-display text-2xl font-semibold text-ink">Paiements</h1>
+        <h1 className="font-display text-2xl font-semibold text-ink">{tr("Paiements")}</h1>
 
         <NewPaymentForm
           onSubmit={async (input) => {
@@ -124,11 +126,11 @@ export default function PaymentsPage() {
 
         <nav className="flex flex-wrap gap-2">
           <FilterPill active={filter === null} onClick={() => setFilter(null)}>
-            Tous
+            {tr("Tous")}
           </FilterPill>
           {(["pending", "completed", "failed", "refunded"] as const).map((value) => (
             <FilterPill key={value} active={filter === value} onClick={() => setFilter(value)}>
-              {STATUS_LABEL[value]}
+              {tr(STATUS_LABEL[value])}
             </FilterPill>
           ))}
         </nav>
@@ -136,20 +138,20 @@ export default function PaymentsPage() {
         {error ? <p className="text-sm text-danger">{error}</p> : null}
 
         {loading ? (
-          <p className="text-sm text-ink-soft">Chargement…</p>
+          <p className="text-sm text-ink-soft">{tr("Chargement…")}</p>
         ) : payments.length === 0 ? (
-          <p className="text-sm text-ink-soft">Aucun paiement.</p>
+          <p className="text-sm text-ink-soft">{tr("Aucun paiement.")}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[820px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
-                  <th className="py-2 pr-4 font-medium">Commande</th>
-                  <th className="py-2 pr-4 font-medium">Méthode</th>
-                  <th className="py-2 pr-4 font-medium">Montant</th>
-                  <th className="py-2 pr-4 font-medium">Référence</th>
-                  <th className="py-2 pr-4 font-medium">Statut</th>
-                  <th className="py-2 font-medium">Action</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Commande")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Méthode")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Montant")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Référence")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Statut")}</th>
+                  <th className="py-2 font-medium">{tr("Action")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -157,19 +159,19 @@ export default function PaymentsPage() {
                   <tr key={payment.id} className="border-b border-line">
                     <td className="py-3 pr-4 text-ink">{payment.order_number}</td>
                     <td className="py-3 pr-4 text-ink-soft">
-                      {METHOD_LABEL[payment.method]}
+                      {tr(METHOD_LABEL[payment.method])}
                       {payment.provider ? ` (${payment.provider})` : ""}
                     </td>
                     <td className="py-3 pr-4 text-ink">
                       {payment.amount_amount.toLocaleString("fr-FR")} {payment.currency}
                       {payment.refunded_amount > 0 ? (
                         <span className="block text-xs text-ink-soft">
-                          dont remboursé : {payment.refunded_amount.toLocaleString("fr-FR")}
+                          {tr("dont remboursé :")} {payment.refunded_amount.toLocaleString("fr-FR")}
                         </span>
                       ) : null}
                     </td>
                     <td className="py-3 pr-4 text-ink-soft">{payment.provider_reference ?? "—"}</td>
-                    <td className="py-3 pr-4 text-ink-soft">{STATUS_LABEL[payment.status]}</td>
+                    <td className="py-3 pr-4 text-ink-soft">{tr(STATUS_LABEL[payment.status])}</td>
                     <td className="py-3">
                       <div className="flex flex-wrap gap-2">
                         {payment.status === "pending" || payment.status === "failed" ? (
@@ -179,7 +181,7 @@ export default function PaymentsPage() {
                             onClick={() => handleAction(payment.id, "confirm")}
                             className="rounded-sm border border-gold px-2 py-1 text-xs text-gold transition-colors disabled:opacity-50"
                           >
-                            Confirmer
+                            {tr("Confirmer")}
                           </button>
                         ) : null}
                         {payment.status === "pending" ? (
@@ -189,7 +191,7 @@ export default function PaymentsPage() {
                             onClick={() => handleAction(payment.id, "fail")}
                             className="rounded-sm border border-danger px-2 py-1 text-xs text-danger transition-colors disabled:opacity-50"
                           >
-                            Marquer échoué
+                            {tr("Marquer échoué")}
                           </button>
                         ) : null}
                         {payment.status === "completed" && payment.refundable_amount > 0 ? (
@@ -199,7 +201,7 @@ export default function PaymentsPage() {
                             onClick={() => handleAction(payment.id, "refund")}
                             className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors disabled:opacity-50"
                           >
-                            Rembourser
+                            {tr("Rembourser")}
                           </button>
                         ) : null}
                       </div>
@@ -248,6 +250,7 @@ function NewPaymentForm({
     provider_reference?: string;
   }) => Promise<void>;
 }) {
+  const { tr } = useAppearance();
   const [orderNumber, setOrderNumber] = useState("");
   const [method, setMethod] = useState<PaymentMethod>("cod");
   const [amount, setAmount] = useState("");
@@ -278,7 +281,7 @@ function NewPaymentForm({
       setAmount("");
       setReference("");
     } catch (caught) {
-      setFormError(caught instanceof PaymentsError ? caught.message : "Enregistrement impossible.");
+      setFormError(caught instanceof PaymentsError ? caught.message : tr("Enregistrement impossible."));
     } finally {
       setSubmitting(false);
     }
@@ -287,48 +290,48 @@ function NewPaymentForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        N° commande
+        {tr("N° commande")}
         <input
           value={orderNumber}
           onChange={(event) => setOrderNumber(event.target.value)}
-          placeholder="TCH-20261025-XXXXXX"
+          placeholder={tr("TCH-20261025-XXXXXX")}
           className="w-48 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
       </label>
 
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        Méthode
+        {tr("Méthode")}
         <select
           value={method}
           onChange={(event) => setMethod(event.target.value as PaymentMethod)}
           className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         >
-          <option value="cod">Paiement à la livraison</option>
-          <option value="mobile_money">Mobile money</option>
+          <option value="cod">{tr("Paiement à la livraison")}</option>
+          <option value="mobile_money">{tr("Mobile money")}</option>
         </select>
       </label>
 
       {method === "mobile_money" ? (
         <>
           <label className="flex flex-col gap-1 text-xs text-ink-soft">
-            Opérateur
+            {tr("Opérateur")}
             <select
               value={provider}
               onChange={(event) => setProvider(event.target.value as MobileMoneyProvider)}
               className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
             >
-              <option value="orange_money">Orange Money</option>
-              <option value="mtn_money">MTN Money</option>
-              <option value="wave">Wave</option>
+              <option value="orange_money">{tr("Orange Money")}</option>
+              <option value="mtn_money">{tr("MTN Money")}</option>
+              <option value="wave">{tr("Wave")}</option>
             </select>
           </label>
 
           <label className="flex flex-col gap-1 text-xs text-ink-soft">
-            Référence transaction
+            {tr("Référence transaction")}
             <input
               value={reference}
               onChange={(event) => setReference(event.target.value)}
-              placeholder="MM-12345678"
+              placeholder={tr("MM-12345678")}
               className="w-40 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
             />
           </label>
@@ -336,7 +339,7 @@ function NewPaymentForm({
       ) : null}
 
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        Montant (F CFA)
+        {tr("Montant (F CFA)")}
         <input
           type="number"
           min={0}
@@ -347,7 +350,7 @@ function NewPaymentForm({
       </label>
 
       <Button type="submit" disabled={submitting}>
-        Enregistrer
+        {tr("Enregistrer")}
       </Button>
 
       {formError ? <p className="w-full text-sm text-danger">{formError}</p> : null}

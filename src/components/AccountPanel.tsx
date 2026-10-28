@@ -4,7 +4,7 @@ import { ROLE_LABEL } from "@/lib/roles";
 
 
 export function AccountPanel({ user, onLogout }: { user: User; onLogout: () => void }) {
-  const { t } = useAppearance();
+  const { t, tr } = useAppearance();
 
   return (
     <div className="flex w-full max-w-sm flex-col gap-4 rounded-sm border border-line bg-surface p-6">
@@ -20,7 +20,7 @@ export function AccountPanel({ user, onLogout }: { user: User; onLogout: () => v
             key={role}
             className="rounded-full border border-gold-deep px-3 py-1 text-xs text-gold-bright"
           >
-            {ROLE_LABEL[role] ?? role}
+            {tr(ROLE_LABEL[role] ?? role)}
           </span>
         ))}
       </div>

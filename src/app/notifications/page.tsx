@@ -1,5 +1,6 @@
 "use client";
 
+import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -21,6 +22,7 @@ import {
 const STATUSES: NotificationStatus[] = ["pending", "sent", "failed"];
 
 export default function NotificationsPage() {
+  const { tr } = useAppearance();
   const router = useRouter();
   const { status: sessionStatus, token, user, logout } = useAuth();
   const [items, setItems] = useState<Notification[]>([]);
@@ -38,9 +40,9 @@ export default function NotificationsPage() {
 
     listNotifications(token, { status: filter ?? undefined, reference: reference.trim() || undefined })
       .then(setItems)
-      .catch((caught) => setError(caught instanceof NotificationsError ? caught.message : "Journal indisponible."))
+      .catch((caught) => setError(caught instanceof NotificationsError ? caught.message : tr("Journal indisponible.")))
       .finally(() => setLoading(false));
-  }, [token, filter, reference]);
+  }, [token, filter, reference, tr]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -60,22 +62,22 @@ export default function NotificationsPage() {
       const updated = await retryNotification(token, item.id);
       setItems((current) => current.map((entry) => (entry.id === item.id ? updated : entry)));
     } catch (caught) {
-      setError(caught instanceof NotificationsError ? caught.message : "La relance a échoué.");
+      setError(caught instanceof NotificationsError ? caught.message : tr("La relance a échoué."));
     } finally {
       setBusyId(null);
     }
   }
 
   if (sessionStatus === "checking") {
-    return <p className="px-4 py-16 text-center text-sm text-ink-soft">Vérification de la session…</p>;
+    return <p className="px-4 py-16 text-center text-sm text-ink-soft">{tr("Vérification de la session…")}</p>;
   }
 
   if (!token) {
     return (
       <main className="flex min-h-screen flex-1 flex-col items-center justify-center gap-3 px-4">
-        <p className="text-ink-soft">Connectez-vous pour accéder aux notifications.</p>
+        <p className="text-ink-soft">{tr("Connectez-vous pour accéder aux notifications.")}</p>
         <Link href="/" className="text-sm text-gold underline-offset-4 hover:underline">
-          Se connecter
+          {tr("Se connecter")}
         </Link>
       </main>
     );
@@ -89,10 +91,10 @@ export default function NotificationsPage() {
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h1 className="font-display text-2xl font-semibold text-ink">Notifications clients</h1>
+          <h1 className="font-display text-2xl font-semibold text-ink">{tr("Notifications clients")}</h1>
           <p className="text-sm text-ink-soft">
-            {counts.sent} envoyé(s) · {counts.pending} en attente ·{" "}
-            <span className={counts.failed > 0 ? "text-danger" : undefined}>{counts.failed} en échec</span>
+            {counts.sent} {tr("envoyé(s) ·")} {counts.pending} {tr("en attente ·")}{" "}
+            <span className={counts.failed > 0 ? "text-danger" : undefined}>{counts.failed} {tr("en échec")}</span>
           </p>
         </div>
 
@@ -107,15 +109,15 @@ export default function NotificationsPage() {
                   filter === value ? "border-gold bg-gold text-on-primary font-medium" : "border-line text-ink hover:border-gold"
                 }`}
               >
-                {value === null ? "Tous" : NOTIFICATION_STATUS_LABEL[value]}
+                {value === null ? tr("Tous") : NOTIFICATION_STATUS_LABEL[value]}
               </button>
             ))}
           </nav>
           <input
             value={reference}
             onChange={(event) => setReference(event.target.value)}
-            placeholder="N° de commande"
-            aria-label="Filtrer par numéro de commande"
+            placeholder={tr("N° de commande")}
+            aria-label={tr("Filtrer par numéro de commande")}
             className="w-52 rounded-sm border border-line bg-surface px-3 py-1.5 text-sm text-ink"
           />
         </div>
@@ -123,20 +125,20 @@ export default function NotificationsPage() {
         {error ? <p className="text-sm text-danger">{error}</p> : null}
 
         {loading ? (
-          <p className="text-sm text-ink-soft">Chargement…</p>
+          <p className="text-sm text-ink-soft">{tr("Chargement…")}</p>
         ) : items.length === 0 ? (
-          <p className="text-sm text-ink-soft">Aucun message.</p>
+          <p className="text-sm text-ink-soft">{tr("Aucun message.")}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
-                  <th className="py-2 pr-4 font-medium">Date</th>
-                  <th className="py-2 pr-4 font-medium">Événement</th>
-                  <th className="py-2 pr-4 font-medium">Canal</th>
-                  <th className="py-2 pr-4 font-medium">Destinataire</th>
-                  <th className="py-2 pr-4 font-medium">Message</th>
-                  <th className="py-2 pr-4 font-medium">Statut</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Date")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Événement")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Canal")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Destinataire")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Message")}</th>
+                  <th className="py-2 pr-4 font-medium">{tr("Statut")}</th>
                   <th className="py-2 font-medium" />
                 </tr>
               </thead>
@@ -148,14 +150,14 @@ export default function NotificationsPage() {
                       {eventLabel(item.event)}
                       {item.reference ? <span className="block text-xs text-ink-soft">{item.reference}</span> : null}
                     </td>
-                    <td className="py-3 pr-4 text-ink-soft">{CHANNEL_LABEL[item.channel] ?? item.channel}</td>
+                    <td className="py-3 pr-4 text-ink-soft">{tr(CHANNEL_LABEL[item.channel] ?? item.channel)}</td>
                     <td className="py-3 pr-4 text-ink-soft">{item.recipient}</td>
                     <td className="max-w-md py-3 pr-4 text-xs text-ink-soft">{item.body}</td>
                     <td className="py-3 pr-4">
                       <span className={item.status === "failed" ? "text-danger" : "text-ink-soft"}>
-                        {NOTIFICATION_STATUS_LABEL[item.status]}
+                        {tr(NOTIFICATION_STATUS_LABEL[item.status])}
                       </span>
-                      {item.attempts > 1 ? <span className="block text-xs text-ink-soft">{item.attempts} essais</span> : null}
+                      {item.attempts > 1 ? <span className="block text-xs text-ink-soft">{item.attempts} {tr("essais")}</span> : null}
                       {item.error ? <span className="block text-xs text-danger">{item.error}</span> : null}
                     </td>
                     <td className="py-3">
@@ -166,7 +168,7 @@ export default function NotificationsPage() {
                           onClick={() => handleRetry(item)}
                           className="rounded-sm border border-gold px-2 py-1 text-xs text-gold transition-colors disabled:opacity-50"
                         >
-                          Relancer
+                          {tr("Relancer")}
                         </button>
                       ) : null}
                     </td>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,6 +17,7 @@ import {
 } from "@/lib/inventory";
 
 export default function StockPage() {
+  const { tr } = useAppearance();
   const router = useRouter();
   const { status: sessionStatus, token, logout } = useAuth();
   const [movements, setMovements] = useState<StockMovement[]>([]);
@@ -34,9 +36,9 @@ export default function StockPage() {
         setMovements(movementList);
         setLowStock(lowStockList);
       })
-      .catch((caught) => setError(caught instanceof InventoryError ? caught.message : "Stock indisponible."))
+      .catch((caught) => setError(caught instanceof InventoryError ? caught.message : tr("Stock indisponible.")))
       .finally(() => setLoading(false));
-  }, [token]);
+  }, [token, tr]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -49,15 +51,15 @@ export default function StockPage() {
   }
 
   if (sessionStatus === "checking") {
-    return <p className="px-4 py-16 text-center text-sm text-ink-soft">Vérification de la session…</p>;
+    return <p className="px-4 py-16 text-center text-sm text-ink-soft">{tr("Vérification de la session…")}</p>;
   }
 
   if (!token) {
     return (
       <main className="flex min-h-screen flex-1 flex-col items-center justify-center gap-3 px-4">
-        <p className="text-ink-soft">Connectez-vous pour accéder au stock.</p>
+        <p className="text-ink-soft">{tr("Connectez-vous pour accéder au stock.")}</p>
         <Link href="/" className="text-sm text-gold underline-offset-4 hover:underline">
-          Se connecter
+          {tr("Se connecter")}
         </Link>
       </main>
     );
@@ -68,7 +70,7 @@ export default function StockPage() {
       <BackofficeNav onLogout={handleLogout} />
 
       <main className="flex w-full flex-1 flex-col gap-8 px-4 py-8">
-        <h1 className="font-display text-2xl font-semibold text-ink">Stock</h1>
+        <h1 className="font-display text-2xl font-semibold text-ink">{tr("Stock")}</h1>
 
         {error ? <p className="text-sm text-danger">{error}</p> : null}
 
@@ -82,19 +84,19 @@ export default function StockPage() {
         />
 
         <section className="flex flex-col gap-3">
-          <h2 className="font-display text-lg font-semibold text-ink">Stock faible</h2>
+          <h2 className="font-display text-lg font-semibold text-ink">{tr("Stock faible")}</h2>
           {loading ? (
-            <p className="text-sm text-ink-soft">Chargement…</p>
+            <p className="text-sm text-ink-soft">{tr("Chargement…")}</p>
           ) : lowStock.length === 0 ? (
-            <p className="text-sm text-ink-soft">Aucune offre en stock faible.</p>
+            <p className="text-sm text-ink-soft">{tr("Aucune offre en stock faible.")}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[600px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-ink-soft">
-                    <th className="py-2 pr-4 font-medium">Produit</th>
-                    <th className="py-2 pr-4 font-medium">SKU</th>
-                    <th className="py-2 font-medium">Stock</th>
+                    <th className="py-2 pr-4 font-medium">{tr("Produit")}</th>
+                    <th className="py-2 pr-4 font-medium">{tr("SKU")}</th>
+                    <th className="py-2 font-medium">{tr("Stock")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -114,20 +116,20 @@ export default function StockPage() {
         </section>
 
         <section className="flex flex-col gap-3">
-          <h2 className="font-display text-lg font-semibold text-ink">Historique des mouvements</h2>
+          <h2 className="font-display text-lg font-semibold text-ink">{tr("Historique des mouvements")}</h2>
           {loading ? (
-            <p className="text-sm text-ink-soft">Chargement…</p>
+            <p className="text-sm text-ink-soft">{tr("Chargement…")}</p>
           ) : movements.length === 0 ? (
-            <p className="text-sm text-ink-soft">Aucun mouvement enregistré.</p>
+            <p className="text-sm text-ink-soft">{tr("Aucun mouvement enregistré.")}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[640px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-ink-soft">
-                    <th className="py-2 pr-4 font-medium">Offre</th>
-                    <th className="py-2 pr-4 font-medium">Variation</th>
-                    <th className="py-2 pr-4 font-medium">Stock après</th>
-                    <th className="py-2 font-medium">Motif</th>
+                    <th className="py-2 pr-4 font-medium">{tr("Offre")}</th>
+                    <th className="py-2 pr-4 font-medium">{tr("Variation")}</th>
+                    <th className="py-2 pr-4 font-medium">{tr("Stock après")}</th>
+                    <th className="py-2 font-medium">{tr("Motif")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -157,6 +159,7 @@ function NewMovementForm({
 }: {
   onSubmit: (input: { offer_id: number; quantity_delta: number; reason?: string }) => Promise<void>;
 }) {
+  const { tr } = useAppearance();
   const [offerId, setOfferId] = useState("");
   const [delta, setDelta] = useState("");
   const [reason, setReason] = useState("");
@@ -168,7 +171,7 @@ function NewMovementForm({
     setFormError(null);
 
     if (!offerId || !delta) {
-      setFormError("L'offre et la variation sont requises.");
+      setFormError(tr("L'offre et la variation sont requises."));
       return;
     }
 
@@ -179,7 +182,7 @@ function NewMovementForm({
       setDelta("");
       setReason("");
     } catch (caught) {
-      setFormError(caught instanceof InventoryError ? caught.message : "Enregistrement impossible.");
+      setFormError(caught instanceof InventoryError ? caught.message : tr("Enregistrement impossible."));
     } finally {
       setSubmitting(false);
     }
@@ -188,7 +191,7 @@ function NewMovementForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        ID offre
+        {tr("ID offre")}
         <input
           type="number"
           value={offerId}
@@ -198,28 +201,28 @@ function NewMovementForm({
       </label>
 
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        Variation (+/-)
+        {tr("Variation (+/-)")}
         <input
           type="number"
           value={delta}
           onChange={(event) => setDelta(event.target.value)}
-          placeholder="+20 ou -5"
+          placeholder={tr("+20 ou -5")}
           className="w-28 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
       </label>
 
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        Motif
+        {tr("Motif")}
         <input
           value={reason}
           onChange={(event) => setReason(event.target.value)}
-          placeholder="Réception fournisseur, casse…"
+          placeholder={tr("Réception fournisseur, casse…")}
           className="w-56 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
       </label>
 
       <Button type="submit" disabled={submitting}>
-        Enregistrer
+        {tr("Enregistrer")}
       </Button>
 
       {formError ? <p className="w-full text-sm text-danger">{formError}</p> : null}

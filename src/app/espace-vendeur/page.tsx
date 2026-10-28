@@ -1,5 +1,6 @@
 "use client";
 
+import { useAppearance } from "@/components/AppearanceProvider";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -41,6 +42,7 @@ const TABS: { id: Tab; label: string }[] = [
 const xof = (amount: number) => formatMoney({ amount, currency: "XOF" });
 
 export default function VendorSpacePage() {
+  const { tr } = useAppearance();
   const router = useRouter();
   const { status: sessionStatus, token, user, logout } = useAuth();
   const [tab, setTab] = useState<Tab>("summary");
@@ -51,15 +53,15 @@ export default function VendorSpacePage() {
   }
 
   if (sessionStatus === "checking") {
-    return <p className="px-4 py-16 text-center text-sm text-ink-soft">Vérification de la session…</p>;
+    return <p className="px-4 py-16 text-center text-sm text-ink-soft">{tr("Vérification de la session…")}</p>;
   }
 
   if (!token) {
     return (
       <main className="flex min-h-screen flex-1 flex-col items-center justify-center gap-3 px-4">
-        <p className="text-ink-soft">Connectez-vous pour accéder à votre espace vendeur.</p>
+        <p className="text-ink-soft">{tr("Connectez-vous pour accéder à votre espace vendeur.")}</p>
         <Link href="/" className="text-sm text-gold underline-offset-4 hover:underline">
-          Se connecter
+          {tr("Se connecter")}
         </Link>
       </main>
     );
@@ -70,7 +72,7 @@ export default function VendorSpacePage() {
       <BackofficeNav onLogout={handleLogout} roles={user?.roles} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
-        <h1 className="font-display text-2xl font-semibold text-ink">Espace vendeur</h1>
+        <h1 className="font-display text-2xl font-semibold text-ink">{tr("Espace vendeur")}</h1>
 
         <nav className="flex flex-wrap gap-2">
           {TABS.map(({ id, label }) => (
@@ -117,8 +119,9 @@ function useLoader<T>(load: () => Promise<T>) {
 }
 
 function Status({ error, loading }: { error: string | null; loading: boolean }) {
+  const { tr } = useAppearance();
   if (error) return <p className="text-sm text-danger">{error}</p>;
-  if (loading) return <p className="text-sm text-ink-soft">Chargement…</p>;
+  if (loading) return <p className="text-sm text-ink-soft">{tr("Chargement…")}</p>;
   return null;
 }
 
@@ -150,6 +153,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 function OrdersTab({ token }: { token: string }) {
+  const { tr } = useAppearance();
   const { data, error, reload, setError } = useLoader<VendorOrder[]>(useCallback(() => listOrders(token), [token]));
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -160,14 +164,14 @@ function OrdersTab({ token }: { token: string }) {
       await shipOrder(token, orderNumber);
       reload();
     } catch (caught) {
-      setError(caught instanceof VendorSpaceError ? caught.message : "Expédition impossible.");
+      setError(caught instanceof VendorSpaceError ? caught.message : tr("Expédition impossible."));
     } finally {
       setBusy(null);
     }
   }
 
   if (!data) return <Status error={error} loading />;
-  if (data.length === 0) return <p className="text-sm text-ink-soft">Aucune commande.</p>;
+  if (data.length === 0) return <p className="text-sm text-ink-soft">{tr("Aucune commande.")}</p>;
 
   return (
     <ul className="flex flex-col gap-3">
@@ -176,7 +180,7 @@ function OrdersTab({ token }: { token: string }) {
         <li key={order.order_number} className="rounded-sm border border-line p-4 text-sm">
           <div className="flex flex-wrap justify-between gap-2 text-ink">
             <span>{order.order_number}</span>
-            <span className="text-ink-soft">{ORDER_STATUS_META[order.status as OrderStatus]?.label ?? order.status}</span>
+            <span className="text-ink-soft">{tr(ORDER_STATUS_META[order.status as OrderStatus]?.label ?? order.status)}</span>
           </div>
           <p className="mt-1 text-ink-soft">
             {order.customer_name} · {order.customer_phone} · {order.delivery_address}
@@ -200,13 +204,13 @@ function OrdersTab({ token }: { token: string }) {
                 onClick={() => handleShip(order.order_number)}
                 className="rounded-sm border border-gold px-2 py-1 text-xs text-gold transition-colors disabled:opacity-50"
               >
-                Marquer expédié
+                {tr("Marquer expédié")}
               </button>
             ) : (
               <span />
             )}
             <p className="text-ink">
-              Votre part : {formatMoney({ amount: order.vendor_subtotal_amount, currency: order.currency })}
+              {tr("Votre part :")} {formatMoney({ amount: order.vendor_subtotal_amount, currency: order.currency })}
             </p>
           </div>
         </li>
@@ -216,6 +220,7 @@ function OrdersTab({ token }: { token: string }) {
 }
 
 function PayoutsTab({ token }: { token: string }) {
+  const { tr } = useAppearance();
   const { data, error, setError } = useLoader<VendorPayout[]>(useCallback(() => listPayouts(token), [token]));
   const [detail, setDetail] = useState<VendorPayout | null>(null);
 
@@ -227,12 +232,12 @@ function PayoutsTab({ token }: { token: string }) {
     try {
       setDetail(await getPayout(token, payout.id));
     } catch (caught) {
-      setError(caught instanceof VendorSpaceError ? caught.message : "Relevé indisponible.");
+      setError(caught instanceof VendorSpaceError ? caught.message : tr("Relevé indisponible."));
     }
   }
 
   if (!data) return <Status error={error} loading />;
-  if (data.length === 0) return <p className="text-sm text-ink-soft">Aucun reversement pour le moment.</p>;
+  if (data.length === 0) return <p className="text-sm text-ink-soft">{tr("Aucun reversement pour le moment.")}</p>;
 
   return (
     <div className="overflow-x-auto">
@@ -240,11 +245,11 @@ function PayoutsTab({ token }: { token: string }) {
       <table className="w-full min-w-[720px] border-collapse text-sm">
         <thead>
           <tr className="border-b border-line text-left text-ink-soft">
-            <th className="py-2 pr-4 font-medium">Date</th>
-            <th className="py-2 pr-4 font-medium">Ventes</th>
-            <th className="py-2 pr-4 font-medium">Commission</th>
-            <th className="py-2 pr-4 font-medium">Net</th>
-            <th className="py-2 pr-4 font-medium">Statut</th>
+            <th className="py-2 pr-4 font-medium">{tr("Date")}</th>
+            <th className="py-2 pr-4 font-medium">{tr("Ventes")}</th>
+            <th className="py-2 pr-4 font-medium">{tr("Commission")}</th>
+            <th className="py-2 pr-4 font-medium">{tr("Net")}</th>
+            <th className="py-2 pr-4 font-medium">{tr("Statut")}</th>
             <th className="py-2 font-medium" />
           </tr>
         </thead>
@@ -261,7 +266,7 @@ function PayoutsTab({ token }: { token: string }) {
                   </td>
                   <td className="py-3 pr-4 text-ink">{money(payout.net_amount)}</td>
                   <td className="py-3 pr-4 text-ink-soft">
-                    {payout.status === "paid" ? `Payé${payout.payment_reference ? ` · ${payout.payment_reference}` : ""}` : "En cours"}
+                    {payout.status === "paid" ? `Payé${payout.payment_reference ? ` · ${payout.payment_reference}` : ""}` : tr("En cours")}
                   </td>
                   <td className="py-3">
                     <button
@@ -269,7 +274,7 @@ function PayoutsTab({ token }: { token: string }) {
                       onClick={() => toggle(payout)}
                       className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold"
                     >
-                      Relevé
+                      {tr("Relevé")}
                     </button>
                   </td>
                 </tr>
@@ -300,6 +305,7 @@ function PayoutsTab({ token }: { token: string }) {
 }
 
 function OffersTab({ token }: { token: string }) {
+  const { tr } = useAppearance();
   const { data, error, reload, setError } = useLoader<VendorOffer[]>(useCallback(() => listOffers(token), [token]));
   const [busyId, setBusyId] = useState<number | null>(null);
 
@@ -347,18 +353,18 @@ function OffersTab({ token }: { token: string }) {
       {!data ? (
         <Status error={null} loading />
       ) : data.length === 0 ? (
-        <p className="text-sm text-ink-soft">Aucune offre.</p>
+        <p className="text-sm text-ink-soft">{tr("Aucune offre.")}</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[780px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-line text-left text-ink-soft">
-                <th className="py-2 pr-4 font-medium">Produit</th>
-                <th className="py-2 pr-4 font-medium">SKU</th>
-                <th className="py-2 pr-4 font-medium">Prix</th>
-                <th className="py-2 pr-4 font-medium">Stock</th>
-                <th className="py-2 pr-4 font-medium">Statut</th>
-                <th className="py-2 font-medium">Actions</th>
+                <th className="py-2 pr-4 font-medium">{tr("Produit")}</th>
+                <th className="py-2 pr-4 font-medium">{tr("SKU")}</th>
+                <th className="py-2 pr-4 font-medium">{tr("Prix")}</th>
+                <th className="py-2 pr-4 font-medium">{tr("Stock")}</th>
+                <th className="py-2 pr-4 font-medium">{tr("Statut")}</th>
+                <th className="py-2 font-medium">{tr("Actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -372,7 +378,7 @@ function OffersTab({ token }: { token: string }) {
                   <td className={`py-3 pr-4 ${isOutOfStock(offer) ? "text-danger" : "text-ink"}`}>
                     {offer.stock_quantity}
                   </td>
-                  <td className="py-3 pr-4 text-ink-soft">{OFFER_STATUS_LABEL[offer.status]}</td>
+                  <td className="py-3 pr-4 text-ink-soft">{tr(OFFER_STATUS_LABEL[offer.status])}</td>
                   <td className="py-3">
                     {offer.status !== "archived" ? (
                       <div className="flex flex-wrap gap-2">
@@ -409,6 +415,7 @@ function NewOfferForm({
 }: {
   onSubmit: (input: { variant_id: number; price_amount: number; stock_quantity: number; warranty_months?: number }) => Promise<void>;
 }) {
+  const { tr } = useAppearance();
   const [variantId, setVariantId] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
@@ -438,7 +445,7 @@ function NewOfferForm({
       setStock("");
       setWarranty("");
     } catch (caught) {
-      setFormError(caught instanceof VendorSpaceError ? caught.message : "Soumission impossible.");
+      setFormError(caught instanceof VendorSpaceError ? caught.message : tr("Soumission impossible."));
     } finally {
       setSubmitting(false);
     }
@@ -449,26 +456,26 @@ function NewOfferForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        ID variante produit
+        {tr("ID variante produit")}
         <input type="number" min={1} value={variantId} onChange={(e) => setVariantId(e.target.value)} className={field} />
       </label>
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        Prix (F CFA)
+        {tr("Prix (F CFA)")}
         <input type="number" min={0} value={price} onChange={(e) => setPrice(e.target.value)} className={field} />
       </label>
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        Stock
+        {tr("Stock")}
         <input type="number" min={0} value={stock} onChange={(e) => setStock(e.target.value)} className={field} />
       </label>
       <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        Garantie (mois)
+        {tr("Garantie (mois)")}
         <input type="number" min={0} value={warranty} onChange={(e) => setWarranty(e.target.value)} className={field} />
       </label>
       <Button type="submit" disabled={submitting}>
-        Soumettre l&apos;offre
+        {tr("Soumettre l'offre")}
       </Button>
       <p className="w-full text-xs text-ink-soft">
-        L&apos;offre part en modération avant publication. Seuls les produits déjà publiés par Technilium sont proposables.
+        {tr("L'offre part en modération avant publication. Seuls les produits déjà publiés par Technilium sont proposables.")}
       </p>
       {formError ? <p className="w-full text-sm text-danger">{formError}</p> : null}
     </form>
