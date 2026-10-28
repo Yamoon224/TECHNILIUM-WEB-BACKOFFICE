@@ -190,36 +190,36 @@ function NewMovementForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("ID offre")}
-        <input
+      <label className="field">
+<input placeholder=" "
           type="number"
           value={offerId}
           onChange={(event) => setOfferId(event.target.value)}
           className="w-24 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-      </label>
+<span className="field-label">{tr("ID offre")}</span>
+</label>
 
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Variation (+/-)")}
-        <input
+      <label className="field">
+<input
           type="number"
           value={delta}
           onChange={(event) => setDelta(event.target.value)}
           placeholder={tr("+20 ou -5")}
           className="w-28 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-      </label>
+<span className="field-label">{tr("Variation (+/-)")}</span>
+</label>
 
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Motif")}
-        <input
+      <label className="field">
+<input
           value={reason}
           onChange={(event) => setReason(event.target.value)}
           placeholder={tr("Réception fournisseur, casse…")}
           className="w-56 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-      </label>
+<span className="field-label">{tr("Motif")}</span>
+</label>
 
       <Button type="submit" disabled={submitting}>
         {tr("Enregistrer")}

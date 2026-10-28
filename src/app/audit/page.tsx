@@ -119,18 +119,17 @@ export default function AuditPage() {
             setFilters(draft);
           }}
         >
-          <label className="flex flex-col gap-1 text-xs text-ink-soft">
-            {tr("Utilisateur (id)")}
-            <input
+          <label className="field">
+<input placeholder=" "
               value={draft.user_id ?? ""}
               onChange={(e) => setDraft({ ...draft, user_id: e.target.value })}
               inputMode="numeric"
               className={`${field} w-28`}
             />
-          </label>
-          <label className="flex flex-col gap-1 text-xs text-ink-soft">
-            {tr("Méthode")}
-            <select value={draft.method ?? ""} onChange={(e) => setDraft({ ...draft, method: e.target.value })} className={field}>
+<span className="field-label">{tr("Utilisateur (id)")}</span>
+</label>
+          <label className="field">
+<select value={draft.method ?? ""} onChange={(e) => setDraft({ ...draft, method: e.target.value })} className={field}>
               <option value="">{tr("Toutes")}</option>
               {AUDIT_METHODS.map((method) => (
                 <option key={method} value={method}>
@@ -138,24 +137,25 @@ export default function AuditPage() {
                 </option>
               ))}
             </select>
-          </label>
-          <label className="flex flex-col gap-1 text-xs text-ink-soft">
-            {tr("Chemin contient")}
-            <input
+<span className="field-label">{tr("Méthode")}</span>
+</label>
+          <label className="field">
+<input
               value={draft.path ?? ""}
               onChange={(e) => setDraft({ ...draft, path: e.target.value })}
               placeholder={tr("refund")}
               className={`${field} w-44`}
             />
-          </label>
-          <label className="flex flex-col gap-1 text-xs text-ink-soft">
-            {tr("Du")}
-            <input type="date" value={draft.from ?? ""} onChange={(e) => setDraft({ ...draft, from: e.target.value })} className={field} />
-          </label>
-          <label className="flex flex-col gap-1 text-xs text-ink-soft">
-            {tr("Au")}
-            <input type="date" value={draft.to ?? ""} onChange={(e) => setDraft({ ...draft, to: e.target.value })} className={field} />
-          </label>
+<span className="field-label">{tr("Chemin contient")}</span>
+</label>
+          <label className="field">
+<input placeholder=" " type="date" value={draft.from ?? ""} onChange={(e) => setDraft({ ...draft, from: e.target.value })} className={field} />
+<span className="field-label">{tr("Du")}</span>
+</label>
+          <label className="field">
+<input placeholder=" " type="date" value={draft.to ?? ""} onChange={(e) => setDraft({ ...draft, to: e.target.value })} className={field} />
+<span className="field-label">{tr("Au")}</span>
+</label>
           <label className="flex items-center gap-2 pb-2 text-sm text-ink">
             <input
               type="checkbox"

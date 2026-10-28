@@ -318,9 +318,8 @@ function NewProductForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Catégorie")}
-        <select
+      <label className="field">
+<select
           value={categoryId}
           onChange={(event) => setCategoryId(event.target.value)}
           className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
@@ -331,49 +330,50 @@ function NewProductForm({
             </option>
           ))}
         </select>
-      </label>
+<span className="field-label">{tr("Catégorie")}</span>
+</label>
 
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Marque")}
-        <input
+      <label className="field">
+<input
           value={brand}
           onChange={(event) => setBrand(event.target.value)}
           placeholder={tr("Samsung")}
           className="w-32 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-      </label>
+<span className="field-label">{tr("Marque")}</span>
+</label>
 
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Nom")}
-        <input
+      <label className="field">
+<input
           value={name}
           onChange={(event) => setName(event.target.value)}
           placeholder={tr("Galaxy A15")}
           className="w-48 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-      </label>
+<span className="field-label">{tr("Nom")}</span>
+</label>
 
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Prix (F CFA)")}
-        <input
+      <label className="field">
+<input placeholder=" "
           type="number"
           min={0}
           value={price}
           onChange={(event) => setPrice(event.target.value)}
           className="w-28 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-      </label>
+<span className="field-label">{tr("Prix (F CFA)")}</span>
+</label>
 
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Stock")}
-        <input
+      <label className="field">
+<input placeholder=" "
           type="number"
           min={0}
           value={stock}
           onChange={(event) => setStock(event.target.value)}
           className="w-20 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-      </label>
+<span className="field-label">{tr("Stock")}</span>
+</label>
 
       <Button type="submit" disabled={submitting}>
         {tr("Créer")}

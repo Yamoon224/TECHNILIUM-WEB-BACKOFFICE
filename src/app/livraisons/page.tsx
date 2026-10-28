@@ -394,25 +394,25 @@ function NewShipmentForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("N° commande")}
-        <input
+      <label className="field">
+<input
           value={orderNumber}
           onChange={(event) => setOrderNumber(event.target.value)}
           placeholder={tr("TCH-20261025-XXXXXX")}
           className="w-48 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-      </label>
+<span className="field-label">{tr("N° commande")}</span>
+</label>
 
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Livreur (ID, optionnel)")}
-        <input
+      <label className="field">
+<input placeholder=" "
           type="number"
           value={assignedTo}
           onChange={(event) => setAssignedTo(event.target.value)}
           className="w-32 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-      </label>
+<span className="field-label">{tr("Livreur (ID, optionnel)")}</span>
+</label>
 
       <Button type="submit" disabled={submitting}>
         {tr("Créer la livraison")}

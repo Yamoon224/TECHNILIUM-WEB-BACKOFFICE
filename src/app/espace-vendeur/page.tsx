@@ -455,22 +455,22 @@ function NewOfferForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("ID variante produit")}
-        <input type="number" min={1} value={variantId} onChange={(e) => setVariantId(e.target.value)} className={field} />
-      </label>
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Prix (F CFA)")}
-        <input type="number" min={0} value={price} onChange={(e) => setPrice(e.target.value)} className={field} />
-      </label>
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Stock")}
-        <input type="number" min={0} value={stock} onChange={(e) => setStock(e.target.value)} className={field} />
-      </label>
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Garantie (mois)")}
-        <input type="number" min={0} value={warranty} onChange={(e) => setWarranty(e.target.value)} className={field} />
-      </label>
+      <label className="field">
+<input placeholder=" " type="number" min={1} value={variantId} onChange={(e) => setVariantId(e.target.value)} className={field} />
+<span className="field-label">{tr("ID variante produit")}</span>
+</label>
+      <label className="field">
+<input placeholder=" " type="number" min={0} value={price} onChange={(e) => setPrice(e.target.value)} className={field} />
+<span className="field-label">{tr("Prix (F CFA)")}</span>
+</label>
+      <label className="field">
+<input placeholder=" " type="number" min={0} value={stock} onChange={(e) => setStock(e.target.value)} className={field} />
+<span className="field-label">{tr("Stock")}</span>
+</label>
+      <label className="field">
+<input placeholder=" " type="number" min={0} value={warranty} onChange={(e) => setWarranty(e.target.value)} className={field} />
+<span className="field-label">{tr("Garantie (mois)")}</span>
+</label>
       <Button type="submit" disabled={submitting}>
         {tr("Soumettre l'offre")}
       </Button>

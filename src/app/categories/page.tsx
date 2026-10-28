@@ -203,19 +203,18 @@ function NewCategoryForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Nom")}
-        <input
+      <label className="field">
+<input
           value={name}
           onChange={(event) => setName(event.target.value)}
           placeholder={tr("Ex. Accessoires audio")}
           className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-      </label>
+<span className="field-label">{tr("Nom")}</span>
+</label>
 
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Catégorie parente")}
-        <select
+      <label className="field">
+<select
           value={parentId}
           onChange={(event) => setParentId(event.target.value)}
           className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
@@ -227,7 +226,8 @@ function NewCategoryForm({
             </option>
           ))}
         </select>
-      </label>
+<span className="field-label">{tr("Catégorie parente")}</span>
+</label>
 
       <Button type="submit" disabled={submitting || !name.trim()}>
         {tr("Ajouter")}

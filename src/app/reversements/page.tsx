@@ -130,9 +130,8 @@ export default function PayoutsPage() {
         </div>
 
         <form onSubmit={handleCalculate} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
-          <label className="flex flex-col gap-1 text-xs text-ink-soft">
-            {tr("Vendeur")}
-            <select
+          <label className="field">
+<select
               value={vendorId}
               onChange={(event) => setVendorId(event.target.value)}
               className="min-w-56 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
@@ -144,7 +143,8 @@ export default function PayoutsPage() {
                 </option>
               ))}
             </select>
-          </label>
+<span className="field-label">{tr("Vendeur")}</span>
+</label>
           <Button type="submit" disabled={busy || !vendorId}>
             {tr("Calculer le reversement")}
           </Button>

@@ -121,24 +121,24 @@ export default function ReportsPage() {
               if (isValidPeriod(draft)) setPeriod(draft);
             }}
           >
-            <label className="flex flex-col gap-1 text-xs text-ink-soft">
-              {tr("Du")}
-              <input
+            <label className="field">
+<input placeholder=" "
                 type="date"
                 value={draft.from}
                 onChange={(event) => setDraft({ ...draft, from: event.target.value })}
                 className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
               />
-            </label>
-            <label className="flex flex-col gap-1 text-xs text-ink-soft">
-              {tr("Au")}
-              <input
+<span className="field-label">{tr("Du")}</span>
+</label>
+            <label className="field">
+<input placeholder=" "
                 type="date"
                 value={draft.to}
                 onChange={(event) => setDraft({ ...draft, to: event.target.value })}
                 className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
               />
-            </label>
+<span className="field-label">{tr("Au")}</span>
+</label>
             <Button type="submit" disabled={!isValidPeriod(draft)}>
               {tr("Appliquer")}
             </Button>

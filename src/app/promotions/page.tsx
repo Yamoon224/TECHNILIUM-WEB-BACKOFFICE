@@ -230,41 +230,41 @@ function NewCouponForm({ onSubmit }: { onSubmit: (input: NewCouponInput) => Prom
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Code")}
-        <input value={code} onChange={(e) => setCode(e.target.value)} placeholder={tr("BIENVENUE10")} className={`${field} uppercase`} />
-      </label>
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Type")}
-        <select value={type} onChange={(e) => setType(e.target.value as CouponType)} className={field}>
+      <label className="field">
+<input value={code} onChange={(e) => setCode(e.target.value)} placeholder={tr("BIENVENUE10")} className={`${field} uppercase`} />
+<span className="field-label">{tr("Code")}</span>
+</label>
+      <label className="field">
+<select value={type} onChange={(e) => setType(e.target.value as CouponType)} className={field}>
           <option value="percent">{tr("Pourcentage")}</option>
           <option value="fixed">{tr("Montant fixe")}</option>
         </select>
-      </label>
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {type === "percent" ? tr("Valeur (%)") : tr("Valeur (F CFA)")}
-        <input value={value} onChange={(e) => setValue(e.target.value)} inputMode="numeric" className={field} />
-      </label>
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Achat minimum")}
-        <input value={minOrder} onChange={(e) => setMinOrder(e.target.value)} inputMode="numeric" className={field} />
-      </label>
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Utilisations max")}
-        <input value={maxUses} onChange={(e) => setMaxUses(e.target.value)} inputMode="numeric" className={field} />
-      </label>
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Par client")}
-        <input value={perCustomer} onChange={(e) => setPerCustomer(e.target.value)} inputMode="numeric" className={field} />
-      </label>
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Début")}
-        <input type="date" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} className={field} />
-      </label>
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Fin")}
-        <input type="date" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} className={field} />
-      </label>
+<span className="field-label">{tr("Type")}</span>
+</label>
+      <label className="field">
+<input placeholder=" " value={value} onChange={(e) => setValue(e.target.value)} inputMode="numeric" className={field} />
+<span className="field-label">{type === "percent" ? tr("Valeur (%)") : tr("Valeur (F CFA)")}</span>
+</label>
+      <label className="field">
+<input placeholder=" " value={minOrder} onChange={(e) => setMinOrder(e.target.value)} inputMode="numeric" className={field} />
+<span className="field-label">{tr("Achat minimum")}</span>
+</label>
+      <label className="field">
+<input placeholder=" " value={maxUses} onChange={(e) => setMaxUses(e.target.value)} inputMode="numeric" className={field} />
+<span className="field-label">{tr("Utilisations max")}</span>
+</label>
+      <label className="field">
+<input placeholder=" " value={perCustomer} onChange={(e) => setPerCustomer(e.target.value)} inputMode="numeric" className={field} />
+<span className="field-label">{tr("Par client")}</span>
+</label>
+      <label className="field">
+<input placeholder=" " type="date" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} className={field} />
+<span className="field-label">{tr("Début")}</span>
+</label>
+      <label className="field">
+<input placeholder=" " type="date" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} className={field} />
+<span className="field-label">{tr("Fin")}</span>
+</label>
       <Button type="submit" disabled={submitting}>
         {tr("Créer le code")}
       </Button>

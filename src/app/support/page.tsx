@@ -223,9 +223,8 @@ function TicketPanel({ token, ticket, onUpdated }: { token: string; ticket: Tick
           {ticket.assigned_to === null ? tr("Prendre") : tr("Libérer")}
         </button>
 
-        <label className="flex items-center gap-1 text-xs text-ink-soft">
-          {tr("Priorité")}
-          <select
+        <label className="field items-center">
+<select
             value={ticket.priority}
             disabled={busy}
             onChange={(event) => run(() => updateTicket(token, ticket.id, { priority: event.target.value as TicketPriority }), "Changement impossible.")}
@@ -237,7 +236,8 @@ function TicketPanel({ token, ticket, onUpdated }: { token: string; ticket: Tick
               </option>
             ))}
           </select>
-        </label>
+<span className="field-label">{tr("Priorité")}</span>
+</label>
 
         {statusActions(ticket.status).map((action) => (
           <button key={action.target} type="button" disabled={busy} className={small} onClick={() => run(() => updateTicket(token, ticket.id, { status: action.target }), "Changement impossible.")}>

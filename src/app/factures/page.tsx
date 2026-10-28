@@ -212,15 +212,15 @@ function NewInvoiceForm({ onSubmit }: { onSubmit: (orderNumber: string) => Promi
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("N° commande à facturer")}
-        <input
+      <label className="field">
+<input
           value={orderNumber}
           onChange={(event) => setOrderNumber(event.target.value)}
           placeholder={tr("TCH-20261025-XXXXXX")}
           className="w-56 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-      </label>
+<span className="field-label">{tr("N° commande à facturer")}</span>
+</label>
 
       <Button type="submit" disabled={submitting}>
         {tr("Émettre la facture")}

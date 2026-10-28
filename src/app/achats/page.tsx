@@ -337,24 +337,24 @@ function OrderDetail({
           {toReceive.map((line) => (
             <div key={line.id} className="flex flex-wrap items-center gap-3 text-xs text-ink-soft">
               <span className="w-64 text-ink">{line.description}</span>
-              <label className="flex items-center gap-1">
-                {tr("Acceptées")}
-                <input
+              <label className="field items-center">
+<input placeholder=" "
                   inputMode="numeric"
                   value={receipt[line.id]?.accepted ?? ""}
                   onChange={(e) => setReceipt({ ...receipt, [line.id]: { rejected: receipt[line.id]?.rejected ?? "", accepted: e.target.value } })}
                   className={`${field} w-20`}
                 />
-              </label>
-              <label className="flex items-center gap-1">
-                {tr("Refusées")}
-                <input
+<span className="field-label">{tr("Acceptées")}</span>
+</label>
+              <label className="field items-center">
+<input placeholder=" "
                   inputMode="numeric"
                   value={receipt[line.id]?.rejected ?? ""}
                   onChange={(e) => setReceipt({ ...receipt, [line.id]: { accepted: receipt[line.id]?.accepted ?? "", rejected: e.target.value } })}
                   className={`${field} w-20`}
                 />
-              </label>
+<span className="field-label">{tr("Refusées")}</span>
+</label>
               <span>{tr("reste")} {line.outstanding}</span>
             </div>
           ))}
@@ -415,9 +415,8 @@ function NewOrderForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Fournisseur")}
-        <select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} className={`${field} min-w-52`}>
+      <label className="field">
+<select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} className={`${field} min-w-52`}>
           <option value="">{tr("Choisir…")}</option>
           {suppliers.map((supplier) => (
             <option key={supplier.id} value={supplier.id}>
@@ -425,15 +424,16 @@ function NewOrderForm({
             </option>
           ))}
         </select>
-      </label>
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Lignes (offre:quantité:coût unitaire)")}
-        <input value={lines} onChange={(e) => setLines(e.target.value)} placeholder="12:10:5000, 15:4:20000" className={`${field} w-72`} />
-      </label>
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Livraison attendue")}
-        <input type="date" value={expected} onChange={(e) => setExpected(e.target.value)} className={field} />
-      </label>
+<span className="field-label">{tr("Fournisseur")}</span>
+</label>
+      <label className="field">
+<input value={lines} onChange={(e) => setLines(e.target.value)} placeholder="12:10:5000, 15:4:20000" className={`${field} w-72`} />
+<span className="field-label">{tr("Lignes (offre:quantité:coût unitaire)")}</span>
+</label>
+      <label className="field">
+<input placeholder=" " type="date" value={expected} onChange={(e) => setExpected(e.target.value)} className={field} />
+<span className="field-label">{tr("Livraison attendue")}</span>
+</label>
       <Button type="submit" disabled={submitting}>
         {tr("Créer le bon")}{total > 0 ? ` (${xof(total)})` : ""}
       </Button>
@@ -475,22 +475,22 @@ function SuppliersTab({ token }: { token: string }) {
   return (
     <section className="flex flex-col gap-4">
       <form onSubmit={handleCreate} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
-        <label className="flex flex-col gap-1 text-xs text-ink-soft">
-          {tr("Nom")}
-          <input value={name} onChange={(e) => setName(e.target.value)} className={`${field} w-56`} />
-        </label>
-        <label className="flex flex-col gap-1 text-xs text-ink-soft">
-          {tr("Contact")}
-          <input value={contact} onChange={(e) => setContact(e.target.value)} className={`${field} w-44`} />
-        </label>
-        <label className="flex flex-col gap-1 text-xs text-ink-soft">
-          {tr("Téléphone")}
-          <input value={phone} onChange={(e) => setPhone(e.target.value)} className={`${field} w-36`} />
-        </label>
-        <label className="flex flex-col gap-1 text-xs text-ink-soft">
-          {tr("Paiement à (jours)")}
-          <input value={terms} onChange={(e) => setTerms(e.target.value)} inputMode="numeric" className={`${field} w-24`} />
-        </label>
+        <label className="field">
+<input placeholder=" " value={name} onChange={(e) => setName(e.target.value)} className={`${field} w-56`} />
+<span className="field-label">{tr("Nom")}</span>
+</label>
+        <label className="field">
+<input placeholder=" " value={contact} onChange={(e) => setContact(e.target.value)} className={`${field} w-44`} />
+<span className="field-label">{tr("Contact")}</span>
+</label>
+        <label className="field">
+<input placeholder=" " value={phone} onChange={(e) => setPhone(e.target.value)} className={`${field} w-36`} />
+<span className="field-label">{tr("Téléphone")}</span>
+</label>
+        <label className="field">
+<input placeholder=" " value={terms} onChange={(e) => setTerms(e.target.value)} inputMode="numeric" className={`${field} w-24`} />
+<span className="field-label">{tr("Paiement à (jours)")}</span>
+</label>
         <Button type="submit">{tr("Ajouter")}</Button>
         {formError ? <p className="w-full text-sm text-danger">{formError}</p> : null}
       </form>
@@ -675,9 +675,8 @@ function NewInvoiceForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Fournisseur")}
-        <select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} className={`${field} min-w-48`}>
+      <label className="field">
+<select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} className={`${field} min-w-48`}>
           <option value="">{tr("Choisir…")}</option>
           {suppliers.map((supplier) => (
             <option key={supplier.id} value={supplier.id}>
@@ -685,26 +684,27 @@ function NewInvoiceForm({
             </option>
           ))}
         </select>
-      </label>
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("N° de facture")}
-        <input value={number} onChange={(e) => setNumber(e.target.value)} className={`${field} w-36`} />
-      </label>
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Nature")}
-        <select value={kind} onChange={(e) => setKind(e.target.value as "goods" | "landed_cost")} className={field}>
+<span className="field-label">{tr("Fournisseur")}</span>
+</label>
+      <label className="field">
+<input placeholder=" " value={number} onChange={(e) => setNumber(e.target.value)} className={`${field} w-36`} />
+<span className="field-label">{tr("N° de facture")}</span>
+</label>
+      <label className="field">
+<select value={kind} onChange={(e) => setKind(e.target.value as "goods" | "landed_cost")} className={field}>
           <option value="goods">{tr("Marchandises")}</option>
           <option value="landed_cost">{tr("Frais d'approche")}</option>
         </select>
-      </label>
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Montant")}
-        <input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="numeric" className={`${field} w-32`} />
-      </label>
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Date")}
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={field} />
-      </label>
+<span className="field-label">{tr("Nature")}</span>
+</label>
+      <label className="field">
+<input placeholder=" " value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="numeric" className={`${field} w-32`} />
+<span className="field-label">{tr("Montant")}</span>
+</label>
+      <label className="field">
+<input placeholder=" " type="date" value={date} onChange={(e) => setDate(e.target.value)} className={field} />
+<span className="field-label">{tr("Date")}</span>
+</label>
       <Button type="submit">{tr("Enregistrer")}</Button>
       <p className="w-full text-xs text-ink-soft">{tr("L'échéance se calcule avec les conditions de paiement du fournisseur.")}</p>
       {error ? <p className="w-full text-sm text-danger">{error}</p> : null}

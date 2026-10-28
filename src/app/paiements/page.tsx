@@ -289,19 +289,18 @@ function NewPaymentForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("N° commande")}
-        <input
+      <label className="field">
+<input
           value={orderNumber}
           onChange={(event) => setOrderNumber(event.target.value)}
           placeholder={tr("TCH-20261025-XXXXXX")}
           className="w-48 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-      </label>
+<span className="field-label">{tr("N° commande")}</span>
+</label>
 
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Méthode")}
-        <select
+      <label className="field">
+<select
           value={method}
           onChange={(event) => setMethod(event.target.value as PaymentMethod)}
           className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
@@ -309,13 +308,13 @@ function NewPaymentForm({
           <option value="cod">{tr("Paiement à la livraison")}</option>
           <option value="mobile_money">{tr("Mobile money")}</option>
         </select>
-      </label>
+<span className="field-label">{tr("Méthode")}</span>
+</label>
 
       {method === "mobile_money" ? (
         <>
-          <label className="flex flex-col gap-1 text-xs text-ink-soft">
-            {tr("Opérateur")}
-            <select
+          <label className="field">
+<select
               value={provider}
               onChange={(event) => setProvider(event.target.value as MobileMoneyProvider)}
               className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
@@ -324,30 +323,31 @@ function NewPaymentForm({
               <option value="mtn_money">{tr("MTN Money")}</option>
               <option value="wave">{tr("Wave")}</option>
             </select>
-          </label>
+<span className="field-label">{tr("Opérateur")}</span>
+</label>
 
-          <label className="flex flex-col gap-1 text-xs text-ink-soft">
-            {tr("Référence transaction")}
-            <input
+          <label className="field">
+<input
               value={reference}
               onChange={(event) => setReference(event.target.value)}
               placeholder={tr("MM-12345678")}
               className="w-40 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
             />
-          </label>
+<span className="field-label">{tr("Référence transaction")}</span>
+</label>
         </>
       ) : null}
 
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Montant (F CFA)")}
-        <input
+      <label className="field">
+<input placeholder=" "
           type="number"
           min={0}
           value={amount}
           onChange={(event) => setAmount(event.target.value)}
           className="w-32 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-      </label>
+<span className="field-label">{tr("Montant (F CFA)")}</span>
+</label>
 
       <Button type="submit" disabled={submitting}>
         {tr("Enregistrer")}

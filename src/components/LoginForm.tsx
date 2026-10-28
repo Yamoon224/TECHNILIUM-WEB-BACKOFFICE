@@ -29,9 +29,8 @@ export function LoginForm({ onSubmit, submitting, error }: LoginFormProps) {
         <p className="text-sm text-ink-soft">{t("login.subtitle")}</p>
       </div>
 
-      <label className="flex flex-col gap-1 text-sm text-ink-soft">
-        {t("login.email")}
-        <input
+      <label className="field">
+<input
           type="email"
           required
           autoComplete="email"
@@ -40,11 +39,11 @@ export function LoginForm({ onSubmit, submitting, error }: LoginFormProps) {
           className="rounded-sm border border-line bg-bg px-3 py-2 text-ink placeholder:text-ink-soft focus:border-gold focus:outline-none"
           placeholder="prenom.nom@technilium.app"
         />
-      </label>
+<span className="field-label">{t("login.email")}</span>
+</label>
 
-      <label className="flex flex-col gap-1 text-sm text-ink-soft">
-        {t("login.password")}
-        <input
+      <label className="field">
+<input placeholder=" "
           type="password"
           required
           autoComplete="current-password"
@@ -52,7 +51,8 @@ export function LoginForm({ onSubmit, submitting, error }: LoginFormProps) {
           onChange={(event) => setPassword(event.target.value)}
           className="rounded-sm border border-line bg-bg px-3 py-2 text-ink focus:border-gold focus:outline-none"
         />
-      </label>
+<span className="field-label">{t("login.password")}</span>
+</label>
 
       {error ? <p className="text-sm text-danger">{error}</p> : null}
 

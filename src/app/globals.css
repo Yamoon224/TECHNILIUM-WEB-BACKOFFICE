@@ -69,3 +69,53 @@ body {
 .gold-text {
   color: var(--gold);
 }
+
+/*
+ * Floating labels: <label class="field"><input placeholder=" "><span class="field-label">Text</span></label>.
+ * The label sits inside the empty field and floats up when it is focused or filled
+ * (selects and date fields are always floated). A real placeholder shows only on focus.
+ */
+.field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.field > :is(input, textarea, select) {
+  padding: 1.35rem 0.75rem 0.45rem;
+  border-radius: 0.125rem;
+}
+.field > :is(input, textarea)::placeholder {
+  color: transparent;
+}
+.field > :is(input, textarea):focus::placeholder {
+  color: var(--ink-soft);
+  opacity: 0.7;
+}
+.field > .field-label {
+  position: absolute;
+  top: 0.8rem;
+  left: 0.75rem;
+  max-width: calc(100% - 1.5rem);
+  overflow: hidden;
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+  transform-origin: left top;
+  transition:
+    transform 0.15s ease,
+    color 0.15s ease,
+    max-width 0.15s ease;
+}
+.field > :is(input, textarea, select):focus ~ .field-label,
+.field > :is(input, textarea):not(:placeholder-shown) ~ .field-label,
+.field > select ~ .field-label,
+.field > input:is([type="date"], [type="datetime-local"], [type="month"], [type="time"]) ~ .field-label {
+  max-width: calc((100% - 1.5rem) / 0.75);
+  transform: translateY(-0.6rem) scale(0.75);
+}
+.field > :is(input, textarea, select):focus ~ .field-label {
+  color: var(--gold);
+}

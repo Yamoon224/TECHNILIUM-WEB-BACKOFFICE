@@ -273,39 +273,38 @@ function NewReturnForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4">
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("N° commande livrée")}
-        <input
+      <label className="field">
+<input
           value={orderNumber}
           onChange={(event) => setOrderNumber(event.target.value)}
           placeholder={tr("TCH-20261025-XXXXXX")}
           className="w-52 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-      </label>
+<span className="field-label">{tr("N° commande livrée")}</span>
+</label>
 
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Motif")}
-        <input
+      <label className="field">
+<input
           value={reason}
           onChange={(event) => setReason(event.target.value)}
           placeholder={tr("Produit défectueux")}
           className="w-64 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-      </label>
+<span className="field-label">{tr("Motif")}</span>
+</label>
 
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Articles (offre:qté, optionnel)")}
-        <input
+      <label className="field">
+<input
           value={articles}
           onChange={(event) => setArticles(event.target.value)}
           placeholder="12:2, 15"
           className="w-40 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-      </label>
+<span className="field-label">{tr("Articles (offre:qté, optionnel)")}</span>
+</label>
 
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">
-        {tr("Montant (optionnel)")}
-        <input
+      <label className="field">
+<input
           type="number"
           min={1}
           value={amount}
@@ -313,7 +312,8 @@ function NewReturnForm({
           placeholder={tr("Total de la commande")}
           className="w-40 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
         />
-      </label>
+<span className="field-label">{tr("Montant (optionnel)")}</span>
+</label>
 
       <Button type="submit" disabled={submitting}>
         {tr("Ouvrir le retour")}
