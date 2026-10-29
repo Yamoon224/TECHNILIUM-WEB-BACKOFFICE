@@ -43,6 +43,7 @@ export default function ProductsPage() {
   const [galleryId, setGalleryId] = useState<number | null>(null);
   const [textsId, setTextsId] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [view, setView] = useState<"table" | "cards">("table");
 
   const refresh = useCallback(() => {
     if (!token) return;
@@ -153,12 +154,39 @@ export default function ProductsPage() {
 
         {error ? <p className="text-sm text-danger">{error}</p> : null}
 
+        <div className="flex gap-2" role="group" aria-label={tr("Affichage")}>
+          {(["table", "cards"] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              aria-pressed={view === mode}
+              onClick={() => setView(mode)}
+              className={`rounded-sm border px-3 py-1 text-xs transition-colors ${
+                view === mode ? "border-gold text-gold" : "border-line text-ink hover:border-gold"
+              }`}
+            >
+              {mode === "table" ? tr("Tableau") : tr("Cartes")}
+            </button>
+          ))}
+        </div>
+
         {showForm ? (
           <NewProductForm
             categories={categories}
-            onCreate={async (input) => {
+            onCreate={async ({ photo, ...input }) => {
               if (!token) return;
-              const created = await createProduct(token, input);
+              let created = await createProduct(token, input);
+              if (photo) {
+                try {
+                  created = await addProductImage(token, created.id, photo);
+                } catch (caught) {
+                  setError(
+                    caught instanceof CatalogError
+                      ? (caught.fieldErrors?.image?.[0] ?? caught.message)
+                      : tr("Produit créé, mais l'envoi de la photo a échoué."),
+                  );
+                }
+              }
               setProducts((current) => [created, ...current]);
               setShowForm(false);
             }}
@@ -169,6 +197,45 @@ export default function ProductsPage() {
           <p className="text-sm text-ink-soft">{tr("Chargement…")}</p>
         ) : products.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Aucun produit.")}</p>
+        ) : view === "cards" ? (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            {products.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                editing={editingId === product.id}
+                galleryOpen={galleryId === product.id}
+                textsOpen={textsId === product.id}
+                onEdit={() => setEditingId(product.id)}
+                onCancelEdit={() => setEditingId(null)}
+                onSave={async (patch) => {
+                  if (!token) return;
+                  try {
+                    replaceProduct(await updateProduct(token, product.id, patch));
+                    setEditingId(null);
+                  } catch (caught) {
+                    setError(caught instanceof CatalogError ? caught.message : tr("Mise à jour impossible."));
+                  }
+                }}
+                onToggleGallery={() => setGalleryId(galleryId === product.id ? null : product.id)}
+                onToggleTexts={() => setTextsId(textsId === product.id ? null : product.id)}
+                onSaveTexts={async (patch) => {
+                  if (!token) return;
+                  setError(null);
+                  try {
+                    replaceProduct(await updateProduct(token, product.id, patch));
+                    setTextsId(null);
+                  } catch (caught) {
+                    setError(caught instanceof CatalogError ? caught.message : tr("Mise à jour impossible."));
+                  }
+                }}
+                onAddPhoto={(file) => handlePhoto(product, file)}
+                onCover={(imageId) => handleCover(product, imageId)}
+                onRemovePhoto={(imageId) => handleRemovePhoto(product, imageId)}
+                onArchive={() => handleArchive(product.id)}
+              />
+            ))}
+          </div>
         ) : (
           <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
             <DataTable
@@ -315,9 +382,11 @@ function NewProductForm({
     name: string;
     price_amount: number;
     stock_quantity: number;
+    photo: File | null;
   }) => Promise<void>;
 }) {
   const { tr } = useAppearance();
+  const [photo, setPhoto] = useState<File | null>(null);
   const [categoryId, setCategoryId] = useState<string>(categories[0]?.id ? String(categories[0].id) : "");
   const [brand, setBrand] = useState("");
   const [name, setName] = useState("");
@@ -335,9 +404,18 @@ function NewProductForm({
       return;
     }
 
+    if (photo) {
+      const problem = imageProblem(photo);
+      if (problem) {
+        setFormError(problem);
+        return;
+      }
+    }
+
     setSubmitting(true);
     try {
       await onCreate({
+        photo,
         category_id: Number(categoryId),
         brand: brand.trim(),
         name: name.trim(),
@@ -348,6 +426,7 @@ function NewProductForm({
       setName("");
       setPrice("");
       setStock("");
+      setPhoto(null);
     } catch (caught) {
       setFormError(caught instanceof CatalogError ? caught.message : tr("Création impossible."));
     } finally {
@@ -419,12 +498,177 @@ function NewProductForm({
         <span className="field-label">{tr("Stock")}</span>
       </label>
 
+      <label className="flex cursor-pointer flex-col gap-1 text-xs text-ink-soft">
+        {tr("Photo (optionnelle)")}
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={(event) => setPhoto(event.target.files?.[0] ?? null)}
+          className="max-w-52 text-xs text-ink file:mr-2 file:rounded-sm file:border file:border-line file:bg-surface file:px-2 file:py-1 file:text-ink"
+        />
+      </label>
+
       <Button type="submit" disabled={submitting}>
         {tr("Créer")}
       </Button>
 
       {formError ? <p className="w-full text-sm text-danger">{formError}</p> : null}
     </form>
+  );
+}
+
+function ProductCard({
+  product,
+  editing,
+  galleryOpen,
+  textsOpen,
+  onEdit,
+  onCancelEdit,
+  onSave,
+  onToggleGallery,
+  onToggleTexts,
+  onSaveTexts,
+  onAddPhoto,
+  onCover,
+  onRemovePhoto,
+  onArchive,
+}: {
+  product: Product;
+  editing: boolean;
+  galleryOpen: boolean;
+  textsOpen: boolean;
+  onEdit: () => void;
+  onCancelEdit: () => void;
+  onSave: (patch: { brand: string; name: string; price_amount: number; stock_quantity: number }) => Promise<void>;
+  onToggleGallery: () => void;
+  onToggleTexts: () => void;
+  onSaveTexts: (patch: { name_en: string; description: string; description_en: string }) => Promise<void>;
+  onAddPhoto: (file: File | null) => void;
+  onCover: (imageId: number) => void;
+  onRemovePhoto: (imageId: number) => void;
+  onArchive: () => void;
+}) {
+  const { tr } = useAppearance();
+  const [brand, setBrand] = useState(product.brand);
+  const [name, setName] = useState(product.name);
+  const [price, setPrice] = useState(product.price_amount ?? 0);
+  const [stock, setStock] = useState(product.stock_quantity ?? 0);
+  const [submitting, setSubmitting] = useState(false);
+  const inputClass = "w-full rounded-sm border border-line bg-surface px-2 py-1 text-sm text-ink";
+  const buttonClass = "rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold";
+
+  async function handleSave() {
+    setSubmitting(true);
+    try {
+      await onSave({ brand: brand.trim(), name: name.trim(), price_amount: price, stock_quantity: stock });
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <article className="flex flex-col gap-3 rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
+      <button
+        type="button"
+        title={tr("Modifier les photos")}
+        aria-label={tr("Modifier les photos")}
+        onClick={onToggleGallery}
+        className="block overflow-hidden rounded-sm border border-line transition-opacity hover:opacity-80"
+      >
+        {product.image_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={product.image_url} alt="" className="aspect-square w-full object-cover" />
+        ) : (
+          <span className="flex aspect-square w-full items-center justify-center text-xs text-ink-soft">
+            {tr("Aucune")}
+          </span>
+        )}
+      </button>
+
+      {editing ? (
+        <div className="flex flex-col gap-2">
+          <input aria-label={tr("Marque")} value={brand} onChange={(event) => setBrand(event.target.value)} className={inputClass} />
+          <input aria-label={tr("Nom du produit")} value={name} onChange={(event) => setName(event.target.value)} className={inputClass} />
+          <div className="flex gap-2">
+            <input
+              aria-label={tr("Prix")}
+              type="number"
+              min={0}
+              value={price}
+              onChange={(event) => setPrice(Number(event.target.value))}
+              className={inputClass}
+            />
+            <input
+              aria-label={tr("Stock")}
+              type="number"
+              min={0}
+              value={stock}
+              onChange={(event) => setStock(Number(event.target.value))}
+              className={inputClass}
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-1">
+          <h2 className="text-sm font-semibold text-ink">
+            {product.brand} {product.name}
+          </h2>
+          <p className="text-xs text-ink-soft">{product.sku ?? "—"}</p>
+          <p className="text-sm text-ink">
+            {product.price_amount?.toLocaleString("fr-FR") ?? "—"} {product.currency}
+            <span className="text-ink-soft">
+              {" "}
+              · {tr("Stock")} {product.stock_quantity ?? "—"}
+            </span>
+          </p>
+          <p className="text-xs text-ink-soft">{tr(STATUS_LABEL[product.status])}</p>
+        </div>
+      )}
+
+      <div className="flex flex-wrap gap-2">
+        {editing ? (
+          <>
+            <button
+              type="button"
+              disabled={submitting || !brand.trim() || !name.trim()}
+              onClick={handleSave}
+              className="rounded-sm border border-gold px-2 py-1 text-xs text-gold transition-colors disabled:opacity-50"
+            >
+              {tr("Enregistrer")}
+            </button>
+            <button type="button" onClick={onCancelEdit} className={buttonClass}>
+              {tr("Annuler")}
+            </button>
+          </>
+        ) : (
+          <>
+            {product.sku ? <QrLink kind="product" reference={product.sku} /> : null}
+            <button type="button" onClick={onEdit} className={buttonClass}>
+              {tr("Modifier")}
+            </button>
+            <button type="button" onClick={onToggleGallery} className={buttonClass}>
+              {tr("Photos (")}
+              {product.images?.length ?? 0})
+            </button>
+            <button type="button" onClick={onToggleTexts} className={buttonClass}>
+              {tr("Textes")}
+            </button>
+            {product.status !== "archived" ? (
+              <button
+                type="button"
+                onClick={onArchive}
+                className="rounded-sm border border-line px-2 py-1 text-xs text-danger transition-colors hover:border-danger"
+              >
+                {tr("Archiver")}
+              </button>
+            ) : null}
+          </>
+        )}
+      </div>
+
+      {galleryOpen ? <Gallery product={product} onAdd={onAddPhoto} onCover={onCover} onRemove={onRemovePhoto} /> : null}
+      {textsOpen ? <TextsPanel product={product} onSave={onSaveTexts} /> : null}
+    </article>
   );
 }
 
