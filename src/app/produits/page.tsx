@@ -197,6 +197,13 @@ export default function ProductsPage() {
                     <tr key={product.id} className="border-b border-line">
                       <td className="py-3 pr-4 text-ink">
                         <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            title={tr("Modifier les photos")}
+                            aria-label={tr("Modifier les photos")}
+                            onClick={() => setGalleryId(galleryId === product.id ? null : product.id)}
+                            className="shrink-0 rounded-sm transition-opacity hover:opacity-80"
+                          >
                           {product.image_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -209,6 +216,7 @@ export default function ProductsPage() {
                               {tr("Aucune")}
                             </span>
                           )}
+                          </button>
                           {product.brand} {product.name}
                         </div>
                       </td>
@@ -426,10 +434,12 @@ function EditProductRow({
   onCancel,
 }: {
   product: Product;
-  onSave: (patch: { price_amount: number; stock_quantity: number }) => Promise<void>;
+  onSave: (patch: { brand: string; name: string; price_amount: number; stock_quantity: number }) => Promise<void>;
   onCancel: () => void;
 }) {
   const { tr } = useAppearance();
+  const [brand, setBrand] = useState(product.brand);
+  const [name, setName] = useState(product.name);
   const [price, setPrice] = useState(product.price_amount ?? 0);
   const [stock, setStock] = useState(product.stock_quantity ?? 0);
   const [submitting, setSubmitting] = useState(false);
@@ -437,7 +447,7 @@ function EditProductRow({
   async function handleSave() {
     setSubmitting(true);
     try {
-      await onSave({ price_amount: price, stock_quantity: stock });
+      await onSave({ brand: brand.trim(), name: name.trim(), price_amount: price, stock_quantity: stock });
     } finally {
       setSubmitting(false);
     }
@@ -446,7 +456,20 @@ function EditProductRow({
   return (
     <tr className="border-b border-line bg-surface-raised">
       <td className="py-2 pr-4 text-ink">
-        {product.brand} {product.name}
+        <div className="flex flex-col gap-1">
+          <input
+            aria-label={tr("Marque")}
+            value={brand}
+            onChange={(event) => setBrand(event.target.value)}
+            className="w-full rounded-sm border border-line bg-surface px-2 py-1 text-sm text-ink"
+          />
+          <input
+            aria-label={tr("Nom du produit")}
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            className="w-full rounded-sm border border-line bg-surface px-2 py-1 text-sm text-ink"
+          />
+        </div>
       </td>
       <td className="py-2 pr-4 text-ink-soft">{product.sku ?? "—"}</td>
       <td className="py-2 pr-4">
@@ -472,7 +495,7 @@ function EditProductRow({
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            disabled={submitting}
+            disabled={submitting || !brand.trim() || !name.trim()}
             onClick={handleSave}
             className="rounded-sm border border-gold px-2 py-1 text-xs text-gold transition-colors disabled:opacity-50"
           >

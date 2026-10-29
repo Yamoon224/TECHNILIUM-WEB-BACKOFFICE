@@ -15,6 +15,8 @@ export const PHRASES_EN: Record<string, string> = {
   "Chargement…": "Loading…",
   "Action": "Action",
   "Annuler": "Cancel",
+  "Nom du produit": "Product name",
+  "Modifier les photos": "Edit photos",
   "Enregistrer": "Save",
   "Modifier": "Edit",
   "Supprimer": "Delete",
