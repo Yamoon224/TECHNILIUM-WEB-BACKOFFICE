@@ -68,6 +68,26 @@ export function sortedIndexes(values: readonly (readonly string[])[], column: nu
   });
 }
 
+/** Lower-case, accent-free text, so "Électro" is found by "electro". */
+export function searchKey(text: string): string {
+  return cleanText(text).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+}
+
+/**
+ * Rows (by index) with at least one of the given columns containing every word
+ * of the query, in any order. An empty query keeps every row.
+ */
+export function matchingIndexes(values: readonly (readonly string[])[], columns: readonly number[], query: string): number[] {
+  const words = searchKey(query).split(" ").filter(Boolean);
+  const indexes = values.map((_, index) => index);
+  if (words.length === 0) return indexes;
+
+  return indexes.filter((index) => {
+    const haystack = columns.map((column) => searchKey(values[index][column] ?? "")).join(" ");
+    return words.every((word) => haystack.includes(word));
+  });
+}
+
 /** The next sort state when a header is clicked: ascending, then descending, then none. */
 export function nextSort(current: { column: number | null; direction: SortDirection }, clicked: number): { column: number | null; direction: SortDirection } {
   if (current.column !== clicked) return { column: clicked, direction: "asc" };

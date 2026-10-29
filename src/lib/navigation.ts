@@ -2,6 +2,7 @@ import {
   BadgeEuro,
   BarChart3,
   Boxes,
+  GalleryHorizontal,
   Calculator,
   FileText,
   LayoutDashboard,
@@ -67,6 +68,7 @@ export const STAFF_NAV: NavGroup[] = [
     label: "nav.catalog",
     items: [
       { href: "/categories", label: "nav.categories", Icon: Tags, ability: "manage-catalog" },
+      { href: "/bannieres", label: "nav.banners", Icon: GalleryHorizontal, ability: "manage-catalog" },
       { href: "/produits", label: "nav.products", Icon: Package, ability: "manage-catalog" },
       { href: "/offres", label: "nav.moderation", Icon: PackageCheck, ability: "manage-catalog" },
       { href: "/stock", label: "nav.stock", Icon: Boxes, ability: "manage-stock" },

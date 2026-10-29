@@ -1,10 +1,11 @@
 "use client";
 
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, ChevronsUpDown, Download } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, ChevronsUpDown, Download, Search, X } from "lucide-react";
 import { Fragment, useMemo, useState, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   cleanText,
+  matchingIndexes,
   nextSort,
   PAGE_SIZES,
   pageWindow,
@@ -54,6 +55,7 @@ export function DataTable<T>({ name, title, rows, headers, actionColumns = [], r
   const [pageSize, setPageSize] = useState<PageSize>(10);
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<{ column: number | null; direction: SortDirection }>({ column: null, direction: "asc" });
+  const [query, setQuery] = useState("");
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
@@ -77,15 +79,18 @@ export function DataTable<T>({ name, title, rows, headers, actionColumns = [], r
 
   const dataColumns = headers.map((_, index) => index).filter((index) => !actionColumns.includes(index));
 
-  // Only a sorted table needs the cell texts while rendering; they are re-read when the data or language changes.
+  // Only a sorted or searched table needs the cell texts while rendering; they are re-read when the data or language changes.
   const order = useMemo(() => {
-    if (sort.column === null || typeof DOMParser === "undefined") return rows.map((_, index) => index);
-    return sortedIndexes(readCellTexts(), sort.column, sort.direction);
+    const searching = query.trim() !== "";
+    if ((sort.column === null && !searching) || typeof DOMParser === "undefined") return rows.map((_, index) => index);
+    const values = readCellTexts();
+    const kept = new Set(matchingIndexes(values, dataColumns, query));
+    return sortedIndexes(values, sort.column, sort.direction).filter((index) => kept.has(index));
     // renderRow is a new function on every render; the text it produces only changes with the data and language.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, sort, context.appearance.language]);
+  }, [rows, sort, query, context.appearance.language]);
 
-  const window = pageWindow(rows.length, pageSize, page);
+  const window = pageWindow(order.length, pageSize, page);
   const visible = order.slice(window.start, window.end);
 
   async function handleExport(format: ExportFormat) {
@@ -93,7 +98,9 @@ export function DataTable<T>({ name, title, rows, headers, actionColumns = [], r
     setExportError(null);
     try {
       const values = readCellTexts();
-      const ordered = sortedIndexes(values, sort.column, sort.direction);
+      // What the search leaves, in the current order.
+      const kept = new Set(matchingIndexes(values, dataColumns, query));
+      const ordered = sortedIndexes(values, sort.column, sort.direction).filter((index) => kept.has(index));
       await exportTable(format, {
         name,
         title: title ?? name,
@@ -110,6 +117,34 @@ export function DataTable<T>({ name, title, rows, headers, actionColumns = [], r
 
   return (
     <div className={`flex flex-col gap-3 ${className}`}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="relative w-full max-w-xs">
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-soft" aria-hidden />
+        <input
+          type="search"
+          value={query}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setPage(1);
+          }}
+          placeholder={t("table.searchPlaceholder")}
+          aria-label={t("table.search")}
+          className="w-full rounded-sm border border-line bg-surface py-1.5 pl-8 pr-8 text-sm text-ink placeholder:text-ink-soft"
+        />
+        {query ? (
+          <button
+            type="button"
+            onClick={() => {
+              setQuery("");
+              setPage(1);
+            }}
+            aria-label={t("table.clearSearch")}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-ink-soft hover:text-ink"
+          >
+            <X className="h-4 w-4" aria-hidden />
+          </button>
+        ) : null}
+      </div>
       <div className="flex flex-wrap items-center justify-end gap-1.5" role="group" aria-label={t("table.export")}>
         <span className="mr-1 flex items-center gap-1 text-xs text-ink-soft">
           <Download className="h-3.5 w-3.5" aria-hidden /> {t("table.export")}
@@ -125,6 +160,7 @@ export function DataTable<T>({ name, title, rows, headers, actionColumns = [], r
             {label}
           </button>
         ))}
+      </div>
       </div>
       {exportError ? <p className="text-xs text-danger">{exportError}</p> : null}
 
@@ -223,8 +259,9 @@ export function DataTable<T>({ name, title, rows, headers, actionColumns = [], r
         </div>
 
         <p className="text-ink-soft sm:justify-self-end">
-          {t("table.items")} <span className="font-medium text-ink tabular-nums">{shownThroughPage(rows.length, window)}</span> /{" "}
-          <span className="tabular-nums">{rows.length}</span>
+          {t("table.items")} <span className="font-medium text-ink tabular-nums">{shownThroughPage(order.length, window)}</span> /{" "}
+          <span className="tabular-nums">{order.length}</span>
+          {order.length !== rows.length ? <span className="text-xs"> ({rows.length})</span> : null}
         </p>
       </div>
     </div>

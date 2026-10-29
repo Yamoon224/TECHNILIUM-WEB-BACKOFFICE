@@ -271,3 +271,72 @@ export async function removeProductImage(token: string, id: number, imageId: num
   if (!response.ok) throw await parseError(response);
   return response.json() as Promise<Product>;
 }
+
+// ------------------------------------------------------------------ banners
+
+export type BannerPlacement = "hero" | "footer";
+
+export interface Banner {
+  id: number;
+  placement: BannerPlacement;
+  image_url: string;
+  title: string | null;
+  link_url: string | null;
+  position: number;
+  is_active: boolean;
+}
+
+export const MAX_BANNER_IMAGES = 10;
+export const MAX_BANNER_BYTES = 4 * 1024 * 1024;
+
+/** Early, friendly refusal; the server validates the real content again. */
+export function bannerImageProblem(file: Pick<File, "type" | "size">): string | null {
+  if (!IMAGE_TYPES.includes(file.type)) return "Format non accepté : utilisez JPG, PNG ou WebP.";
+  if (file.size > MAX_BANNER_BYTES) return "L'image dépasse 4 Mo.";
+  return null;
+}
+
+export async function listBanners(token: string): Promise<Banner[]> {
+  const response = await fetch(`${API_BASE_URL}/admin/banners`, { headers: authHeaders(token), cache: "no-store" });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<Banner[]>;
+}
+
+export async function addBanner(
+  token: string,
+  input: { placement: BannerPlacement; file: File; title?: string; link_url?: string },
+): Promise<Banner> {
+  const body = new FormData();
+  body.append("placement", input.placement);
+  body.append("image", input.file);
+  if (input.title) body.append("title", input.title);
+  if (input.link_url) body.append("link_url", input.link_url);
+
+  // No Content-Type: the browser sets the multipart boundary itself.
+  const response = await fetch(`${API_BASE_URL}/admin/banners`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+    body,
+  });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<Banner>;
+}
+
+export async function updateBanner(
+  token: string,
+  id: number,
+  input: Partial<Pick<Banner, "title" | "link_url" | "is_active" | "position">>,
+): Promise<Banner> {
+  const response = await fetch(`${API_BASE_URL}/admin/banners/${id}`, {
+    method: "PUT",
+    headers: authHeaders(token),
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<Banner>;
+}
+
+export async function deleteBanner(token: string, id: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/admin/banners/${id}`, { method: "DELETE", headers: authHeaders(token) });
+  if (!response.ok) throw await parseError(response);
+}

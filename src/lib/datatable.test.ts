@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   compareCells,
+  matchingIndexes,
   nextSort,
   pageWindow,
   parseDate,
@@ -147,5 +148,27 @@ describe("exports", () => {
 
   it("replaces what the PDF fonts cannot draw", () => {
     expect(toLatin1("Café — 5 € ✓")).toBe("Café ? 5 ? ?");
+  });
+});
+
+describe("matchingIndexes", () => {
+  const values = [
+    ["CMD-1", "Électro Kouassi", "12 000 F CFA"],
+    ["CMD-2", "Awa Traoré", "9 500 F CFA"],
+    ["CMD-3", "Awa Électro", "500 F CFA"],
+  ];
+
+  it("keeps every row for an empty query", () => {
+    expect(matchingIndexes(values, [0, 1, 2], "  ")).toEqual([0, 1, 2]);
+  });
+
+  it("ignores case and accents, and needs every word, in any order", () => {
+    expect(matchingIndexes(values, [0, 1, 2], "electro")).toEqual([0, 2]);
+    expect(matchingIndexes(values, [0, 1, 2], "ELECTRO awa")).toEqual([2]);
+  });
+
+  it("only looks in the given columns", () => {
+    expect(matchingIndexes(values, [0, 2], "awa")).toEqual([]);
+    expect(matchingIndexes(values, [0, 2], "cmd-2")).toEqual([1]);
   });
 });
