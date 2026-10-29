@@ -74,9 +74,11 @@ export default function ProductsPage() {
     setProducts((current) => current.map((p) => (p.id === updated.id ? updated : p)));
   }
 
-  async function handlePhoto(product: Product, file: File | null) {
-    if (!token || !file) return;
-    const problem = imageProblem(file);
+  async function handlePhoto(product: Product, picked: File[]) {
+    if (!token || picked.length === 0) return;
+    // Only what still fits in the gallery.
+    const files = picked.slice(0, Math.max(0, MAX_GALLERY_IMAGES - (product.images?.length ?? 0)));
+    const problem = files.map(imageProblem).find(Boolean);
     if (problem) {
       setError(problem);
       return;
@@ -84,7 +86,8 @@ export default function ProductsPage() {
 
     setError(null);
     try {
-      replaceProduct(await addProductImage(token, product.id, file));
+      // One request per file; the card shows each photo as soon as it is stored.
+      for (const file of files) replaceProduct(await addProductImage(token, product.id, file));
     } catch (caught) {
       setError(
         caught instanceof CatalogError
@@ -173,12 +176,13 @@ export default function ProductsPage() {
         {showForm ? (
           <NewProductForm
             categories={categories}
-            onCreate={async ({ photo, ...input }) => {
+            onCreate={async ({ photos, ...input }) => {
               if (!token) return;
               let created = await createProduct(token, input);
-              if (photo) {
+              if (photos.length > 0) {
                 try {
-                  created = await addProductImage(token, created.id, photo);
+                  // The first photo is the cover.
+                  for (const photo of photos) created = await addProductImage(token, created.id, photo);
                 } catch (caught) {
                   setError(
                     caught instanceof CatalogError
@@ -229,7 +233,7 @@ export default function ProductsPage() {
                     setError(caught instanceof CatalogError ? caught.message : tr("Mise à jour impossible."));
                   }
                 }}
-                onAddPhoto={(file) => handlePhoto(product, file)}
+                onAddPhoto={(files) => handlePhoto(product, files)}
                 onCover={(imageId) => handleCover(product, imageId)}
                 onRemovePhoto={(imageId) => handleRemovePhoto(product, imageId)}
                 onArchive={() => handleArchive(product.id)}
@@ -382,11 +386,11 @@ function NewProductForm({
     name: string;
     price_amount: number;
     stock_quantity: number;
-    photo: File | null;
+    photos: File[];
   }) => Promise<void>;
 }) {
   const { tr } = useAppearance();
-  const [photo, setPhoto] = useState<File | null>(null);
+  const [photos, setPhotos] = useState<File[]>([]);
   const [categoryId, setCategoryId] = useState<string>(categories[0]?.id ? String(categories[0].id) : "");
   const [brand, setBrand] = useState("");
   const [name, setName] = useState("");
@@ -404,18 +408,16 @@ function NewProductForm({
       return;
     }
 
-    if (photo) {
-      const problem = imageProblem(photo);
-      if (problem) {
-        setFormError(problem);
-        return;
-      }
+    const problem = photos.map(imageProblem).find(Boolean);
+    if (problem) {
+      setFormError(problem);
+      return;
     }
 
     setSubmitting(true);
     try {
       await onCreate({
-        photo,
+        photos,
         category_id: Number(categoryId),
         brand: brand.trim(),
         name: name.trim(),
@@ -426,7 +428,7 @@ function NewProductForm({
       setName("");
       setPrice("");
       setStock("");
-      setPhoto(null);
+      setPhotos([]);
     } catch (caught) {
       setFormError(caught instanceof CatalogError ? caught.message : tr("Création impossible."));
     } finally {
@@ -499,11 +501,12 @@ function NewProductForm({
       </label>
 
       <label className="flex cursor-pointer flex-col gap-1 text-xs text-ink-soft">
-        {tr("Photo (optionnelle)")}
+        {tr("Photos (optionnelles, plusieurs possibles)")}
         <input
           type="file"
+          multiple
           accept="image/jpeg,image/png,image/webp"
-          onChange={(event) => setPhoto(event.target.files?.[0] ?? null)}
+          onChange={(event) => setPhotos(Array.from(event.target.files ?? []).slice(0, MAX_GALLERY_IMAGES))}
           className="max-w-52 text-xs text-ink file:mr-2 file:rounded-sm file:border file:border-line file:bg-surface file:px-2 file:py-1 file:text-ink"
         />
       </label>
@@ -543,7 +546,7 @@ function ProductCard({
   onToggleGallery: () => void;
   onToggleTexts: () => void;
   onSaveTexts: (patch: { name_en: string; description: string; description_en: string }) => Promise<void>;
-  onAddPhoto: (file: File | null) => void;
+  onAddPhoto: (files: File[]) => void;
   onCover: (imageId: number) => void;
   onRemovePhoto: (imageId: number) => void;
   onArchive: () => void;
@@ -765,7 +768,7 @@ function Gallery({
   onRemove,
 }: {
   product: Product;
-  onAdd: (file: File | null) => void;
+  onAdd: (files: File[]) => void;
   onCover: (imageId: number) => void;
   onRemove: (imageId: number) => void;
 }) {
@@ -805,10 +808,11 @@ function Gallery({
           <span className="px-1 text-[10px]">{tr("JPG, PNG, WebP, 2 Mo")}</span>
           <input
             type="file"
+            multiple
             accept="image/jpeg,image/png,image/webp"
             className="sr-only"
             onChange={(event) => {
-              onAdd(event.target.files?.[0] ?? null);
+              onAdd(Array.from(event.target.files ?? []));
               event.target.value = "";
             }}
           />

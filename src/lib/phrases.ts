@@ -37,6 +37,7 @@ export const PHRASES_EN: Record<string, string> = {
   "Chargement…": "Loading…",
   "Action": "Action",
   "Annuler": "Cancel",
+  "Photos (optionnelles, plusieurs possibles)": "Photos (optional, several allowed)",
   "Photo (optionnelle)": "Photo (optional)",
   "Produit créé, mais l'envoi de la photo a échoué.": "Product created, but the photo upload failed.",
   "Affichage": "View",
