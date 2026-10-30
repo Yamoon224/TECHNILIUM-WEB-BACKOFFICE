@@ -20,7 +20,7 @@ describe("navFor", () => {
     const hrefs = STAFF_NAV.flatMap((group) => group.items.map((item) => item.href));
     const former = [
       "/", "/commandes", "/categories", "/bannieres", "/produits", "/offres", "/vendeurs", "/stock", "/achats", "/ventes-internes", "/paiements", "/livraisons",
-      "/factures", "/comptabilite", "/reversements", "/retours", "/rapports", "/promotions", "/support", "/avis", "/notifications", "/audit",
+      "/factures", "/comptabilite", "/reversements", "/retours", "/rapports", "/promotions", "/annonces", "/support", "/avis", "/notifications", "/audit",
       "/qrcodes", "/acces",
     ];
 

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BackofficeNav } from "@/components/BackofficeNav";
 import { Button } from "@/components/Button";
+import { Dropzone } from "@/components/Dropzone";
 import { FormModal } from "@/components/Modal";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { useAuth } from "@/lib/useAuth";
@@ -339,21 +340,18 @@ function AddSlidesModal({
       }}
     >
       <div className="grid gap-4">
-        <label className="flex cursor-pointer flex-col gap-1 text-xs text-ink-soft">
-          <span>{tr("Ajouter des images (JPG, PNG, WebP, 4 Mo, 600 px de large au moins)")}</span>
-          <input
-            type="file"
-            multiple
-            accept="image/jpeg,image/png,image/webp"
-            className="text-sm text-ink"
-            onChange={(event) => {
-              const picked = Array.from(event.target.files ?? []).slice(0, room);
-              const refused = picked.map(bannerImageProblem).find(Boolean) ?? null;
-              setProblem(refused ? tr(refused) : null);
-              setFiles(refused ? [] : picked);
-            }}
-          />
-        </label>
+        <Dropzone
+          multiple
+          maxFiles={room}
+          accept="image/jpeg,image/png,image/webp"
+          hint={tr("Ajouter des images (JPG, PNG, WebP, 4 Mo, 600 px de large au moins)")}
+          selected={files.map((file) => file.name)}
+          onFiles={(dropped) => {
+            const refused = dropped.map(bannerImageProblem).find(Boolean) ?? null;
+            setProblem(refused ? tr(refused) : null);
+            setFiles(refused ? [] : dropped);
+          }}
+        />
       </div>
     </FormModal>
   );

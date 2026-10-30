@@ -2,6 +2,7 @@ import {
   BadgeEuro,
   BarChart3,
   Boxes,
+  Megaphone,
   GalleryHorizontal,
   Calculator,
   FileText,
@@ -62,6 +63,7 @@ export const STAFF_NAV: NavGroup[] = [
       { href: "/factures", label: "nav.invoices", Icon: FileText, ability: "manage-invoices" },
       { href: "/retours", label: "nav.returns", Icon: Undo2, ability: "manage-returns" },
       { href: "/promotions", label: "nav.promotions", Icon: Tag, ability: "manage-promotions" },
+      { href: "/annonces", label: "nav.announcements", Icon: Megaphone, ability: "manage-promotions" },
     ],
   },
   {

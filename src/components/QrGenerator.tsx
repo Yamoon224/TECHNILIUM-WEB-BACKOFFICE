@@ -1,5 +1,6 @@
 "use client";
 
+import { Dropzone } from "@/components/Dropzone";
 import { Download, ImageOff, QrCode } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { isHexColor } from "@/lib/appearance";
@@ -171,10 +172,12 @@ export function QrGenerator({
           </label>
 
           <div className={`flex flex-col gap-3 ${withLogo ? "" : "pointer-events-none opacity-50"}`}>
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="text-ink-soft">{tr("Votre propre logo (PNG, JPEG ou WebP)")}</span>
-              <input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void onLogoFile(event.target.files?.[0])} className="text-sm" />
-            </label>
+            <Dropzone
+              accept="image/png,image/jpeg,image/webp"
+              label={tr("Votre propre logo (PNG, JPEG ou WebP)")}
+              hint={tr("Votre propre logo (PNG, JPEG ou WebP)")}
+              onFiles={(files) => void onLogoFile(files[0])}
+            />
 
             {customLogo ? (
               <button type="button" onClick={() => setCustomLogo(null)} className="flex items-center gap-1 self-start text-xs text-ink-soft hover:text-ink">

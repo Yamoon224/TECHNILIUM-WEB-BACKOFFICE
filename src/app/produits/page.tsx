@@ -2,6 +2,7 @@
 
 import { QrLink } from "@/components/QrLink";
 import { DataTable } from "@/components/DataTable";
+import { Dropzone } from "@/components/Dropzone";
 import { FormModal } from "@/components/Modal";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
@@ -554,21 +555,22 @@ function ProductFormModal({
           {product ? (
             <Gallery product={product} onAdd={onAddPhoto} onCover={onCover} onRemove={onRemovePhoto} />
           ) : (
-            <label className="flex cursor-pointer flex-col gap-1 text-xs text-ink-soft">
-              {tr("Photos (optionnelles, plusieurs possibles)")}
-              <input
-                type="file"
+            <div className="flex flex-col gap-1">
+              <Dropzone
                 multiple
+                maxFiles={MAX_GALLERY_IMAGES}
                 accept="image/jpeg,image/png,image/webp"
-                onChange={(event) => setPhotos(Array.from(event.target.files ?? []).slice(0, MAX_GALLERY_IMAGES))}
-                className="max-w-full text-xs text-ink file:mr-2 file:rounded-sm file:border file:border-line file:bg-surface file:px-2 file:py-1 file:text-ink"
+                label={tr("Photos (optionnelles, plusieurs possibles)")}
+                hint={tr("Photos (optionnelles, plusieurs possibles)") + " · " + tr("JPG, PNG, WebP, 2 Mo")}
+                selected={photos.map((photo) => photo.name)}
+                onFiles={setPhotos}
               />
               {photos.length > 0 ? (
-                <span>
+                <span className="text-xs text-ink-soft">
                   {photos.length} {tr("photo(s) choisie(s) — la première sera la couverture.")}
                 </span>
               ) : null}
-            </label>
+            </div>
           )}
         </section>
       </div>
@@ -618,20 +620,18 @@ function Gallery({
       ))}
 
       {images.length < MAX_GALLERY_IMAGES ? (
-        <label className="flex h-28 w-28 cursor-pointer flex-col items-center justify-center gap-1 rounded-sm border border-dashed border-line text-center text-xs text-ink-soft transition-colors hover:border-gold">
-          {tr("+ Ajouter")}
+        <Dropzone
+          multiple
+          maxFiles={MAX_GALLERY_IMAGES - images.length}
+          accept="image/jpeg,image/png,image/webp"
+          label={tr("+ Ajouter")}
+          className="h-28 w-28 !px-1 !py-1 text-xs"
+          onFiles={onAdd}
+        >
+          <span className="text-ink">{tr("+ Ajouter")}</span>
+          <span className="px-1 text-[10px]">{tr("Glissez ou cliquez")}</span>
           <span className="px-1 text-[10px]">{tr("JPG, PNG, WebP, 2 Mo")}</span>
-          <input
-            type="file"
-            multiple
-            accept="image/jpeg,image/png,image/webp"
-            className="sr-only"
-            onChange={(event) => {
-              onAdd(Array.from(event.target.files ?? []));
-              event.target.value = "";
-            }}
-          />
-        </label>
+        </Dropzone>
       ) : (
         <p className="text-xs text-ink-soft">
           {tr("Galerie pleine (")}
