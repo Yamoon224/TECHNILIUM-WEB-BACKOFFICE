@@ -147,7 +147,7 @@ export default function CategoriesPage() {
                       <td className="py-3 pr-4 text-ink">{category.name}</td>
                       <td className="py-3 pr-4 text-ink-soft">{category.slug}</td>
                       <td className="py-3 pr-4 text-ink-soft">
-                        {categories.find((c) => c.id === category.parent_id)?.name ?? "—"}
+                        {categories.find((c) => c.id === category.parent_id)?.name ?? "-"}
                       </td>
                       <td className="py-3 pr-4 text-ink">{category.product_count ?? 0}</td>
                       <td className="py-3 pr-4 text-ink-soft">{category.is_active ? tr("Oui") : tr("Non")}</td>

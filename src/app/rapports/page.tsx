@@ -203,7 +203,7 @@ function Report({ dashboard, sellers }: { dashboard: Dashboard; sellers: SellerS
                 {alerts.low_stock.map((offer) => (
                   <li key={offer.offer_id}>
                     {offer.product} ({offer.sku}
-                    {tr(") — stock :")} {offer.stock}
+                    {tr(") - stock :")} {offer.stock}
                   </li>
                 ))}
               </ul>
@@ -383,7 +383,7 @@ function SalesChart({ days }: { days: { date: string; orders: number; revenue: n
           {days.map((day) => (
             <div
               key={day.date}
-              title={`${day.date} — ${xof(day.revenue)} (${day.orders} ${tr(day.orders > 1 ? "commandes" : "commande")})`}
+              title={`${day.date} - ${xof(day.revenue)} (${day.orders} ${tr(day.orders > 1 ? "commandes" : "commande")})`}
               className="min-w-1 flex-1 rounded-t-[4px] bg-gold hover:bg-gold-bright"
               style={{ height: `${barPercent(day.revenue, max)}%` }}
             />

@@ -116,7 +116,7 @@ export interface NewLine {
 /**
  * Parses "12:10:5000, 15:4:20000" (offre:quantité:coût unitaire) into order
  * lines. A blank text is an empty list; anything malformed, a zero quantity
- * or a repeated offer is null — the caller must not send it.
+ * or a repeated offer is null - the caller must not send it.
  */
 export function parseOrderLines(raw: string): NewLine[] | null {
   const text = raw.trim();

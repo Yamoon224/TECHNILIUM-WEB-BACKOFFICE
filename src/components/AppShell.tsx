@@ -326,7 +326,7 @@ function Topbar({
           {showBell ? (
           <Link
             href="/notifications"
-            aria-label={`${t("shell.notifications")}${failedMessages > 0 ? ` — ${failedMessages} ${t("shell.failedMessages")}` : ""}`}
+            aria-label={`${t("shell.notifications")}${failedMessages > 0 ? ` - ${failedMessages} ${t("shell.failedMessages")}` : ""}`}
             className="relative rounded-sm p-2 transition-colors hover:bg-black/5 dark:hover:bg-white/5"
           >
             <Bell className="h-5 w-5" aria-hidden />

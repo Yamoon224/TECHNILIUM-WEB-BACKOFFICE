@@ -147,7 +147,7 @@ describe("exports", () => {
   });
 
   it("replaces what the PDF fonts cannot draw", () => {
-    expect(toLatin1("Café — 5 € ✓")).toBe("Café ? 5 ? ?");
+    expect(toLatin1("Café - 5 € ✓")).toBe("Café ? 5 ? ?");
   });
 });
 

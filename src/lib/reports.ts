@@ -148,7 +148,7 @@ export interface MarginReport {
 
 /** "76,4 %" with a decimal comma, or an em dash when there is no revenue to compare to. */
 export function marginPercentLabel(percent: number | null): string {
-  return percent === null ? "—" : `${percent.toFixed(1).replace(".", ",")} %`;
+  return percent === null ? "-" : `${percent.toFixed(1).replace(".", ",")} %`;
 }
 
 /**

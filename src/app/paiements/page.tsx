@@ -173,7 +173,7 @@ export default function PaymentsPage() {
                         </span>
                       ) : null}
                     </td>
-                    <td className="py-3 pr-4 text-ink-soft">{payment.provider_reference ?? "—"}</td>
+                    <td className="py-3 pr-4 text-ink-soft">{payment.provider_reference ?? "-"}</td>
                     <td className="py-3 pr-4 text-ink-soft">{tr(STATUS_LABEL[payment.status])}</td>
                     <td className="py-3">
                       <div className="flex flex-wrap gap-2">

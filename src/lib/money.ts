@@ -1,5 +1,5 @@
 /**
- * Centralized money formatting/conversion — the single place rounding rules live
+ * Centralized money formatting/conversion - the single place rounding rules live
  * (cahier des charges §11). Amounts always travel as integers in the currency's
  * smallest unit, mirroring the backend's Money value object.
  */

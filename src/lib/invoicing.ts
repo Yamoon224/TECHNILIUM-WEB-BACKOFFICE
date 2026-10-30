@@ -46,7 +46,7 @@ export class InvoicingError extends Error {}
 
 /**
  * What credit notes (full or partial) may still cancel on an invoice; 0 for a
- * credit note. Mirrors Invoice::remainingCreditable() on the backend — the
+ * credit note. Mirrors Invoice::remainingCreditable() on the backend - the
  * server remains the authority.
  */
 export function remainingCreditable(invoice: Invoice, all: readonly Invoice[]): number {

@@ -131,7 +131,7 @@ const HISTORY_LABEL: Record<string, string> = {
 
 const HISTORY_DATE = new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "2-digit", timeZone: "UTC" });
 
-/** "Reçue 27/10 · Confirmée 28/10" — empty when there is no history. */
+/** "Reçue 27/10 · Confirmée 28/10" - empty when there is no history. */
 export function historyLine(history: Order["status_history"]): string {
   return (history ?? [])
     .map((event) => {

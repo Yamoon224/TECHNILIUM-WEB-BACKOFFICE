@@ -129,7 +129,7 @@ export default function InvoicesPage() {
                       <td className="py-3 pr-4 text-ink">{invoice.number}</td>
                       <td className="py-3 pr-4 text-ink-soft">
                         {tr(INVOICE_TYPE_LABEL[invoice.type])}
-                        {invoice.reason ? ` — ${invoice.reason}` : ""}
+                        {invoice.reason ? ` - ${invoice.reason}` : ""}
                       </td>
                       <td className="py-3 pr-4 text-ink-soft">{invoice.order_number}</td>
                       <td className="py-3 pr-4 text-ink-soft">{invoice.customer_name}</td>

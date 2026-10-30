@@ -267,11 +267,11 @@ export default function ProductsPage() {
                       {product.brand} {product.name}
                     </div>
                   </td>
-                  <td className="py-3 pr-4 text-ink-soft">{product.sku ?? "—"}</td>
+                  <td className="py-3 pr-4 text-ink-soft">{product.sku ?? "-"}</td>
                   <td className="py-3 pr-4 text-ink">
-                    {product.price_amount?.toLocaleString("fr-FR") ?? "—"} {product.currency}
+                    {product.price_amount?.toLocaleString("fr-FR") ?? "-"} {product.currency}
                   </td>
-                  <td className="py-3 pr-4 text-ink">{product.stock_quantity ?? "—"}</td>
+                  <td className="py-3 pr-4 text-ink">{product.stock_quantity ?? "-"}</td>
                   <td className="py-3 pr-4 text-ink-soft">{tr(STATUS_LABEL[product.status])}</td>
                   <td className="py-3">
                     <div className="flex flex-wrap gap-2">
@@ -324,12 +324,12 @@ function ProductCard({ product, onEdit, onArchive }: { product: Product; onEdit:
         <h2 className="text-sm font-semibold text-ink">
           {product.brand} {product.name}
         </h2>
-        <p className="text-xs text-ink-soft">{product.sku ?? "—"}</p>
+        <p className="text-xs text-ink-soft">{product.sku ?? "-"}</p>
         <p className="text-sm text-ink">
-          {product.price_amount?.toLocaleString("fr-FR") ?? "—"} {product.currency}
+          {product.price_amount?.toLocaleString("fr-FR") ?? "-"} {product.currency}
           <span className="text-ink-soft">
             {" "}
-            · {tr("Stock")} {product.stock_quantity ?? "—"}
+            · {tr("Stock")} {product.stock_quantity ?? "-"}
           </span>
         </p>
         <p className="text-xs text-ink-soft">{tr(STATUS_LABEL[product.status])}</p>
@@ -468,7 +468,7 @@ function ProductFormModal({
     <FormModal
       open
       size="xl"
-      title={editing ? `${tr("Modifier le produit")} — ${product.brand} ${product.name}` : tr("Nouveau produit")}
+      title={editing ? `${tr("Modifier le produit")} - ${product.brand} ${product.name}` : tr("Nouveau produit")}
       onClose={onClose}
       onSubmit={handleSubmit}
       submitLabel={editing ? tr("Enregistrer") : tr("Créer")}
@@ -585,7 +585,7 @@ function ProductFormModal({
               />
               {photos.length > 0 ? (
                 <span className="text-xs text-ink-soft">
-                  {photos.length} {tr("photo(s) choisie(s) — la première sera la couverture.")}
+                  {photos.length} {tr("photo(s) choisie(s) - la première sera la couverture.")}
                 </span>
               ) : null}
             </div>

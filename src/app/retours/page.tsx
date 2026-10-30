@@ -176,7 +176,7 @@ export default function ReturnsPage() {
                       <td className="py-3 pr-4 text-ink-soft">{item.order_number}</td>
                       <td className="py-3 pr-4 text-ink-soft">
                         {item.reason}
-                        {item.decision_note ? ` — ${item.decision_note}` : ""}
+                        {item.decision_note ? ` - ${item.decision_note}` : ""}
                         {item.items.length > 0 ? (
                           <span className="block text-xs">
                             {item.items.map((line) => `offre ${line.offer_id} × ${line.quantity}`).join(", ")}
@@ -186,7 +186,7 @@ export default function ReturnsPage() {
                       </td>
                       <td className="py-3 pr-4 text-ink">{money(item.requested_amount)}</td>
                       <td className="py-3 pr-4 text-ink">
-                        {item.refunded_amount !== null ? money(item.refunded_amount) : "—"}
+                        {item.refunded_amount !== null ? money(item.refunded_amount) : "-"}
                       </td>
                       <td className="py-3 pr-4 text-ink-soft">{tr(RETURN_STATUS_LABEL[item.status])}</td>
                       <td className="py-3">

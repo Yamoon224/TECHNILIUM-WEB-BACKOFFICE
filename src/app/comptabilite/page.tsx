@@ -93,7 +93,7 @@ export default function AccountingPage() {
                 footer={
                   <tr className="font-medium">
                     <td className="py-2 text-ink" colSpan={2}>
-                      {tr("Total")} {isTrialBalanced(balance) ? "" : tr("— DÉSÉQUILIBRÉ")}
+                      {tr("Total")} {isTrialBalanced(balance) ? "" : tr("- DÉSÉQUILIBRÉ")}
                     </td>
                     <td className="py-2 text-right text-ink">{fmt(balance.total_debit)}</td>
                     <td className="py-2 text-right text-ink">{fmt(balance.total_credit)}</td>

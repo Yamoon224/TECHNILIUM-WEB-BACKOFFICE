@@ -62,7 +62,7 @@ export function Dashboard({ token, user }: { token: string; user: User }) {
           <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Tableau de bord")}</h1>
           <p className="text-sm text-ink-soft">
             {tr("Bonjour")} {user.name}
-            {profile ? ` — ${profile}` : ""}
+            {profile ? ` - ${profile}` : ""}
           </p>
         </div>
 
@@ -192,7 +192,7 @@ function TableView({ table, language }: { table: DashboardTable; language: "fr" 
                 <tr key={rowIndex} className="border-b border-line last:border-b-0">
                   {row.map((cell, cellIndex) => (
                     <td key={cellIndex} className={`py-1.5 pr-3 text-ink ${typeof cell === "number" ? "tabular-nums" : ""}`}>
-                      {cell === null || cell === "" ? "—" : typeof cell === "number" ? formatValue(cell, "number") : cell}
+                      {cell === null || cell === "" ? "-" : typeof cell === "number" ? formatValue(cell, "number") : cell}
                     </td>
                   ))}
                 </tr>

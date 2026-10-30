@@ -269,7 +269,7 @@ function BackgroundPicker({
           <Plus className="h-4 w-4" aria-hidden />
           <input
             type="color"
-            aria-label={`${label} — ${t("settings.custom")}`}
+            aria-label={`${label} - ${t("settings.custom")}`}
             value={current ?? "#ffffff"}
             onChange={(event) => isHexColor(event.target.value) && update({ [field]: event.target.value })}
             className="absolute inset-0 cursor-pointer opacity-0"
@@ -296,7 +296,7 @@ function PrimaryColorPicker({ appearance, update }: { appearance: Appearance; up
       <Plus className="h-4 w-4" aria-hidden />
       <input
         type="color"
-        aria-label={`${t("settings.primary")} — ${t("settings.custom")}`}
+        aria-label={`${t("settings.primary")} - ${t("settings.custom")}`}
         value={appearance.primary}
         onChange={(event) => isHexColor(event.target.value) && update({ primary: event.target.value })}
         className="absolute inset-0 cursor-pointer opacity-0"

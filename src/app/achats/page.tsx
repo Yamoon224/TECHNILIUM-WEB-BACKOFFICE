@@ -574,7 +574,7 @@ function SuppliersTab({ token }: { token: string }) {
               <span className="flex flex-col">
                 <span className={supplier.active ? "text-ink" : "text-ink-soft line-through"}>{supplier.name}</span>
                 <span className="text-xs text-ink-soft">
-                  {supplier.contact_name ?? "—"} · {supplier.phone ?? "—"} {tr("· paiement à")}{" "}
+                  {supplier.contact_name ?? "-"} · {supplier.phone ?? "-"} {tr("· paiement à")}{" "}
                   {supplier.payment_terms_days} j
                 </span>
               </span>
@@ -846,7 +846,7 @@ function StockTab({ token }: { token: string }) {
   renderRow={(offer) => (
                 <tr key={offer.offer_id} className="border-b border-line">
                   <td className="py-3 pr-4 text-ink">{offer.product}</td>
-                  <td className="py-3 pr-4 text-ink-soft">{offer.sku ?? "—"}</td>
+                  <td className="py-3 pr-4 text-ink-soft">{offer.sku ?? "-"}</td>
                   <td className="py-3 pr-4 text-right text-ink-soft">{offer.stock}</td>
                   <td className="py-3 pr-4 text-right text-ink-soft">{xof(offer.average_cost)}</td>
                   <td className="py-3 text-right text-ink">{xof(offer.value)}</td>

@@ -121,7 +121,7 @@ export default function PromotionsPage() {
                     <td className="py-3 pr-4 text-ink">{coupon.code}</td>
                     <td className="py-3 pr-4 text-ink">{describeDiscount(coupon)}</td>
                     <td className="py-3 pr-4 text-ink-soft">
-                      {coupon.min_order_amount > 0 ? coupon.min_order_amount.toLocaleString("fr-FR") : "—"}
+                      {coupon.min_order_amount > 0 ? coupon.min_order_amount.toLocaleString("fr-FR") : "-"}
                     </td>
                     <td className="py-3 pr-4 text-ink-soft">
                       {usageLabel(coupon)}

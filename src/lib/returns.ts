@@ -26,7 +26,7 @@ export const RETURN_ACTION_LABEL: Record<ReturnAction, string> = {
 };
 
 /**
- * Mirrors ReturnStatus::allowedTransitions() on the backend — the UI only
+ * Mirrors ReturnStatus::allowedTransitions() on the backend - the UI only
  * offers legal actions, the server remains the authority.
  */
 const TRANSITIONS: Record<ReturnStatus, ReturnAction[]> = {

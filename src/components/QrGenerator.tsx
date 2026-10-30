@@ -189,7 +189,7 @@ export function QrGenerator({
 
             <label className="flex flex-col gap-1 text-sm">
               <span className="text-ink-soft">
-                {tr("Taille du logo")} — {Math.round(ratio * 100)} %
+                {tr("Taille du logo")} - {Math.round(ratio * 100)} %
               </span>
               <input
                 type="range"

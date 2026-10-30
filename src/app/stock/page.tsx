@@ -130,7 +130,7 @@ export default function StockPage() {
                         {movement.quantity_delta}
                       </td>
                       <td className="py-3 pr-4 text-ink">{movement.quantity_after}</td>
-                      <td className="py-3 text-ink-soft">{movement.reason ?? "—"}</td>
+                      <td className="py-3 text-ink-soft">{movement.reason ?? "-"}</td>
                     </tr>
                   )}
 />

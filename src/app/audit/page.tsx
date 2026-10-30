@@ -110,7 +110,7 @@ export default function AuditPage() {
           >
             {verification.valid
               ? trf("Chaîne intacte : {count} entrée(s) vérifiée(s).", { count: verification.checked })
-              : trf("Intégrité compromise à l'entrée n° {at} ({count} vérifiée(s) avant) — {reason}", { at: verification.broken_at ?? "?", count: verification.checked, reason: verification.reason ?? "" })}
+              : trf("Intégrité compromise à l'entrée n° {at} ({count} vérifiée(s) avant) - {reason}", { at: verification.broken_at ?? "?", count: verification.checked, reason: verification.reason ?? "" })}
           </p>
         ) : null}
 
@@ -204,7 +204,7 @@ export default function AuditPage() {
                     <tr className="border-b border-line align-top">
                       <td className="py-3 pr-4 text-ink-soft">{entry.occurred_at.slice(0, 19).replace("T", " ")}</td>
                       <td className="py-3 pr-4 text-ink">
-                        {entry.user_name ?? "—"}
+                        {entry.user_name ?? "-"}
                         <span className="block text-xs text-ink-soft">
                           #{entry.user_id} · {entry.roles}
                         </span>

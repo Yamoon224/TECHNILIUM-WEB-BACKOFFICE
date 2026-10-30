@@ -1,5 +1,5 @@
 /**
- * Mirrors backend/app/Modules/Orders/Domain/OrderStatus.php — a deliberately
+ * Mirrors backend/app/Modules/Orders/Domain/OrderStatus.php - a deliberately
  * simplified first pass (paiement à la livraison only), not the full 18-state
  * machine from the cahier des charges §3.2. Extend both sides together when
  * Payments/Shipping/Returns land, don't widen this file alone.

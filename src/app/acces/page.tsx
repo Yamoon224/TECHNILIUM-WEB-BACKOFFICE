@@ -202,7 +202,7 @@ function FeaturesTab({
                               type="button"
                               onClick={() => void toggle(feature.key, group)}
                               aria-pressed={!off}
-                              aria-label={`${featureLabel(feature)} — ${tr(group.label)}`}
+                              aria-label={`${featureLabel(feature)} - ${tr(group.label)}`}
                               className={`rounded-full px-2.5 py-0.5 text-xs transition-colors ${
                                 off ? "bg-red-600/15 text-danger" : "bg-emerald-600/15 text-emerald-700 dark:text-emerald-400"
                               }`}
@@ -211,7 +211,7 @@ function FeaturesTab({
                             </button>
                           ) : (
                             <span className="text-ink-soft" title={tr("Ce groupe n'a pas cette fonctionnalité")}>
-                              —
+                              -
                             </span>
                           )}
                         </td>
@@ -508,7 +508,7 @@ function UsersTab({
           renderRow={(row) => (
             <tr key={row.id} className="border-b border-line">
               <td className="py-3 pr-4 text-ink">{row.name}</td>
-              <td className="py-3 pr-4 text-ink-soft">{row.email ?? "—"}</td>
+              <td className="py-3 pr-4 text-ink-soft">{row.email ?? "-"}</td>
               <td className="py-3 pr-4 text-ink-soft">{row.roles.map((role) => tr(groupLabel(role))).join(", ")}</td>
               <td className="py-3 pr-4 text-ink-soft">{Object.values(row.switches).filter((enabled) => !enabled).length}</td>
               <td className="py-3">

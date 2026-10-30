@@ -14,7 +14,7 @@ export function ChartView({ chart }: { chart: DashboardChart }) {
   const language = appearance.language;
 
   if (chart.points.length === 0 || chart.points.every((point) => point.value === 0)) {
-    return <p className="py-6 text-center text-xs text-ink-soft">—</p>;
+    return <p className="py-6 text-center text-xs text-ink-soft">-</p>;
   }
 
   const values = chart.points.map((point) => point.value);

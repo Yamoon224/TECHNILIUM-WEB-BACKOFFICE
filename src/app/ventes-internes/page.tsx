@@ -258,8 +258,8 @@ export default function InternalSalesPage() {
           <section className="flex flex-col gap-3 rounded-sm border border-line bg-surface p-4 shadow-card border-b-4 border-b-gold">
             <h2 className="font-display text-lg font-semibold text-ink">{tr("Vente enregistrée")}</h2>
             <p className="text-sm text-ink">
-              {tr("Commande")} {completed.order_number} — {money(completed.total_amount)}
-              {completed.payment ? ` — ${tr("N° de reçu")} ${completed.payment.receipt_number}` : ""}
+              {tr("Commande")} {completed.order_number} - {money(completed.total_amount)}
+              {completed.payment ? ` - ${tr("N° de reçu")} ${completed.payment.receipt_number}` : ""}
             </p>
             {completed.payment?.change_amount != null && completed.payment.change_amount > 0 ? (
               <p className="text-lg font-semibold text-ink">
@@ -552,7 +552,7 @@ export default function InternalSalesPage() {
                     <td className="py-3 pr-4 text-ink-soft">{sale.customer_name}</td>
                     <td className="py-3 pr-4 text-ink">{money(sale.total_amount)}</td>
                     <td className="py-3 pr-4 text-ink-soft">{sale.payment?.method === "mobile_money" ? tr("Mobile money") : tr("Espèces")}</td>
-                    <td className="py-3 pr-4 text-ink-soft">{sale.payment?.receipt_number ?? "—"}</td>
+                    <td className="py-3 pr-4 text-ink-soft">{sale.payment?.receipt_number ?? "-"}</td>
                     <td className="py-3">
                       <div className="flex flex-wrap gap-2">
                         {sale.payment ? (

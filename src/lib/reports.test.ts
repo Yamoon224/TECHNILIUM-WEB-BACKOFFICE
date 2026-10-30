@@ -56,7 +56,7 @@ describe("margin helpers", () => {
   });
 
   it("shows a dash when there is no revenue to compare to", () => {
-    expect(marginPercentLabel(null)).toBe("—");
+    expect(marginPercentLabel(null)).toBe("-");
   });
 
   it("flags revenue without a recorded cost, which overstates the margin", () => {

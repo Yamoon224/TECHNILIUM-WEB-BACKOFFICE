@@ -188,7 +188,7 @@ export default function SupportPage() {
                       <td className="py-3 pr-4 text-ink-soft">{tr(STATUS_LABEL[ticket.status])}</td>
                       <td className="py-3 text-ink-soft">
                         {ticket.assigned_to === null
-                          ? "—"
+                          ? "-"
                           : ticket.assigned_to === user?.id
                             ? "Moi"
                             : `#${ticket.assigned_to}`}

@@ -105,7 +105,7 @@ export function DataTable<T>({ name, title, rows, headers, actionColumns = [], r
         name,
         title: title ?? name,
         headers: dataColumns.map((index) => headers[index]),
-        // Every row, in the current order — not just the page on screen.
+        // Every row, in the current order - not just the page on screen.
         rows: ordered.map((rowIndex) => dataColumns.map((column) => values[rowIndex]?.[column] ?? "")),
       });
     } catch {

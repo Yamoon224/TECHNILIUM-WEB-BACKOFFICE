@@ -1,7 +1,7 @@
 /**
  * Parses an optional positive whole amount typed by a user.
  * Returns `undefined` for a blank field (= "use the default"), the number
- * for a valid positive integer, and `null` for anything else — so the
+ * for a valid positive integer, and `null` for anything else - so the
  * caller can tell "left empty" from "typed garbage".
  */
 export function parseOptionalAmount(raw: string): number | undefined | null {
