@@ -25,14 +25,14 @@ export function LoginForm({ onSubmit, submitting, error }: LoginFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex w-full max-w-sm flex-col gap-4 rounded-sm border border-line bg-surface p-6 shadow-card border-b-4 border-b-gold"
+      className="flex w-full max-w-md flex-col gap-4 rounded-sm border border-line bg-surface p-8 shadow-card border-b-4 border-b-gold"
     >
-      <div className="flex justify-center">
+      <div className="hidden justify-center lg:flex">
         <LogoMark />
       </div>
 
       <div className="flex flex-col gap-1 text-center">
-        <h1 className="text-lg font-medium text-ink">{t("login.title")}</h1>
+        <h1 className="font-display text-xl font-semibold text-ink">{t("login.title")}</h1>
         <p className="text-sm text-ink-soft">{t("login.subtitle")}</p>
       </div>
 

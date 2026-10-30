@@ -4,6 +4,7 @@ import { Mail } from "lucide-react";
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { requestPasswordReset } from "@/lib/auth";
+import { AuthLayout } from "./AuthLayout";
 import { useAppearance } from "./AppearanceProvider";
 import { LogoMark } from "./LogoMark";
 
@@ -32,8 +33,8 @@ export function ForgotPasswordForm() {
   }
 
   return (
-    <main className="flex min-h-screen flex-1 flex-col items-center justify-center px-4 py-16">
-      <div className="flex w-full max-w-sm flex-col gap-4 rounded-sm border border-line bg-surface p-6 shadow-card border-b-4 border-b-gold">
+    <AuthLayout>
+      <div className="flex w-full max-w-md flex-col gap-4 rounded-sm border border-line bg-surface p-8 shadow-card border-b-4 border-b-gold">
         <div className="flex justify-center">
           <LogoMark />
         </div>
@@ -75,6 +76,6 @@ export function ForgotPasswordForm() {
           {tr("Retour à la connexion")}
         </Link>
       </div>
-    </main>
+    </AuthLayout>
   );
 }

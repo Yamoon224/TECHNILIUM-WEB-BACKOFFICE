@@ -125,6 +125,9 @@ export const PHRASES_EN: Record<string, string> = {
   "Moyen (512 px) : page web, document": "Medium (512 px): web page, document",
   "Grand (1024 px) : impression, affiche": "Large (1024 px): print, poster",
   "Taille du fichier (PNG et SVG)": "File size (PNG and SVG)",
+  // Sign-in
+  "Pilotez votre marché tech en toute simplicité": "Run your tech marketplace with ease",
+  "Commandes, stock, livraisons et finances : tout votre commerce au même endroit.": "Orders, stock, deliveries and finances: your whole business in one place.",
   // Shared
   "Vérification de la session…": "Checking your session…",
   "Se connecter": "Sign in",

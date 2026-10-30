@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AuthLayout } from "@/components/AuthLayout";
 import { Dashboard } from "@/components/Dashboard";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { BackofficeNav } from "@/components/BackofficeNav";
@@ -47,12 +48,12 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-1 flex-col items-center justify-center gap-8 px-4 py-16">
+    <AuthLayout>
       {status === "checking" ? (
         <p className="text-sm text-ink-soft">{t("login.checking")}</p>
       ) : (
         <LoginForm onSubmit={handleLogin} submitting={submitting} error={error} />
       )}
-    </main>
+    </AuthLayout>
   );
 }

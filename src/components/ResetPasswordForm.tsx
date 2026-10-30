@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { resetPassword } from "@/lib/auth";
 import { passwordProblem, type PasswordProblem } from "@/lib/passwordRules";
+import { AuthLayout } from "./AuthLayout";
 import { useAppearance } from "./AppearanceProvider";
 import { LogoMark } from "./LogoMark";
 import { PasswordInput } from "./PasswordInput";
@@ -55,8 +56,8 @@ export function ResetPasswordForm() {
   const unusable = token === "" || email === "";
 
   return (
-    <main className="flex min-h-screen flex-1 flex-col items-center justify-center px-4 py-16">
-      <div className="flex w-full max-w-sm flex-col gap-4 rounded-sm border border-line bg-surface p-6 shadow-card border-b-4 border-b-gold">
+    <AuthLayout>
+      <div className="flex w-full max-w-md flex-col gap-4 rounded-sm border border-line bg-surface p-8 shadow-card border-b-4 border-b-gold">
         <div className="flex justify-center">
           <LogoMark />
         </div>
@@ -109,6 +110,6 @@ export function ResetPasswordForm() {
           </form>
         )}
       </div>
-    </main>
+    </AuthLayout>
   );
 }
