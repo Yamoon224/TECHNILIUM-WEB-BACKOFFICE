@@ -13,6 +13,8 @@ export interface Announcement {
   width: number;
   height: number;
   delay_seconds: number;
+  /** Visits on which it is shown to a visitor; null = until the visitor closes it. */
+  max_displays: number | null;
   starts_at: string | null;
   ends_at: string | null;
   is_active: boolean;
@@ -28,6 +30,8 @@ export interface AnnouncementInput {
   width: number;
   height: number;
   delay_seconds: number;
+  /** Empty = until the visitor closes it. */
+  max_displays: number | null;
   /** `datetime-local` values ("2026-11-01T08:00") or "". */
   starts_at: string;
   ends_at: string;
@@ -103,6 +107,7 @@ function formData(input: AnnouncementInput): FormData {
   body.append("width", String(input.width));
   body.append("height", String(input.height));
   body.append("delay_seconds", String(input.delay_seconds));
+  body.append("max_displays", input.max_displays === null ? "" : String(input.max_displays));
   body.append("starts_at", fromLocalInput(input.starts_at));
   body.append("ends_at", fromLocalInput(input.ends_at));
   body.append("is_active", input.is_active ? "1" : "0");

@@ -37,6 +37,22 @@ export function clampLogoRatio(value: number): number {
   return Math.min(LOGO_RATIO.max, Math.max(LOGO_RATIO.min, value));
 }
 
+/** Pixel sizes a code can be exported at; the code is always a square of side × side. */
+export const QR_EXPORT_SIZES = [
+  { value: 256, label: "Petit (256 px) : écran, e-mail" },
+  { value: 512, label: "Moyen (512 px) : page web, document" },
+  { value: 1024, label: "Grand (1024 px) : impression, affiche" },
+] as const;
+
+/** Side of a printed code, in centimetres: a label-sized square, whatever the paper. */
+export const QR_PRINT_SIDE_CM = 6;
+
+/** Square placed in the middle of a `size`-unit code, in the same (possibly fractional) unit. */
+export function logoBoxExact(size: number, ratio: number): { x: number; y: number; side: number } {
+  const side = size * clampLogoRatio(ratio);
+  return { x: (size - side) / 2, y: (size - side) / 2, side };
+}
+
 /** Square placed in the middle of a `size`-pixel code. */
 export function logoBox(size: number, ratio: number): { x: number; y: number; side: number } {
   const side = Math.round(size * clampLogoRatio(ratio));
@@ -113,6 +129,11 @@ export async function drawQr(canvas: HTMLCanvasElement, text: string, style: QrS
     color: { dark: style.dark, light: style.light },
   });
 
+  // The library pins an inline size in pixels, which would override the layout's CSS and stretch the code:
+  // the canvas keeps its square resolution and is sized by CSS only.
+  canvas.style.width = "";
+  canvas.style.height = "";
+
   if (!style.logo) return;
 
   const context = canvas.getContext("2d");
@@ -147,9 +168,11 @@ export async function buildQrSvg(text: string, style: QrStyle): Promise<string> 
 
   if (!style.logo) return svg;
 
-  const { x, y, side } = logoBox(style.size, style.logoRatio);
-  const pad = Math.max(4, Math.round(side * 0.1));
-  const backing = `<rect x="${x - pad}" y="${y - pad}" width="${side + pad * 2}" height="${side + pad * 2}" rx="${Math.round(side * 0.18)}" fill="${style.light}"/>`;
+  // The drawing is laid out in module units (viewBox "0 0 25 25"), not in pixels.
+  const units = Number(/viewBox="0 0 (\d+(?:\.\d+)?) /.exec(svg)?.[1]) || style.size;
+  const { x, y, side } = logoBoxExact(units, style.logoRatio);
+  const pad = Math.max(units * 0.008, side * 0.1);
+  const backing = `<rect x="${x - pad}" y="${y - pad}" width="${side + pad * 2}" height="${side + pad * 2}" rx="${side * 0.18}" fill="${style.light}"/>`;
   const logo = `<image href="${style.logo}" x="${x}" y="${y}" width="${side}" height="${side}" preserveAspectRatio="xMidYMid meet"/>`;
 
   return svg.replace("</svg>", `${backing}${logo}</svg>`);

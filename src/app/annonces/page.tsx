@@ -98,6 +98,7 @@ export default function AnnouncementsPage() {
         width: announcement.width,
         height: announcement.height,
         delay_seconds: announcement.delay_seconds,
+        max_displays: announcement.max_displays,
         starts_at: toLocalInput(announcement.starts_at),
         ends_at: toLocalInput(announcement.ends_at),
         is_active: !announcement.is_active,
@@ -198,8 +199,8 @@ export default function AnnouncementsPage() {
             <DataTable
               name="annonces"
               rows={shown}
-              headers={[tr("Image"), tr("Titre"), tr("Dimensions"), tr("Délai"), tr("Période"), tr("État"), tr("Action")]}
-              actionColumns={[0, 6]}
+              headers={[tr("Image"), tr("Titre"), tr("Dimensions"), tr("Délai"), tr("Affichages"), tr("Période"), tr("État"), tr("Action")]}
+              actionColumns={[0, 7]}
               renderRow={(announcement) => (
                 <tr key={announcement.id} className="border-b border-line">
                   <td className="py-3 pr-4">
@@ -211,6 +212,7 @@ export default function AnnouncementsPage() {
                     {announcement.width} × {announcement.height}
                   </td>
                   <td className="py-3 pr-4 text-ink-soft">{announcement.delay_seconds} s</td>
+                  <td className="py-3 pr-4 text-ink-soft">{announcement.max_displays === null ? tr("Jusqu'à la fermeture") : announcement.max_displays}</td>
                   <td className="py-3 pr-4 text-ink-soft">
                     {formatPeriodDate(announcement.starts_at)} → {formatPeriodDate(announcement.ends_at)}
                   </td>
@@ -278,6 +280,7 @@ function AnnouncementFormModal({
   const [width, setWidth] = useState(String(announcement?.width ?? 600));
   const [height, setHeight] = useState(String(announcement?.height ?? 400));
   const [delay, setDelay] = useState(String(announcement?.delay_seconds ?? 3));
+  const [maxDisplays, setMaxDisplays] = useState(announcement?.max_displays ? String(announcement.max_displays) : "");
   const [startsAt, setStartsAt] = useState(toLocalInput(announcement?.starts_at ?? null));
   const [endsAt, setEndsAt] = useState(toLocalInput(announcement?.ends_at ?? null));
   const [active, setActive] = useState(announcement?.is_active ?? true);
@@ -314,6 +317,7 @@ function AnnouncementFormModal({
             width: Number(width),
             height: Number(height),
             delay_seconds: Number(delay),
+            max_displays: maxDisplays === "" ? null : Number(maxDisplays),
             starts_at: startsAt,
             ends_at: endsAt,
             is_active: active,
@@ -366,7 +370,18 @@ function AnnouncementFormModal({
           <input type="number" min={0} max={600} value={delay} onChange={(event) => setDelay(event.target.value)} className={FIELD_CLASS} />
           <span className="field-label">{tr("Délai d'apparition (secondes)")}</span>
         </label>
-        <span aria-hidden className="hidden sm:block" />
+        <label className="field">
+          <input
+            type="number"
+            min={1}
+            max={100}
+            value={maxDisplays}
+            onChange={(event) => setMaxDisplays(event.target.value)}
+            placeholder={tr("Jusqu'à la fermeture")}
+            className={FIELD_CLASS}
+          />
+          <span className="field-label">{tr("Nombre d'affichages (visites)")}</span>
+        </label>
 
         <label className="field">
           <input type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} className={FIELD_CLASS} />

@@ -1,15 +1,24 @@
 "use client";
 
-import { useState } from "react";
-import { AccountPanel } from "@/components/AccountPanel";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Dashboard } from "@/components/Dashboard";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { BackofficeNav } from "@/components/BackofficeNav";
 import { LoginForm } from "@/components/LoginForm";
+import { isVendorOnly } from "@/lib/roles";
 import { AuthError, useAuth } from "@/lib/useAuth";
 
 export default function Home() {
   const { t, tr } = useAppearance();
+  const router = useRouter();
   const { status, token, user, login, logout } = useAuth();
+  const vendorOnly = user ? isVendorOnly(user.roles) : false;
+
+  useEffect(() => {
+    // A third-party vendor's home is the vendor space: there is no staff dashboard for them.
+    if (vendorOnly) router.replace("/espace-vendeur");
+  }, [vendorOnly, router]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,8 +39,8 @@ export default function Home() {
     return (
       <div className="flex flex-1 flex-col">
         <BackofficeNav onLogout={logout} roles={user.roles} />
-        <main className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-16">
-          <AccountPanel user={user} onLogout={logout} />
+        <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
+          {vendorOnly ? <p className="text-sm text-ink-soft">{tr("Redirection vers votre espace vendeur…")}</p> : <Dashboard token={token} user={user} />}
         </main>
       </div>
     );

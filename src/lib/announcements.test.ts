@@ -10,6 +10,7 @@ const base: Announcement = {
   width: 600,
   height: 400,
   delay_seconds: 3,
+  max_displays: null,
   starts_at: null,
   ends_at: null,
   is_active: true,

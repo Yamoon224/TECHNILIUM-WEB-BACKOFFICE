@@ -13,6 +13,7 @@ import {
   fetchQrPayload,
   isLogoFileAllowed,
   LOGO_RATIO,
+  QR_EXPORT_SIZES,
   QR_KINDS,
   qrFileName,
   QrError,
@@ -60,6 +61,7 @@ export function QrGenerator({
   const [defaultLogo, setDefaultLogo] = useState<string | null>(null);
   const [ratio, setRatio] = useState<number>(LOGO_RATIO.default);
   const [dark, setDark] = useState(DEFAULT_STYLE.dark);
+  const [size, setSize] = useState<number>(DEFAULT_STYLE.size);
 
   useEffect(() => {
     // The default logo as a data URL, so the SVG export carries it with it.
@@ -73,7 +75,7 @@ export function QrGenerator({
   }, []);
 
   const logo = withLogo ? (customLogo ?? defaultLogo) : null;
-  const style = { ...DEFAULT_STYLE, dark, logo, logoRatio: ratio };
+  const style = { ...DEFAULT_STYLE, size, dark, logo, logoRatio: ratio };
 
   const generate = useCallback(
     async (nextKind: QrKind, nextReference: string) => {
@@ -105,10 +107,10 @@ export function QrGenerator({
     const canvas = canvasRef.current;
     if (!canvas || !text) return;
 
-    drawQr(canvas, text, { ...DEFAULT_STYLE, dark, logo: logoKey, logoRatio: ratio }).catch(() =>
+    drawQr(canvas, text, { ...DEFAULT_STYLE, size, dark, logo: logoKey, logoRatio: ratio }).catch(() =>
       setError(tr("Logo illisible : le code est affiché sans logo.")),
     );
-  }, [text, dark, logoKey, ratio, tr]);
+  }, [text, size, dark, logoKey, ratio, tr]);
 
   async function onLogoFile(file: File | undefined) {
     if (!file) return;
@@ -211,10 +213,21 @@ export function QrGenerator({
             />
           </label>
           <p className="text-xs text-ink-soft">{tr("Gardez un code sombre sur fond clair : c'est ce que les lecteurs lisent le mieux.")}</p>
+
+          <label className="field">
+            <select value={size} onChange={(event) => setSize(Number(event.target.value))}>
+              {QR_EXPORT_SIZES.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {tr(option.label)}
+                </option>
+              ))}
+            </select>
+            <span className="field-label">{tr("Taille du fichier (PNG et SVG)")}</span>
+          </label>
         </fieldset>
       </div>
 
-      <div className="flex flex-col items-center gap-3 rounded-sm border border-line bg-surface p-4 shadow-card border-b-4 border-b-gold">
+      <div className="qr-print-area flex flex-col items-center gap-3 self-start rounded-sm border border-line bg-surface p-4 shadow-card border-b-4 border-b-gold">
         {error ? (
           <p role="alert" className="text-sm text-danger">
             {error}
@@ -223,7 +236,7 @@ export function QrGenerator({
 
         {result ? (
           <>
-            <canvas ref={canvasRef} aria-label={tr("Code QR")} className="h-auto w-full max-w-[18rem] rounded-sm bg-white" />
+            <canvas ref={canvasRef} aria-label={tr("Code QR")} className="aspect-square h-auto w-full max-w-[18rem] rounded-sm bg-white" />
             <p className="text-center text-sm font-medium text-ink">{result.caption}</p>
             <p className="break-all text-center text-xs text-ink-soft">{result.payload}</p>
             <div className="flex flex-wrap justify-center gap-2">

@@ -227,14 +227,14 @@ select optgroup {
   scrollbar-color: color-mix(in oklab, var(--gold) 65%, transparent) transparent;
 }
 *::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 6px;
+  height: 6px;
 }
 *::-webkit-scrollbar-track {
   background: transparent;
 }
 *::-webkit-scrollbar-thumb {
-  border: 2px solid transparent;
+  border: 1px solid transparent;
   border-radius: 999px;
   background-color: color-mix(in oklab, var(--gold) 65%, transparent);
   background-clip: content-box;
@@ -244,4 +244,40 @@ select optgroup {
 }
 *::-webkit-scrollbar-corner {
   background: transparent;
+}
+
+/*
+ * The QR code is always a square. On screen it fills its card up to 18rem; on paper only the code card is
+ * printed, as a 6 cm square (the size of a parcel or shelf label), whatever the sheet.
+ */
+.qr-print-area canvas {
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+}
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  .qr-print-area,
+  .qr-print-area * {
+    visibility: visible !important;
+  }
+  .qr-print-area {
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 0.5cm;
+    border: 0;
+    box-shadow: none;
+    background: #fff;
+    color: #000;
+  }
+  .qr-print-area canvas {
+    width: 6cm !important;
+    height: 6cm !important;
+    max-width: none !important;
+  }
+  .qr-print-area button {
+    display: none !important;
+  }
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clampLogoRatio, isLogoFileAllowed, logoBox, LOGO_RATIO, parseQrPayload, qrFileName } from "./qr";
+import { buildQrSvg, clampLogoRatio, DEFAULT_STYLE, isLogoFileAllowed, logoBox, logoBoxExact, LOGO_RATIO, parseQrPayload, qrFileName } from "./qr";
 
 describe("logoBox", () => {
   it("centres a square logo of the asked share of the code", () => {
@@ -43,5 +43,25 @@ describe("isLogoFileAllowed", () => {
     expect(isLogoFileAllowed({ type: "image/svg+xml", size: 1000 })).toBe(false);
     expect(isLogoFileAllowed({ type: "image/png", size: 3 * 1024 * 1024 })).toBe(false);
     expect(isLogoFileAllowed({ type: "image/png", size: 0 })).toBe(false);
+  });
+});
+
+describe("logoBoxExact", () => {
+  it("centres the logo in any unit, fractions included", () => {
+    expect(logoBoxExact(25, 0.2)).toEqual({ x: 10, y: 10, side: 5 });
+    expect(logoBoxExact(33, 0.2).side).toBeCloseTo(6.6);
+  });
+});
+
+describe("buildQrSvg", () => {
+  it("is a square and places the logo inside the code, in the drawing's own units", async () => {
+    const svg = await buildQrSvg("TECHNILIUM:ORDER:1", { ...DEFAULT_STYLE, logo: "data:image/png;base64,AAAA" });
+    const [, units] = /viewBox="0 0 (\d+) (\d+)"/.exec(svg) ?? [];
+    const sides = /viewBox="0 0 (\d+) (\d+)"/.exec(svg);
+
+    expect(sides?.[1]).toBe(sides?.[2]);
+    const image = /<image [^>]*x="([\d.]+)" y="([\d.]+)" width="([\d.]+)"/.exec(svg);
+    expect(Number(image?.[1]) + Number(image?.[3]) / 2).toBeCloseTo(Number(units) / 2);
+    expect(Number(image?.[1]) + Number(image?.[3])).toBeLessThan(Number(units));
   });
 });
