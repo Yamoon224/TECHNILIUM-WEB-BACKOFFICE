@@ -280,7 +280,9 @@ export default function InternalSalesPage() {
           </section>
         ) : (
           <div className="grid gap-6 lg:grid-cols-2">
-            <section className="flex flex-col gap-4 rounded-sm border border-line bg-surface p-4 shadow-card border-b-4 border-b-gold">
+            {/* The found articles scroll inside their card: on large screens its height follows the basket's card
+                (h-0 + min-h-full takes no part in sizing the row), so a long result list never stretches it. */}
+            <section className="flex flex-col gap-4 rounded-sm border border-line bg-surface p-4 shadow-card border-b-4 border-b-gold lg:h-0 lg:min-h-full">
               <h2 className="font-display text-lg font-semibold text-ink">{tr("Articles")}</h2>
 
               <form onSubmit={handleSearch} className="flex flex-wrap items-end gap-3">
@@ -299,7 +301,7 @@ export default function InternalSalesPage() {
               </form>
 
               {results.length > 0 ? (
-                <ul className="flex flex-col divide-y divide-line rounded-sm border border-line">
+                <ul className="flex max-h-96 min-h-0 flex-col divide-y divide-line overflow-y-auto rounded-sm border border-line lg:max-h-none lg:flex-1">
                   {results.map((offer) => (
                     <li key={offer.offerId} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
                       <span className="text-ink">
@@ -319,7 +321,7 @@ export default function InternalSalesPage() {
               ) : null}
             </section>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-sm border border-line bg-surface p-4 shadow-card border-b-4 border-b-gold">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-sm border border-line bg-surface p-4 shadow-card border-b-4 border-b-gold lg:min-h-[28rem]">
               <h2 className="font-display text-lg font-semibold text-ink">{tr("Panier")}</h2>
 
               {cart.length === 0 ? (
