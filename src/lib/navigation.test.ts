@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isActive, isPageForbidden, navFor, shortcutsFor, STAFF_NAV } from "./navigation";
+import { canSeeNotifications, isActive, isPageForbidden, navFor, shortcutsFor, STAFF_NAV } from "./navigation";
 
 describe("navFor", () => {
   it("gives a vendor-only account just its own space", () => {
@@ -85,5 +85,17 @@ describe("isPageForbidden", () => {
   it("reserves /acces for the super admin", () => {
     expect(isPageForbidden("/acces", { roles: ["administrateur"], abilities: [] })).toBe(true);
     expect(isPageForbidden("/acces", { roles: ["super_admin"], abilities: [] })).toBe(false);
+  });
+});
+
+describe("canSeeNotifications", () => {
+  it("shows the bell to staff, unless the Notifications feature is switched off", () => {
+    expect(canSeeNotifications(["support"], undefined)).toBe(true);
+    expect(canSeeNotifications(["support"], ["manage-notifications"])).toBe(true);
+    expect(canSeeNotifications(["support"], ["manage-orders"])).toBe(false);
+  });
+
+  it("never shows it to a vendor-only account", () => {
+    expect(canSeeNotifications(["vendeur_tiers"], ["manage-notifications"])).toBe(false);
   });
 });

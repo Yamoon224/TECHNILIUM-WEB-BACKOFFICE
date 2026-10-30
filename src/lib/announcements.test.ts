@@ -13,6 +13,7 @@ const base: Announcement = {
   starts_at: null,
   ends_at: null,
   is_active: true,
+  archived_at: null,
 };
 const now = new Date("2026-11-05T12:00:00Z");
 
@@ -25,6 +26,11 @@ describe("announcementState", () => {
     expect(announcementState({ ...base, starts_at: "2026-11-06T00:00:00Z" }, now)).toBe("scheduled");
     expect(announcementState({ ...base, ends_at: "2026-11-05T11:00:00Z" }, now)).toBe("expired");
     expect(announcementState({ ...base, starts_at: "2026-11-01T00:00:00Z", ends_at: "2026-11-10T00:00:00Z" }, now)).toBe("active");
+  });
+
+  it("is archived whatever else it is", () => {
+    expect(announcementState({ ...base, archived_at: "2026-11-04T00:00:00Z" }, now)).toBe("archived");
+    expect(announcementState({ ...base, archived_at: "2026-11-04T00:00:00Z", is_active: false }, now)).toBe("archived");
   });
 
   it("is inactive when switched off, whatever the period", () => {

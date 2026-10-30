@@ -1,6 +1,7 @@
 "use client";
 
 import { DataTable } from "@/components/DataTable";
+import { LanguageTabs } from "@/components/LanguageTabs";
 import { FormModal } from "@/components/Modal";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
@@ -240,14 +241,21 @@ function CategoryFormModal({
       }}
     >
       <div className="grid gap-4">
-        <label className="field">
-          <input value={name} onChange={(event) => setName(event.target.value)} placeholder={tr("Ex. Accessoires audio")} className={fieldClass} />
-          <span className="field-label">{tr("Nom")}</span>
-        </label>
-        <label className="field">
-          <input value={nameEn} onChange={(event) => setNameEn(event.target.value)} placeholder={tr("Ex. Audio accessories")} className={fieldClass} />
-          <span className="field-label">{tr("Nom en anglais")}</span>
-        </label>
+        <LanguageTabs
+          enFilled={Boolean(nameEn.trim())}
+          fr={
+            <label className="field">
+              <input value={name} onChange={(event) => setName(event.target.value)} placeholder={tr("Ex. Accessoires audio")} className={fieldClass} />
+              <span className="field-label">{tr("Nom")}</span>
+            </label>
+          }
+          en={
+            <label className="field">
+              <input value={nameEn} onChange={(event) => setNameEn(event.target.value)} placeholder={tr("Ex. Audio accessories")} className={fieldClass} />
+              <span className="field-label">{tr("Nom")}</span>
+            </label>
+          }
+        />
         <label className="field">
           <select value={parentId} onChange={(event) => setParentId(event.target.value)} className={fieldClass}>
             <option value="">{tr("Aucune")}</option>

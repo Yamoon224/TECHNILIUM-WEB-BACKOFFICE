@@ -149,6 +149,13 @@ export function navFor(roles: readonly string[], abilities?: readonly string[]):
   return STAFF_NAV.map((group) => ({ ...group, items: group.items.filter((item) => allowed(item, access)) })).filter((group) => group.items.length > 0);
 }
 
+/** Whether the top bar's notification bell is for this account: staff only, and only with the Notifications feature on. */
+export function canSeeNotifications(roles: readonly string[], abilities?: readonly string[]): boolean {
+  if (isVendorOnly(roles)) return false;
+
+  return abilities === undefined || abilities.includes("manage-notifications");
+}
+
 /** The shortcuts a user can see: a vendor-only account has no staff pages. */
 export function shortcutsFor(roles: readonly string[], abilities?: readonly string[]): NavItem[] {
   if (isVendorOnly(roles)) return VENDOR_NAV[0].items;

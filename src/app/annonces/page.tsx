@@ -15,9 +15,11 @@ import {
   AnnouncementError,
   announcementImageProblem,
   announcementState,
+  archiveAnnouncement,
   createAnnouncement,
   deleteAnnouncement,
   listAnnouncements,
+  restoreAnnouncement,
   toLocalInput,
   updateAnnouncement,
   type Announcement,
@@ -39,6 +41,7 @@ export default function AnnouncementsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<"new" | number | null>(null);
+  const [tab, setTab] = useState<"current" | "archived">("current");
   // Evaluated on mount, not during render: the clock must not be frozen by the prerender.
   const [now, setNow] = useState<Date | null>(null);
 
@@ -105,6 +108,17 @@ export default function AnnouncementsPage() {
     }
   }
 
+  async function handleArchive(announcement: Announcement, archive: boolean) {
+    if (!token) return;
+    setError(null);
+    try {
+      const updated = archive ? await archiveAnnouncement(token, announcement.id) : await restoreAnnouncement(token, announcement.id);
+      setAnnouncements((current) => current.map((item) => (item.id === updated.id ? updated : item)));
+    } catch (caught) {
+      setError(messageOf(caught, "L'action a échoué."));
+    }
+  }
+
   async function handleDelete(announcement: Announcement) {
     if (!token || !window.confirm(tr("Supprimer cette annonce ?"))) return;
     setError(null);
@@ -116,6 +130,7 @@ export default function AnnouncementsPage() {
     }
   }
 
+  const shown = useMemo(() => announcements.filter((item) => (item.archived_at !== null) === (tab === "archived")), [announcements, tab]);
   const editing = useMemo(() => (typeof form === "number" ? announcements.find((item) => item.id === form) : undefined), [form, announcements]);
 
   if (sessionStatus === "checking") {
@@ -160,15 +175,29 @@ export default function AnnouncementsPage() {
           <AnnouncementFormModal key={form} announcement={editing} onClose={() => setForm(null)} onSubmit={handleSubmit} error={error} />
         ) : null}
 
+        <div className="flex gap-2" role="group" aria-label={tr("Affichage")}>
+          {(["current", "archived"] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              aria-pressed={tab === mode}
+              onClick={() => setTab(mode)}
+              className={`rounded-sm border px-3 py-1 text-xs transition-colors ${tab === mode ? "border-gold text-gold" : "border-line text-ink hover:border-gold"}`}
+            >
+              {mode === "current" ? tr("Annonces") : tr("Historique (archivées)")} ({announcements.filter((item) => (item.archived_at !== null) === (mode === "archived")).length})
+            </button>
+          ))}
+        </div>
+
         {loading && announcements.length === 0 ? (
           <p className="text-sm text-ink-soft">{tr("Chargement…")}</p>
-        ) : announcements.length === 0 ? (
-          <p className="text-sm text-ink-soft">{tr("Aucune annonce.")}</p>
+        ) : shown.length === 0 ? (
+          <p className="text-sm text-ink-soft">{tab === "archived" ? tr("Aucune annonce archivée.") : tr("Aucune annonce.")}</p>
         ) : (
           <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">
             <DataTable
               name="annonces"
-              rows={announcements}
+              rows={shown}
               headers={[tr("Image"), tr("Titre"), tr("Dimensions"), tr("Délai"), tr("Période"), tr("État"), tr("Action")]}
               actionColumns={[0, 6]}
               renderRow={(announcement) => (
@@ -188,19 +217,30 @@ export default function AnnouncementsPage() {
                   <td className="py-3 pr-4 text-ink-soft">{now ? tr(ANNOUNCEMENT_STATE_LABEL[announcementState(announcement, now)]) : ""}</td>
                   <td className="py-3">
                     <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        className={BUTTON_CLASS}
-                        onClick={() => {
-                          setError(null);
-                          setForm(announcement.id);
-                        }}
-                      >
-                        {tr("Modifier")}
-                      </button>
-                      <button type="button" className={BUTTON_CLASS} onClick={() => handleToggle(announcement)}>
-                        {announcement.is_active ? tr("Désactiver") : tr("Réactiver")}
-                      </button>
+                      {announcement.archived_at ? (
+                        <button type="button" className={BUTTON_CLASS} onClick={() => handleArchive(announcement, false)}>
+                          {tr("Restaurer")}
+                        </button>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            className={BUTTON_CLASS}
+                            onClick={() => {
+                              setError(null);
+                              setForm(announcement.id);
+                            }}
+                          >
+                            {tr("Modifier")}
+                          </button>
+                          <button type="button" className={BUTTON_CLASS} onClick={() => handleToggle(announcement)}>
+                            {announcement.is_active ? tr("Désactiver") : tr("Réactiver")}
+                          </button>
+                          <button type="button" className={BUTTON_CLASS} onClick={() => handleArchive(announcement, true)}>
+                            {tr("Archiver")}
+                          </button>
+                        </>
+                      )}
                       <button
                         type="button"
                         onClick={() => handleDelete(announcement)}

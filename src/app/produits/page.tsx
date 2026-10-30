@@ -3,6 +3,7 @@
 import { QrLink } from "@/components/QrLink";
 import { DataTable } from "@/components/DataTable";
 import { Dropzone } from "@/components/Dropzone";
+import { LanguageTabs } from "@/components/LanguageTabs";
 import { FormModal } from "@/components/Modal";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
@@ -475,8 +476,8 @@ function ProductFormModal({
       error={formError ?? externalError}
     >
       <div className="flex flex-col gap-6">
-        <section className="grid gap-4 sm:grid-cols-2">
-          <label className="field sm:col-span-2">
+        <section className="grid gap-4 sm:grid-cols-3">
+          <label className="field sm:col-span-3">
             <select value={categoryId} onChange={(event) => setCategoryId(event.target.value)} className={FIELD_CLASS}>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
@@ -489,10 +490,6 @@ function ProductFormModal({
           <label className="field">
             <input placeholder={tr("Marque")} value={brand} onChange={(event) => setBrand(event.target.value)} className={FIELD_CLASS} />
             <span className="field-label">{tr("Marque")}</span>
-          </label>
-          <label className="field">
-            <input placeholder={tr("Nom du produit")} value={name} onChange={(event) => setName(event.target.value)} className={FIELD_CLASS} />
-            <span className="field-label">{tr("Nom du produit")}</span>
           </label>
           <label className="field">
             <input
@@ -516,38 +513,59 @@ function ProductFormModal({
           <p className="text-xs text-ink-soft">
             {tr("Le français est la référence. Sans texte anglais, la boutique en anglais affiche le texte français.")}
           </p>
-          <label className="field">
-            <input
-              value={nameEn}
-              onChange={(event) => setNameEn(event.target.value)}
-              maxLength={255}
-              placeholder={tr("Ex. 27-inch monitor")}
-              className={FIELD_CLASS}
-            />
-            <span className="field-label">{tr("Nom en anglais")}</span>
-          </label>
-          <label className="field">
-            <textarea
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              rows={3}
-              maxLength={5000}
-              placeholder={tr("Décrivez le produit en quelques lignes")}
-              className={FIELD_CLASS}
-            />
-            <span className="field-label">{tr("Description (français)")}</span>
-          </label>
-          <label className="field">
-            <textarea
-              value={descriptionEn}
-              onChange={(event) => setDescriptionEn(event.target.value)}
-              rows={3}
-              maxLength={5000}
-              placeholder={tr("Describe the product in a few lines")}
-              className={FIELD_CLASS}
-            />
-            <span className="field-label">{tr("Description (anglais)")}</span>
-          </label>
+          <LanguageTabs
+            enFilled={Boolean(nameEn.trim() || descriptionEn.trim())}
+            fr={
+              <>
+                <label className="field">
+                  <input
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    maxLength={255}
+                    placeholder={tr("Nom du produit")}
+                    className={FIELD_CLASS}
+                  />
+                  <span className="field-label">{tr("Nom du produit")}</span>
+                </label>
+                <label className="field">
+                  <textarea
+                    value={description}
+                    onChange={(event) => setDescription(event.target.value)}
+                    rows={4}
+                    maxLength={5000}
+                    placeholder={tr("Décrivez le produit en quelques lignes")}
+                    className={FIELD_CLASS}
+                  />
+                  <span className="field-label">{tr("Description")}</span>
+                </label>
+              </>
+            }
+            en={
+              <>
+                <label className="field">
+                  <input
+                    value={nameEn}
+                    onChange={(event) => setNameEn(event.target.value)}
+                    maxLength={255}
+                    placeholder={tr("Ex. 27-inch monitor")}
+                    className={FIELD_CLASS}
+                  />
+                  <span className="field-label">{tr("Nom du produit")}</span>
+                </label>
+                <label className="field">
+                  <textarea
+                    value={descriptionEn}
+                    onChange={(event) => setDescriptionEn(event.target.value)}
+                    rows={4}
+                    maxLength={5000}
+                    placeholder={tr("Describe the product in a few lines")}
+                    className={FIELD_CLASS}
+                  />
+                  <span className="field-label">{tr("Description")}</span>
+                </label>
+              </>
+            }
+          />
         </section>
 
         <section className="flex flex-col gap-3">

@@ -92,6 +92,16 @@ export const PHRASES_EN: Record<string, string> = {
   "Délai d'apparition (secondes)": "Appearance delay (seconds)",
   "Début d'affichage": "Display start",
   "Expiration": "Expiry",
+  // Language tabs
+  "Français": "French",
+  "Anglais (US)": "English (US)",
+  "Langue des textes": "Language of the texts",
+  "Description": "Description",
+  // Announcement archive
+  "Annonces": "Announcements",
+  "Historique (archivées)": "History (archived)",
+  "Aucune annonce archivée.": "No archived announcements.",
+  "Restaurer": "Restore",
   // Shared
   "Vérification de la session…": "Checking your session…",
   "Se connecter": "Sign in",

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { fetchCurrentUser, logout as logoutRequest, TOKEN_STORAGE_KEY, type User } from "@/lib/auth";
-import { isActive, isPageForbidden, navFor, shortcutsFor, type NavGroup, type NavItem } from "@/lib/navigation";
+import { canSeeNotifications, isActive, isPageForbidden, navFor, shortcutsFor, type NavGroup, type NavItem } from "@/lib/navigation";
 import { listNotifications } from "@/lib/notifications";
 import { ROLE_LABEL } from "@/lib/roles";
 import { AUTH_CHANGED_EVENT } from "@/lib/useAuth";
@@ -62,10 +62,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [readSession]);
 
   const token = session?.token ?? null;
+  const showBell = session ? canSeeNotifications(session.user.roles, session.user.abilities) : false;
 
   useEffect(() => {
-    // Failed customer messages need a look: shown on the bell. Not every role may read them.
-    if (!token) return;
+    // Failed customer messages need a look: shown on the bell, for the accounts that have it.
+    if (!token || !showBell) return;
 
     let cancelled = false;
     listNotifications(token, { status: "failed" })
@@ -75,7 +76,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [token, pathname]);
+  }, [token, showBell, pathname]);
 
   useEffect(() => {
     // Close the mobile drawer when the page changes.
@@ -121,6 +122,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           groups={groups}
           horizontal={!side}
           failedMessages={failedMessages}
+          showBell={showBell}
           onToggleMenu={() => {
             if (window.matchMedia("(min-width: 1024px)").matches) return update({ collapsed: !appearance.collapsed });
             setMobileMenuOpen((open) => !open);
@@ -271,6 +273,7 @@ function Topbar({
   groups,
   horizontal,
   failedMessages,
+  showBell,
   onToggleMenu,
   onOpenSettings,
   onLogout,
@@ -279,6 +282,7 @@ function Topbar({
   groups: NavGroup[];
   horizontal: boolean;
   failedMessages: number;
+  showBell: boolean;
   onToggleMenu: () => void;
   onOpenSettings: () => void;
   onLogout: () => void;
@@ -319,6 +323,7 @@ function Topbar({
         )}
 
         <div className="ml-auto flex items-center gap-1">
+          {showBell ? (
           <Link
             href="/notifications"
             aria-label={`${t("shell.notifications")}${failedMessages > 0 ? ` — ${failedMessages} ${t("shell.failedMessages")}` : ""}`}
@@ -331,6 +336,7 @@ function Topbar({
               </span>
             ) : null}
           </Link>
+          ) : null}
 
           <button
             type="button"

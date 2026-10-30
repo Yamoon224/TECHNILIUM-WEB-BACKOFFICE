@@ -16,6 +16,8 @@ export interface Announcement {
   starts_at: string | null;
   ends_at: string | null;
   is_active: boolean;
+  /** Set when archived: never shown again, kept in the history. */
+  archived_at: string | null;
 }
 
 export interface AnnouncementInput {
@@ -32,13 +34,14 @@ export interface AnnouncementInput {
   is_active: boolean;
 }
 
-export type AnnouncementState = "active" | "scheduled" | "expired" | "inactive";
+export type AnnouncementState = "active" | "scheduled" | "expired" | "inactive" | "archived";
 
 export const ANNOUNCEMENT_STATE_LABEL: Record<AnnouncementState, string> = {
   active: "En cours",
   scheduled: "Programmée",
   expired: "Expirée",
   inactive: "Désactivée",
+  archived: "Archivée",
 };
 
 export class AnnouncementError extends Error {}
@@ -55,6 +58,7 @@ export function announcementImageProblem(file: Pick<File, "type" | "size">): str
 
 /** What the storefront does with it right now. */
 export function announcementState(announcement: Announcement, now: Date): AnnouncementState {
+  if (announcement.archived_at) return "archived";
   if (!announcement.is_active) return "inactive";
   if (announcement.starts_at && new Date(announcement.starts_at) > now) return "scheduled";
   if (announcement.ends_at && new Date(announcement.ends_at) <= now) return "expired";
@@ -120,6 +124,18 @@ export async function createAnnouncement(token: string, input: AnnouncementInput
 
 export async function updateAnnouncement(token: string, id: number, input: AnnouncementInput): Promise<Announcement> {
   const response = await fetch(`${API_BASE_URL}/admin/announcements/${id}`, { method: "POST", headers: auth(token), body: formData(input) });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<Announcement>;
+}
+
+export async function archiveAnnouncement(token: string, id: number): Promise<Announcement> {
+  const response = await fetch(`${API_BASE_URL}/admin/announcements/${id}/archive`, { method: "POST", headers: auth(token) });
+  if (!response.ok) throw await parseError(response);
+  return response.json() as Promise<Announcement>;
+}
+
+export async function restoreAnnouncement(token: string, id: number): Promise<Announcement> {
+  const response = await fetch(`${API_BASE_URL}/admin/announcements/${id}/restore`, { method: "POST", headers: auth(token) });
   if (!response.ok) throw await parseError(response);
   return response.json() as Promise<Announcement>;
 }
