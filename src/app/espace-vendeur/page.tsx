@@ -1,6 +1,7 @@
 "use client";
 
 import { DataTable } from "@/components/DataTable";
+import { FormModal } from "@/components/Modal";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -302,9 +303,10 @@ function PayoutsTab({ token }: { token: string }) {
 }
 
 function OffersTab({ token }: { token: string }) {
-  const { tr, trf } = useAppearance();
+  const { tr } = useAppearance();
   const { data, error, reload, setError } = useLoader<VendorOffer[]>(useCallback(() => listOffers(token), [token]));
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [form, setForm] = useState<"new" | number | null>(null);
 
   async function run(id: number | null, action: () => Promise<unknown>, fallback: string) {
     setBusyId(id);
@@ -319,25 +321,6 @@ function OffersTab({ token }: { token: string }) {
     }
   }
 
-  function editPrice(offer: VendorOffer) {
-    const input = window.prompt(
-      trf("Nouveau prix pour {name} (une modification renvoie l'offre en modération)", { name: offer.product_name }),
-      String(offer.price_amount),
-    );
-    if (input === null || input.trim() === "") return;
-    void run(offer.id, () => updateOffer(token, offer.id, { price_amount: Number(input) }), tr("Mise à jour impossible."));
-  }
-
-  function editStock(offer: VendorOffer) {
-    const input = window.prompt(trf("Nouveau stock pour {name}", { name: offer.product_name }), String(offer.stock_quantity));
-    if (input === null || input.trim() === "") return;
-    void run(
-      offer.id,
-      () => updateOffer(token, offer.id, { stock_quantity: Number(input) }),
-      tr("Mise à jour impossible."),
-    );
-  }
-
   function archive(offer: VendorOffer) {
     if (!window.confirm(`Retirer l'offre ${offer.product_name} ?`)) return;
     void run(offer.id, () => archiveOffer(token, offer.id), tr("Retrait impossible."));
@@ -345,12 +328,30 @@ function OffersTab({ token }: { token: string }) {
 
   return (
     <section className="flex flex-col gap-4">
-      <NewOfferForm
-        onSubmit={async (input) => {
-          await createOffer(token, input);
-          reload();
-        }}
-      />
+      <div className="flex justify-end">
+        <Button onClick={() => setForm("new")}>{tr("Nouvelle offre")}</Button>
+      </div>
+
+      {form === "new" ? (
+        <NewOfferForm
+          onClose={() => setForm(null)}
+          onSubmit={async (input) => {
+            await createOffer(token, input);
+            reload();
+          }}
+        />
+      ) : null}
+
+      {typeof form === "number" && data?.find((o) => o.id === form) ? (
+        <EditOfferForm
+          offer={data.find((o) => o.id === form)!}
+          onClose={() => setForm(null)}
+          onSubmit={async (patch) => {
+            await updateOffer(token, form, patch);
+            reload();
+          }}
+        />
+      ) : null}
 
       {error ? <p className="text-sm text-danger">{error}</p> : null}
 
@@ -382,9 +383,8 @@ function OffersTab({ token }: { token: string }) {
                     {offer.status !== "archived" ? (
                       <div className="flex flex-wrap gap-2">
                         {[
-                          ["Prix", () => editPrice(offer)],
-                          ["Stock", () => editStock(offer)],
-                          ["Retirer", () => archive(offer)],
+                          [tr("Modifier"), () => setForm(offer.id)],
+                          [tr("Retirer"), () => archive(offer)],
                         ].map(([label, handler]) => (
                           <button
                             key={label as string}
@@ -409,8 +409,10 @@ function OffersTab({ token }: { token: string }) {
 }
 
 function NewOfferForm({
+  onClose,
   onSubmit,
 }: {
+  onClose: () => void;
   onSubmit: (input: {
     variant_id: number;
     price_amount: number;
@@ -426,8 +428,7 @@ function NewOfferForm({
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
+  async function handleSubmit() {
     setFormError(null);
 
     if (!variantId || !price || !stock) {
@@ -443,10 +444,7 @@ function NewOfferForm({
         stock_quantity: Number(stock),
         warranty_months: warranty ? Number(warranty) : undefined,
       });
-      setVariantId("");
-      setPrice("");
-      setStock("");
-      setWarranty("");
+      onClose();
     } catch (caught) {
       setFormError(caught instanceof VendorSpaceError ? caught.message : tr("Soumission impossible."));
     } finally {
@@ -454,66 +452,116 @@ function NewOfferForm({
     }
   }
 
-  const field = "w-32 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink";
+  const field = "rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink";
 
   return (
-    <form
+    <FormModal
+      open
+      size="md"
+      title={tr("Nouvelle offre")}
+      onClose={onClose}
+      submitLabel={tr("Soumettre l'offre")}
+      submitting={submitting}
+      error={formError}
       onSubmit={handleSubmit}
-      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold"
     >
-      <label className="field">
-        <input
-          placeholder="42"
-          type="number"
-          min={1}
-          value={variantId}
-          onChange={(e) => setVariantId(e.target.value)}
-          className={field}
-        />
-        <span className="field-label">{tr("ID variante produit")}</span>
-      </label>
-      <label className="field">
-        <input
-          placeholder="59000"
-          type="number"
-          min={0}
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          className={field}
-        />
-        <span className="field-label">{tr("Prix (F CFA)")}</span>
-      </label>
-      <label className="field">
-        <input
-          placeholder="25"
-          type="number"
-          min={0}
-          value={stock}
-          onChange={(e) => setStock(e.target.value)}
-          className={field}
-        />
-        <span className="field-label">{tr("Stock")}</span>
-      </label>
-      <label className="field">
-        <input
-          placeholder="12"
-          type="number"
-          min={0}
-          value={warranty}
-          onChange={(e) => setWarranty(e.target.value)}
-          className={field}
-        />
-        <span className="field-label">{tr("Garantie (mois)")}</span>
-      </label>
-      <Button type="submit" disabled={submitting}>
-        {tr("Soumettre l'offre")}
-      </Button>
-      <p className="w-full text-xs text-ink-soft">
-        {tr(
-          "L'offre part en modération avant publication. Seuls les produits déjà publiés par Technilium sont proposables.",
-        )}
-      </p>
-      {formError ? <p className="w-full text-sm text-danger">{formError}</p> : null}
-    </form>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="field">
+          <input placeholder="42" type="number" min={1} value={variantId} onChange={(e) => setVariantId(e.target.value)} className={field} />
+          <span className="field-label">{tr("ID variante produit")}</span>
+        </label>
+        <label className="field">
+          <input placeholder="59000" type="number" min={0} value={price} onChange={(e) => setPrice(e.target.value)} className={field} />
+          <span className="field-label">{tr("Prix (F CFA)")}</span>
+        </label>
+        <label className="field">
+          <input placeholder="25" type="number" min={0} value={stock} onChange={(e) => setStock(e.target.value)} className={field} />
+          <span className="field-label">{tr("Stock")}</span>
+        </label>
+        <label className="field">
+          <input placeholder="12" type="number" min={0} value={warranty} onChange={(e) => setWarranty(e.target.value)} className={field} />
+          <span className="field-label">{tr("Garantie (mois)")}</span>
+        </label>
+        <p className="text-xs text-ink-soft sm:col-span-2">
+          {tr(
+            "L'offre part en modération avant publication. Seuls les produits déjà publiés par Technilium sont proposables.",
+          )}
+        </p>
+      </div>
+    </FormModal>
+  );
+}
+
+/** Edit the price and stock of an offer (a price change sends it back to moderation). */
+function EditOfferForm({
+  offer,
+  onClose,
+  onSubmit,
+}: {
+  offer: VendorOffer;
+  onClose: () => void;
+  onSubmit: (patch: { price_amount?: number; stock_quantity?: number }) => Promise<void>;
+}) {
+  const { tr } = useAppearance();
+  const [price, setPrice] = useState(String(offer.price_amount));
+  const [stock, setStock] = useState(String(offer.stock_quantity));
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const field = "rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink";
+
+  async function handleSubmit() {
+    setFormError(null);
+
+    if (price.trim() === "" || stock.trim() === "") {
+      setFormError(tr("Le prix et le stock sont requis."));
+      return;
+    }
+
+    const patch: { price_amount?: number; stock_quantity?: number } = {};
+    if (Number(price) !== offer.price_amount) patch.price_amount = Number(price);
+    if (Number(stock) !== offer.stock_quantity) patch.stock_quantity = Number(stock);
+
+    if (Object.keys(patch).length === 0) {
+      onClose();
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await onSubmit(patch);
+      onClose();
+    } catch (caught) {
+      setFormError(caught instanceof VendorSpaceError ? caught.message : tr("Mise à jour impossible."));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <FormModal
+      open
+      size="md"
+      title={tr("Modifier l'offre")}
+      onClose={onClose}
+      submitLabel={tr("Enregistrer")}
+      submitting={submitting}
+      error={formError}
+      onSubmit={handleSubmit}
+    >
+      <div className="grid gap-4 sm:grid-cols-2">
+        <p className="text-sm text-ink sm:col-span-2">
+          {offer.brand} {offer.product_name}
+        </p>
+        <label className="field">
+          <input type="number" min={0} value={price} onChange={(e) => setPrice(e.target.value)} className={field} />
+          <span className="field-label">{tr("Prix (F CFA)")}</span>
+        </label>
+        <label className="field">
+          <input type="number" min={0} value={stock} onChange={(e) => setStock(e.target.value)} className={field} />
+          <span className="field-label">{tr("Stock")}</span>
+        </label>
+        <p className="text-xs text-ink-soft sm:col-span-2">{tr("Une modification du prix renvoie l'offre en modération.")}</p>
+      </div>
+    </FormModal>
   );
 }

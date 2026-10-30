@@ -1,6 +1,7 @@
 "use client";
 
 import { DataTable } from "@/components/DataTable";
+import { FormModal } from "@/components/Modal";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -34,6 +35,7 @@ export default function ReturnsPage() {
   const [loading, setLoading] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showNew, setShowNew] = useState(false);
 
   const refresh = useCallback(() => {
     if (!token) return;
@@ -120,15 +122,21 @@ export default function ReturnsPage() {
       <BackofficeNav onLogout={handleLogout} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
-        <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Retours et SAV")}</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Retours et SAV")}</h1>
+          <Button onClick={() => setShowNew(true)}>{tr("Nouveau retour")}</Button>
+        </div>
 
-        <NewReturnForm
-          onSubmit={async (input) => {
-            if (!token) return;
-            await openReturn(token, input);
-            refresh();
-          }}
-        />
+        {showNew ? (
+          <NewReturnForm
+            onClose={() => setShowNew(false)}
+            onSubmit={async (input) => {
+              if (!token) return;
+              await openReturn(token, input);
+              refresh();
+            }}
+          />
+        ) : null}
 
         <nav className="flex flex-wrap gap-2">
           {[null, ...FILTERS].map((value) => (
@@ -214,8 +222,10 @@ export default function ReturnsPage() {
 }
 
 function NewReturnForm({
+  onClose,
   onSubmit,
 }: {
+  onClose: () => void;
   onSubmit: (input: {
     order_number: string;
     reason: string;
@@ -231,8 +241,7 @@ function NewReturnForm({
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
+  async function handleSubmit() {
     setFormError(null);
 
     if (!orderNumber || !reason) {
@@ -256,10 +265,7 @@ function NewReturnForm({
         amount: amount ? Number(amount) : undefined,
         items: items.length > 0 ? items : undefined,
       });
-      setOrderNumber("");
-      setReason("");
-      setAmount("");
-      setArticles("");
+      onClose();
     } catch (caught) {
       setFormError(caught instanceof ReturnsError ? caught.message : tr("Ouverture impossible."));
     } finally {
@@ -268,57 +274,37 @@ function NewReturnForm({
   }
 
   return (
-    <form
+    <FormModal
+      open
+      size="md"
+      title={tr("Nouveau retour")}
+      onClose={onClose}
+      submitLabel={tr("Ouvrir le retour")}
+      submitting={submitting}
+      error={formError}
       onSubmit={handleSubmit}
-      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold"
     >
-      <label className="field">
-        <input
-          value={orderNumber}
-          onChange={(event) => setOrderNumber(event.target.value)}
-          placeholder={tr("TCH-20261025-XXXXXX")}
-          className="w-52 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
-        />
-        <span className="field-label">{tr("N° commande livrée")}</span>
-      </label>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="field">
+          <input value={orderNumber} onChange={(event) => setOrderNumber(event.target.value)} placeholder={tr("TCH-20261025-XXXXXX")} className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink" />
+          <span className="field-label">{tr("N° commande livrée")}</span>
+        </label>
 
-      <label className="field">
-        <input
-          value={reason}
-          onChange={(event) => setReason(event.target.value)}
-          placeholder={tr("Produit défectueux")}
-          className="w-64 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
-        />
-        <span className="field-label">{tr("Motif")}</span>
-      </label>
+        <label className="field">
+          <input value={reason} onChange={(event) => setReason(event.target.value)} placeholder={tr("Produit défectueux")} className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink" />
+          <span className="field-label">{tr("Motif")}</span>
+        </label>
 
-      <label className="field">
-        <input
-          value={articles}
-          onChange={(event) => setArticles(event.target.value)}
-          placeholder="12:2, 15"
-          className="w-40 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
-        />
-        <span className="field-label">{tr("Articles (offre:qté, optionnel)")}</span>
-      </label>
+        <label className="field">
+          <input value={articles} onChange={(event) => setArticles(event.target.value)} placeholder="12:2, 15" className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink" />
+          <span className="field-label">{tr("Articles (offre:qté, optionnel)")}</span>
+        </label>
 
-      <label className="field">
-        <input
-          type="number"
-          min={1}
-          value={amount}
-          onChange={(event) => setAmount(event.target.value)}
-          placeholder={tr("Total de la commande")}
-          className="w-40 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
-        />
-        <span className="field-label">{tr("Montant (optionnel)")}</span>
-      </label>
-
-      <Button type="submit" disabled={submitting}>
-        {tr("Ouvrir le retour")}
-      </Button>
-
-      {formError ? <p className="w-full text-sm text-danger">{formError}</p> : null}
-    </form>
+        <label className="field">
+          <input type="number" min={1} value={amount} onChange={(event) => setAmount(event.target.value)} placeholder={tr("Total de la commande")} className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink" />
+          <span className="field-label">{tr("Montant (optionnel)")}</span>
+        </label>
+      </div>
+    </FormModal>
   );
 }

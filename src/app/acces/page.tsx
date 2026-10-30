@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { Button } from "@/components/Button";
+import { FormModal } from "@/components/Modal";
 import { DataTable } from "@/components/DataTable";
 import {
   AccessError,
@@ -274,36 +275,78 @@ function FeaturePicker({ features, value, onChange }: { features: AccessFeature[
   );
 }
 
+function GroupFormModal({
+  token,
+  group,
+  features,
+  onClose,
+  onSaved,
+}: {
+  token: string;
+  group?: AccessGroup;
+  features: AccessFeature[];
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const { tr } = useAppearance();
+  const [label, setLabel] = useState(group?.label ?? "");
+  const [description, setDescription] = useState(group?.description ?? "");
+  const [permissions, setPermissions] = useState<string[]>(group?.permissions ?? []);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  return (
+    <FormModal
+      open
+      size="lg"
+      title={group ? tr("Modifier le groupe") : tr("Nouveau groupe")}
+      onClose={onClose}
+      submitLabel={tr("Enregistrer")}
+      submitting={busy}
+      disabled={label.trim().length < 2}
+      error={error}
+      onSubmit={async () => {
+        setBusy(true);
+        setError(null);
+        const input = { label: label.trim(), description: description.trim() || null, permissions };
+        try {
+          if (group) await updateGroup(token, group.name, input);
+          else await createGroup(token, input);
+          onSaved();
+          onClose();
+        } catch (caught) {
+          setError(message(caught, tr("Enregistrement impossible.")));
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
+      <div className="grid gap-4">
+        <label className="field">
+          <input value={label} onChange={(event) => setLabel(event.target.value)} placeholder={tr("Ex. Caisse boutique")} required minLength={2} maxLength={60} />
+          <span className="field-label">{tr("Nom du groupe")}</span>
+        </label>
+        <label className="field">
+          <input value={description} onChange={(event) => setDescription(event.target.value)} placeholder={tr("Ex. Encaissement et suivi des commandes")} maxLength={500} />
+          <span className="field-label">{tr("Description (optionnel)")}</span>
+        </label>
+
+        <div>
+          <p className="pb-2 text-sm font-medium text-ink">{tr("Fonctionnalités accordées")}</p>
+          <FeaturePicker features={features} value={permissions} onChange={setPermissions} />
+        </div>
+      </div>
+    </FormModal>
+  );
+}
+
 function GroupsTab({ token, overview, onReload, onError }: { token: string; overview: AccessOverview; onReload: () => void; onError: (message: string | null) => void }) {
   const { tr } = useAppearance();
   const [editing, setEditing] = useState<AccessGroup | "new" | null>(null);
-  const [label, setLabel] = useState("");
-  const [description, setDescription] = useState("");
-  const [permissions, setPermissions] = useState<string[]>([]);
-  const [busy, setBusy] = useState(false);
 
   function open(group: AccessGroup | "new") {
     setEditing(group);
-    setLabel(group === "new" ? "" : group.label);
-    setDescription(group === "new" ? "" : (group.description ?? ""));
-    setPermissions(group === "new" ? [] : group.permissions);
     onError(null);
-  }
-
-  async function save() {
-    setBusy(true);
-    onError(null);
-    const input = { label: label.trim(), description: description.trim() || null, permissions };
-    try {
-      if (editing === "new") await createGroup(token, input);
-      else if (editing) await updateGroup(token, editing.name, input);
-      setEditing(null);
-      onReload();
-    } catch (caught) {
-      onError(message(caught, tr("Enregistrement impossible.")));
-    } finally {
-      setBusy(false);
-    }
   }
 
   async function remove(group: AccessGroup) {
@@ -326,39 +369,14 @@ function GroupsTab({ token, overview, onReload, onError }: { token: string; over
       </div>
 
       {editing ? (
-        <form
-          className="flex flex-col gap-5 rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold"
-          onSubmit={(event) => {
-            event.preventDefault();
-            void save();
-          }}
-        >
-          <h2 className="section-title font-display text-lg font-semibold text-ink">{editing === "new" ? tr("Nouveau groupe") : tr("Modifier le groupe")}</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="field">
-              <input value={label} onChange={(event) => setLabel(event.target.value)} placeholder={tr("Ex. Caisse boutique")} required minLength={2} maxLength={60} />
-              <span className="field-label">{tr("Nom du groupe")}</span>
-            </label>
-            <label className="field">
-              <input value={description} onChange={(event) => setDescription(event.target.value)} placeholder={tr("Ex. Encaissement et suivi des commandes")} maxLength={500} />
-              <span className="field-label">{tr("Description (optionnel)")}</span>
-            </label>
-          </div>
-
-          <div>
-            <p className="pb-2 text-sm font-medium text-ink">{tr("Fonctionnalités accordées")}</p>
-            <FeaturePicker features={overview.features} value={permissions} onChange={setPermissions} />
-          </div>
-
-          <div className="flex gap-2">
-            <Button type="submit" disabled={busy || label.trim().length < 2}>
-              {busy ? tr("Enregistrement…") : tr("Enregistrer")}
-            </Button>
-            <Button type="button" variant="ghost" onClick={() => setEditing(null)}>
-              {tr("Annuler")}
-            </Button>
-          </div>
-        </form>
+        <GroupFormModal
+          key={editing === "new" ? "new" : editing.name}
+          token={token}
+          group={editing === "new" ? undefined : editing}
+          features={overview.features}
+          onClose={() => setEditing(null)}
+          onSaved={onReload}
+        />
       ) : null}
 
       <div className="overflow-x-auto rounded-sm bg-surface p-4 shadow-card border-b-4 border-b-gold">

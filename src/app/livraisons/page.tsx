@@ -1,6 +1,7 @@
 "use client";
 
 import { DataTable } from "@/components/DataTable";
+import { FormModal } from "@/components/Modal";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { deliveryNoteFilename, savePdf, withLanguage } from "@/lib/download";
 import { useCallback, useEffect, useState } from "react";
@@ -41,6 +42,7 @@ export default function ShipmentsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<number | null>(null);
+  const [showNew, setShowNew] = useState(false);
 
   const refresh = useCallback(() => {
     if (!token) return;
@@ -97,15 +99,21 @@ export default function ShipmentsPage() {
       <BackofficeNav onLogout={handleLogout} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
-        <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Livraisons")}</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Livraisons")}</h1>
+          <Button onClick={() => setShowNew(true)}>{tr("Nouvelle livraison")}</Button>
+        </div>
 
-        <NewShipmentForm
-          onCreate={async (orderNumber, assignedTo) => {
-            if (!token) return;
-            const created = await createShipment(token, orderNumber, assignedTo);
-            setShipments((current) => [created, ...current]);
-          }}
-        />
+        {showNew ? (
+          <NewShipmentForm
+            onClose={() => setShowNew(false)}
+            onCreate={async (orderNumber, assignedTo) => {
+              if (!token) return;
+              const created = await createShipment(token, orderNumber, assignedTo);
+              setShipments((current) => [created, ...current]);
+            }}
+          />
+        ) : null}
 
         <nav className="flex flex-wrap gap-2">
           <FilterPill active={filter === null} onClick={() => setFilter(null)}>
@@ -304,30 +312,43 @@ function ActionButton({
 
 function AssignForm({ onAssign }: { onAssign: (assignedTo: number) => void }) {
   const { tr } = useAppearance();
+  const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
 
   return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault();
-        if (value) onAssign(Number(value));
-      }}
-      className="flex items-center gap-1"
-    >
-      <label className="field w-28">
-        <input
-          type="number"
-          value={value}
-          onChange={(event) => setValue(event.target.value)}
-          placeholder="7"
-          className="rounded-sm border border-line bg-surface px-2 text-xs text-ink"
-        />
-        <span className="field-label">{tr("ID livreur")}</span>
-      </label>
-      <button type="submit" className="rounded-sm border border-line px-2 py-1 text-xs text-ink hover:border-gold">
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          setValue("");
+          setOpen(true);
+        }}
+        className="rounded-sm border border-line px-2 py-1 text-xs text-ink hover:border-gold"
+      >
         {tr("Assigner")}
       </button>
-    </form>
+      {open ? (
+        <FormModal
+          open
+          size="md"
+          title={tr("Assigner un livreur")}
+          onClose={() => setOpen(false)}
+          submitLabel={tr("Assigner")}
+          disabled={!value}
+          onSubmit={() => {
+            onAssign(Number(value));
+            setOpen(false);
+          }}
+        >
+          <div className="grid gap-4">
+            <label className="field">
+              <input type="number" value={value} onChange={(event) => setValue(event.target.value)} placeholder="7" className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink" />
+              <span className="field-label">{tr("ID livreur")}</span>
+            </label>
+          </div>
+        </FormModal>
+      ) : null}
+    </>
   );
 }
 
@@ -336,52 +357,56 @@ function FailForm({ onFail }: { onFail: (notes?: string) => void }) {
   const [notes, setNotes] = useState("");
   const [open, setOpen] = useState(false);
 
-  if (!open) {
-    return (
+  return (
+    <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setNotes("");
+          setOpen(true);
+        }}
         className="rounded-sm border border-danger px-2 py-1 text-xs text-danger"
       >
         {tr("Échec de livraison")}
       </button>
-    );
-  }
-
-  return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault();
-        onFail(notes || undefined);
-        setOpen(false);
-      }}
-      className="flex items-center gap-1"
-    >
-      <label className="field w-40">
-        <input
-          value={notes}
-          onChange={(event) => setNotes(event.target.value)}
-          placeholder={tr("Ex. Client absent")}
-          className="rounded-sm border border-line bg-surface px-2 text-xs text-ink"
-        />
-        <span className="field-label">{tr("Motif (optionnel)")}</span>
-      </label>
-      <button type="submit" className="rounded-sm border border-danger px-2 py-1 text-xs text-danger">
-        {tr("Confirmer")}
-      </button>
-    </form>
+      {open ? (
+        <FormModal
+          open
+          size="md"
+          title={tr("Échec de livraison")}
+          onClose={() => setOpen(false)}
+          submitLabel={tr("Confirmer")}
+          onSubmit={() => {
+            onFail(notes || undefined);
+            setOpen(false);
+          }}
+        >
+          <div className="grid gap-4">
+            <label className="field">
+              <input value={notes} onChange={(event) => setNotes(event.target.value)} placeholder={tr("Ex. Client absent")} className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink" />
+              <span className="field-label">{tr("Motif (optionnel)")}</span>
+            </label>
+          </div>
+        </FormModal>
+      ) : null}
+    </>
   );
 }
 
-function NewShipmentForm({ onCreate }: { onCreate: (orderNumber: string, assignedTo?: number) => Promise<void> }) {
+function NewShipmentForm({
+  onClose,
+  onCreate,
+}: {
+  onClose: () => void;
+  onCreate: (orderNumber: string, assignedTo?: number) => Promise<void>;
+}) {
   const { tr } = useAppearance();
   const [orderNumber, setOrderNumber] = useState("");
   const [assignedTo, setAssignedTo] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
+  async function handleSubmit() {
     setFormError(null);
 
     if (!orderNumber) {
@@ -392,8 +417,7 @@ function NewShipmentForm({ onCreate }: { onCreate: (orderNumber: string, assigne
     setSubmitting(true);
     try {
       await onCreate(orderNumber, assignedTo ? Number(assignedTo) : undefined);
-      setOrderNumber("");
-      setAssignedTo("");
+      onClose();
     } catch (caught) {
       setFormError(caught instanceof ShippingError ? caught.message : tr("Création impossible."));
     } finally {
@@ -402,36 +426,26 @@ function NewShipmentForm({ onCreate }: { onCreate: (orderNumber: string, assigne
   }
 
   return (
-    <form
+    <FormModal
+      open
+      size="md"
+      title={tr("Nouvelle livraison")}
+      onClose={onClose}
+      submitLabel={tr("Créer la livraison")}
+      submitting={submitting}
+      error={formError}
       onSubmit={handleSubmit}
-      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold"
     >
-      <label className="field">
-        <input
-          value={orderNumber}
-          onChange={(event) => setOrderNumber(event.target.value)}
-          placeholder={tr("TCH-20261025-XXXXXX")}
-          className="w-48 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
-        />
-        <span className="field-label">{tr("N° commande")}</span>
-      </label>
-
-      <label className="field">
-        <input
-          placeholder="7"
-          type="number"
-          value={assignedTo}
-          onChange={(event) => setAssignedTo(event.target.value)}
-          className="w-32 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
-        />
-        <span className="field-label">{tr("Livreur (ID, optionnel)")}</span>
-      </label>
-
-      <Button type="submit" disabled={submitting}>
-        {tr("Créer la livraison")}
-      </Button>
-
-      {formError ? <p className="w-full text-sm text-danger">{formError}</p> : null}
-    </form>
+      <div className="grid gap-4">
+        <label className="field">
+          <input value={orderNumber} onChange={(event) => setOrderNumber(event.target.value)} placeholder={tr("TCH-20261025-XXXXXX")} className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink" />
+          <span className="field-label">{tr("N° commande")}</span>
+        </label>
+        <label className="field">
+          <input placeholder="7" type="number" value={assignedTo} onChange={(event) => setAssignedTo(event.target.value)} className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink" />
+          <span className="field-label">{tr("Livreur (ID, optionnel)")}</span>
+        </label>
+      </div>
+    </FormModal>
   );
 }

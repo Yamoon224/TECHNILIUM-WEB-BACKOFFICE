@@ -1,6 +1,7 @@
 "use client";
 
 import { DataTable } from "@/components/DataTable";
+import { FormModal } from "@/components/Modal";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -24,7 +25,7 @@ export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [form, setForm] = useState<"new" | number | null>(null);
 
   const refresh = useCallback(() => {
     if (!token) return;
@@ -48,25 +49,26 @@ export default function CategoriesPage() {
     router.push("/");
   }
 
-  async function handleCreate(name: string, parentId: number | null) {
+  async function handleCreate(input: CategoryFormValues) {
     if (!token) return;
     setError(null);
     try {
-      const created = await createCategory(token, { name, parent_id: parentId });
+      const created = await createCategory(token, { ...input, name_en: input.name_en || undefined });
       setCategories((current) => [...current, created]);
+      setForm(null);
     } catch (caught) {
       setError(caught instanceof CatalogError ? caught.message : tr("Création impossible."));
       throw caught;
     }
   }
 
-  async function handleSave(id: number, patch: { name: string; name_en: string; is_active: boolean; position: number }) {
+  async function handleSave(id: number, patch: CategoryFormValues) {
     if (!token) return;
     setError(null);
     try {
       const updated = await updateCategory(token, id, patch);
       setCategories((current) => current.map((category) => (category.id === id ? updated : category)));
-      setEditingId(null);
+      setForm(null);
     } catch (caught) {
       setError(caught instanceof CatalogError ? caught.message : tr("Mise à jour impossible."));
     }
@@ -103,11 +105,30 @@ export default function CategoriesPage() {
       <BackofficeNav onLogout={handleLogout} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
-        <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Catégories")}</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Catégories")}</h1>
+          <Button
+            onClick={() => {
+              setError(null);
+              setForm("new");
+            }}
+          >
+            {tr("Nouvelle catégorie")}
+          </Button>
+        </div>
 
-        {error ? <p className="text-sm text-danger">{error}</p> : null}
+        {error && form === null ? <p className="text-sm text-danger">{error}</p> : null}
 
-        <NewCategoryForm categories={categories} onCreate={handleCreate} />
+        {form !== null ? (
+          <CategoryFormModal
+            key={form}
+            category={typeof form === "number" ? categories.find((c) => c.id === form) : undefined}
+            categories={categories}
+            onClose={() => setForm(null)}
+            onSubmit={(input) => (typeof form === "number" ? handleSave(form, input) : handleCreate(input))}
+            error={error}
+          />
+        ) : null}
 
         {loading ? (
           <p className="text-sm text-ink-soft">{tr("Chargement…")}</p>
@@ -120,14 +141,7 @@ export default function CategoriesPage() {
   rows={categories}
   headers={[tr("Nom"), tr("Slug"), tr("Parente"), tr("Produits"), tr("Active"), tr("Action")]}
   actionColumns={[5]}
-  renderRow={(category) => editingId === category.id ? (
-                    <EditCategoryRow
-                      key={category.id}
-                      category={category}
-                      onSave={(patch) => handleSave(category.id, patch)}
-                      onCancel={() => setEditingId(null)}
-                    />
-                  ) : (
+  renderRow={(category) => (
                     <tr key={category.id} className="border-b border-line">
                       <td className="py-3 pr-4 text-ink">{category.name}</td>
                       <td className="py-3 pr-4 text-ink-soft">{category.slug}</td>
@@ -140,7 +154,10 @@ export default function CategoriesPage() {
                         <div className="flex flex-wrap gap-2">
                           <button
                             type="button"
-                            onClick={() => setEditingId(category.id)}
+                            onClick={() => {
+                              setError(null);
+                              setForm(category.id);
+                            }}
                             className="rounded-sm border border-line px-2 py-1 text-xs text-ink transition-colors hover:border-gold"
                           >
                             {tr("Modifier")}
@@ -164,145 +181,95 @@ export default function CategoriesPage() {
   );
 }
 
-function NewCategoryForm({
-  categories,
-  onCreate,
-}: {
-  categories: Category[];
-  onCreate: (name: string, parentId: number | null) => Promise<void>;
-}) {
-  const { tr } = useAppearance();
-  const [name, setName] = useState("");
-  const [parentId, setParentId] = useState<string>("");
-  const [submitting, setSubmitting] = useState(false);
-
-  async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    if (!name.trim()) return;
-
-    setSubmitting(true);
-    try {
-      await onCreate(name.trim(), parentId ? Number(parentId) : null);
-      setName("");
-      setParentId("");
-    } catch {
-      // error surfaced by parent
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold"
-    >
-      <label className="field">
-        <input
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          placeholder={tr("Ex. Accessoires audio")}
-          className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
-        />
-        <span className="field-label">{tr("Nom")}</span>
-      </label>
-
-      <label className="field">
-        <select
-          value={parentId}
-          onChange={(event) => setParentId(event.target.value)}
-          className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
-        >
-          <option value="">{tr("Aucune")}</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
-        <span className="field-label">{tr("Catégorie parente")}</span>
-      </label>
-
-      <Button type="submit" disabled={submitting || !name.trim()}>
-        {tr("Ajouter")}
-      </Button>
-    </form>
-  );
+interface CategoryFormValues {
+  name: string;
+  name_en: string;
+  parent_id: number | null;
+  position: number;
+  is_active: boolean;
 }
 
-function EditCategoryRow({
+/** Create (no `category`) or edit a category in a dialog. */
+function CategoryFormModal({
   category,
-  onSave,
-  onCancel,
+  categories,
+  onClose,
+  onSubmit,
+  error,
 }: {
-  category: Category;
-  onSave: (patch: { name: string; name_en: string; is_active: boolean; position: number }) => Promise<void>;
-  onCancel: () => void;
+  category?: Category;
+  categories: Category[];
+  onClose: () => void;
+  onSubmit: (values: CategoryFormValues) => Promise<void>;
+  error: string | null;
 }) {
   const { tr } = useAppearance();
-  const [name, setName] = useState(category.name);
-  const [nameEn, setNameEn] = useState(category.name_en ?? "");
-  const [isActive, setIsActive] = useState(category.is_active);
-  const [position, setPosition] = useState(category.position);
+  const [name, setName] = useState(category?.name ?? "");
+  const [nameEn, setNameEn] = useState(category?.name_en ?? "");
+  const [parentId, setParentId] = useState(category?.parent_id ? String(category.parent_id) : "");
+  const [position, setPosition] = useState(String(category?.position ?? 0));
+  const [isActive, setIsActive] = useState(category?.is_active ?? true);
   const [submitting, setSubmitting] = useState(false);
-
-  async function handleSave() {
-    setSubmitting(true);
-    try {
-      await onSave({ name, name_en: nameEn.trim(), is_active: isActive, position });
-    } finally {
-      setSubmitting(false);
-    }
-  }
+  const fieldClass = "rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink";
 
   return (
-    <tr className="border-b border-line bg-surface-raised">
-      <td className="py-2 pr-4">
-        <input
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          className="w-full rounded-sm border border-line bg-surface px-2 py-1 text-sm text-ink"
-        />
-        <input
-          value={nameEn}
-          onChange={(event) => setNameEn(event.target.value)}
-          placeholder={tr("Nom en anglais")}
-          aria-label={tr("Nom en anglais")}
-          className="mt-1 w-full rounded-sm border border-line bg-surface px-2 py-1 text-xs text-ink"
-        />
-      </td>
-      <td className="py-2 pr-4 text-ink-soft">{category.slug}</td>
-      <td className="py-2 pr-4 text-ink-soft">—</td>
-      <td className="py-2 pr-4">
-        <input
-          type="number"
-          value={position}
-          onChange={(event) => setPosition(Number(event.target.value))}
-          className="w-16 rounded-sm border border-line bg-surface px-2 py-1 text-sm text-ink"
-        />
-      </td>
-      <td className="py-2 pr-4">
-        <input type="checkbox" checked={isActive} onChange={(event) => setIsActive(event.target.checked)} />
-      </td>
-      <td className="py-2">
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            disabled={submitting}
-            onClick={handleSave}
-            className="rounded-sm border border-gold px-2 py-1 text-xs text-gold transition-colors disabled:opacity-50"
-          >
-            {tr("Enregistrer")}
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded-sm border border-line px-2 py-1 text-xs text-ink-soft transition-colors hover:border-gold"
-          >
-            {tr("Annuler")}
-          </button>
-        </div>
-      </td>
-    </tr>
+    <FormModal
+      open
+      size="md"
+      title={category ? tr("Modifier la catégorie") : tr("Nouvelle catégorie")}
+      onClose={onClose}
+      submitLabel={category ? tr("Enregistrer") : tr("Ajouter")}
+      submitting={submitting}
+      disabled={!name.trim()}
+      error={error}
+      onSubmit={async () => {
+        setSubmitting(true);
+        try {
+          await onSubmit({
+            name: name.trim(),
+            name_en: nameEn.trim(),
+            parent_id: parentId ? Number(parentId) : null,
+            position: Number(position) || 0,
+            is_active: isActive,
+          });
+        } catch {
+          // error surfaced by the page, shown in the footer
+        } finally {
+          setSubmitting(false);
+        }
+      }}
+    >
+      <div className="grid gap-4">
+        <label className="field">
+          <input value={name} onChange={(event) => setName(event.target.value)} placeholder={tr("Ex. Accessoires audio")} className={fieldClass} />
+          <span className="field-label">{tr("Nom")}</span>
+        </label>
+        <label className="field">
+          <input value={nameEn} onChange={(event) => setNameEn(event.target.value)} placeholder={tr("Ex. Audio accessories")} className={fieldClass} />
+          <span className="field-label">{tr("Nom en anglais")}</span>
+        </label>
+        <label className="field">
+          <select value={parentId} onChange={(event) => setParentId(event.target.value)} className={fieldClass}>
+            <option value="">{tr("Aucune")}</option>
+            {categories
+              .filter((candidate) => candidate.id !== category?.id)
+              .map((candidate) => (
+                <option key={candidate.id} value={candidate.id}>
+                  {candidate.name}
+                </option>
+              ))}
+          </select>
+          <span className="field-label">{tr("Catégorie parente")}</span>
+        </label>
+        <label className="field">
+          <input type="number" min={0} value={position} onChange={(event) => setPosition(event.target.value)} className={fieldClass} />
+          <span className="field-label">{tr("Position")}</span>
+        </label>
+        <label className="flex items-center gap-2 text-sm text-ink">
+          <input type="checkbox" checked={isActive} onChange={(event) => setIsActive(event.target.checked)} />
+          {tr("Active")}
+        </label>
+      </div>
+    </FormModal>
   );
 }

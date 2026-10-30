@@ -1,6 +1,7 @@
 "use client";
 
 import { DataTable } from "@/components/DataTable";
+import { FormModal } from "@/components/Modal";
 import { useAppearance } from "@/components/AppearanceProvider";
 import { receiptFilename, savePdf, withLanguage } from "@/lib/download";
 import { useCallback, useEffect, useState } from "react";
@@ -44,6 +45,7 @@ export default function PaymentsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<number | null>(null);
+  const [showNew, setShowNew] = useState(false);
 
   const refresh = useCallback(() => {
     if (!token) return;
@@ -116,15 +118,21 @@ export default function PaymentsPage() {
       <BackofficeNav onLogout={handleLogout} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
-        <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Paiements")}</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="page-title font-display text-2xl font-semibold text-ink">{tr("Paiements")}</h1>
+          <Button onClick={() => setShowNew(true)}>{tr("Nouveau paiement")}</Button>
+        </div>
 
-        <NewPaymentForm
-          onSubmit={async (input) => {
-            if (!token) return;
-            const created = await recordPayment(token, input);
-            setPayments((current) => [created, ...current]);
-          }}
-        />
+        {showNew ? (
+          <NewPaymentForm
+            onClose={() => setShowNew(false)}
+            onSubmit={async (input) => {
+              if (!token) return;
+              const created = await recordPayment(token, input);
+              setPayments((current) => [created, ...current]);
+            }}
+          />
+        ) : null}
 
         <nav className="flex flex-wrap gap-2">
           <FilterPill active={filter === null} onClick={() => setFilter(null)}>
@@ -249,8 +257,10 @@ function FilterPill({
 }
 
 function NewPaymentForm({
+  onClose,
   onSubmit,
 }: {
+  onClose: () => void;
   onSubmit: (input: {
     order_number: string;
     method: PaymentMethod;
@@ -268,8 +278,7 @@ function NewPaymentForm({
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
+  async function handleSubmit() {
     setFormError(null);
 
     if (!orderNumber || !amount) {
@@ -286,9 +295,7 @@ function NewPaymentForm({
         provider: method === "mobile_money" ? provider : undefined,
         provider_reference: reference || undefined,
       });
-      setOrderNumber("");
-      setAmount("");
-      setReference("");
+      onClose();
     } catch (caught) {
       setFormError(caught instanceof PaymentsError ? caught.message : tr("Enregistrement impossible."));
     } finally {
@@ -297,76 +304,53 @@ function NewPaymentForm({
   }
 
   return (
-    <form
+    <FormModal
+      open
+      size="md"
+      title={tr("Nouveau paiement")}
+      onClose={onClose}
+      submitLabel={tr("Enregistrer")}
+      submitting={submitting}
+      error={formError}
       onSubmit={handleSubmit}
-      className="flex flex-wrap items-end gap-3 rounded-sm border border-line p-4 bg-surface shadow-card border-b-4 border-b-gold"
     >
-      <label className="field">
-        <input
-          value={orderNumber}
-          onChange={(event) => setOrderNumber(event.target.value)}
-          placeholder={tr("TCH-20261025-XXXXXX")}
-          className="w-48 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
-        />
-        <span className="field-label">{tr("N° commande")}</span>
-      </label>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="field">
+          <input value={orderNumber} onChange={(event) => setOrderNumber(event.target.value)} placeholder={tr("TCH-20261025-XXXXXX")} className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink" />
+          <span className="field-label">{tr("N° commande")}</span>
+        </label>
 
-      <label className="field">
-        <select
-          value={method}
-          onChange={(event) => setMethod(event.target.value as PaymentMethod)}
-          className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
-        >
-          <option value="cod">{tr("Paiement à la livraison")}</option>
-          <option value="mobile_money">{tr("Mobile money")}</option>
-        </select>
-        <span className="field-label">{tr("Méthode")}</span>
-      </label>
+        <label className="field">
+          <select value={method} onChange={(event) => setMethod(event.target.value as PaymentMethod)} className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink">
+            <option value="cod">{tr("Paiement à la livraison")}</option>
+            <option value="mobile_money">{tr("Mobile money")}</option>
+          </select>
+          <span className="field-label">{tr("Méthode")}</span>
+        </label>
 
-      {method === "mobile_money" ? (
-        <>
-          <label className="field">
-            <select
-              value={provider}
-              onChange={(event) => setProvider(event.target.value as MobileMoneyProvider)}
-              className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
-            >
-              <option value="orange_money">{tr("Orange Money")}</option>
-              <option value="mtn_money">{tr("MTN Money")}</option>
-              <option value="wave">{tr("Wave")}</option>
-            </select>
-            <span className="field-label">{tr("Opérateur")}</span>
-          </label>
+        {method === "mobile_money" ? (
+          <>
+            <label className="field">
+              <select value={provider} onChange={(event) => setProvider(event.target.value as MobileMoneyProvider)} className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink">
+                <option value="orange_money">{tr("Orange Money")}</option>
+                <option value="mtn_money">{tr("MTN Money")}</option>
+                <option value="wave">{tr("Wave")}</option>
+              </select>
+              <span className="field-label">{tr("Opérateur")}</span>
+            </label>
 
-          <label className="field">
-            <input
-              value={reference}
-              onChange={(event) => setReference(event.target.value)}
-              placeholder={tr("MM-12345678")}
-              className="w-40 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
-            />
-            <span className="field-label">{tr("Référence transaction")}</span>
-          </label>
-        </>
-      ) : null}
+            <label className="field">
+              <input value={reference} onChange={(event) => setReference(event.target.value)} placeholder={tr("MM-12345678")} className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink" />
+              <span className="field-label">{tr("Référence transaction")}</span>
+            </label>
+          </>
+        ) : null}
 
-      <label className="field">
-        <input
-          placeholder="118000"
-          type="number"
-          min={0}
-          value={amount}
-          onChange={(event) => setAmount(event.target.value)}
-          className="w-32 rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
-        />
-        <span className="field-label">{tr("Montant (F CFA)")}</span>
-      </label>
-
-      <Button type="submit" disabled={submitting}>
-        {tr("Enregistrer")}
-      </Button>
-
-      {formError ? <p className="w-full text-sm text-danger">{formError}</p> : null}
-    </form>
+        <label className="field">
+          <input placeholder="118000" type="number" min={0} value={amount} onChange={(event) => setAmount(event.target.value)} className="rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink" />
+          <span className="field-label">{tr("Montant (F CFA)")}</span>
+        </label>
+      </div>
+    </FormModal>
   );
 }
